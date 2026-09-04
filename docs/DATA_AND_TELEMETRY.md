@@ -82,7 +82,11 @@ novelty outcome
 revalidation outcome
 ```
 
-Prices and success probabilities must be estimated separately. A high per-token ASTRA price may still yield a lower Verified Proof Cost if it materially improves acceptance probability.
+Prices and success probabilities must be estimated separately. Providers may
+publish prices and capacity, but an independent protocol estimator derives
+success probability from audited history. A high per-token ASTRA price may
+still yield a lower Quality-Adjusted Certification Cost if it materially
+improves acceptance probability.
 
 ## 5. Difficulty and proof-state features
 
@@ -124,7 +128,7 @@ Track at least:
 
 Report denominators, abstentions, policy versions, and confidence intervals. Do not market cherry-picked success rates.
 
-## 7. Compute-savings measurement
+## 7. Compute-impact measurement
 
 The preferred hierarchy is:
 
@@ -139,7 +143,10 @@ Required safeguards:
 - count only final proof dependencies;
 - cluster formally equivalent or near-duplicate lemmas;
 - detect cycles and self-citation rings;
-- cap rewards by realized downstream net revenue;
+- treat savings as one uncertain impact signal, not a precise invoice;
+- require a separately authorized eligible economic edge and bounded pool;
+- cap allocations by realized downstream net revenue and remaining pool budget;
+- prevent recursive treatment of one revenue event;
 - publish methodology and uncertainty;
 - preserve negative estimates;
 - require minimum sample and effect thresholds.

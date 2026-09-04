@@ -12,14 +12,14 @@ XLMP/1 is the service-to-service contract. Core services and adapters:
 - append-only participant/operator/node credential and revocation registry with issuer/key-resolution adapters;
 - optional x402 and other payment adapters;
 - researcher identity/manifest service;
-- quote and compute-curve service;
+- quote, protocol-calibration, and job-specific service-curve service;
 - durable job orchestrator;
 - `ResearchProver` workers, with ASTRA as the reference adapter;
 - `VerifierAdapter` build workers, with Lean as the default;
 - official-kernel checker network;
 - independent-checker network;
 - committee selection and receipt aggregator;
-- novelty/review network;
+- novelty and statement-alignment review networks;
 - watcher/challenge service;
 - content-addressed storage and availability service;
 - finality-adapter chain writer/indexer;
@@ -56,7 +56,11 @@ Runs untrusted artifacts in ephemeral no-network sandboxes. Builder and checker 
 
 ### Economic plane
 
-Holds chain signing, facilitator, vault, and reconciliation components. Use hardware-backed threshold signing, withdrawal limits, allowlisted contracts, and independent accounting alerts.
+Holds chain signing, facilitator, vault, impact-policy authorization, and
+reconciliation components. Use hardware-backed threshold signing, withdrawal
+limits, allowlisted contracts, and independent accounting alerts. Maintain a
+prescriptive economic graph distinct from the formal evidence/dependency graph;
+no graph-index join may itself execute payment.
 
 ### Storage plane
 
@@ -68,7 +72,7 @@ Stores encrypted/public bundles and serves availability challenges. Storage rece
 - durable message bus for jobs and observations;
 - append-only event store for signed protocol events;
 - object/content-addressed storage for proof bundles;
-- graph index for dependencies, contribution, equivalence, and revenue routes;
+- separate graph indexes for descriptive dependencies/contributions and prescriptive economic-policy/revenue routes;
 - time-series store for compute curves and operations;
 - secret manager/HSM for operational credentials.
 

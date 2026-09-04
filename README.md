@@ -1,6 +1,7 @@
 # xLemma Protocol
 
-**Proof-carrying decentralized research for sovereign researchers, with a provider-neutral protocol for independent reproduction, attribution, rights, and research economics.**
+**Proof-carrying infrastructure for financing, producing, formally verifying,
+attributing, licensing, and funding the reuse of research artifacts.**
 
 > Status: architectural reference implementation and prototype. The Rust, Lean, Solidity, payment, and cryptographic components have not been independently audited. Do not deploy with real funds until the missing production work in `ROADMAP.md` is complete.
 
@@ -15,15 +16,19 @@ xLemma lets an individual or collective operate as a **Decentralized Researcher 
 - provider-neutral proof production, with ASTRA as the reference adapter;
 - provider-neutral formal verification, with Lean as the default adapter;
 - Proof of Independent Reproduction (PoIR) node certificates;
+- separate human/domain statement-alignment receipts;
 - pluggable payment rails, including x402, research credits, stablecoins, grants, escrow, and invoicing;
-- revenue routing to contributors, dependencies, public goods, and future compute;
-- compute-forward pricing and conservative compute-savings dividends.
+- revenue routing to contributors, bounded contractual pools, public goods, and future compute;
+- job-specific service pricing and conservative impact-pool allocation.
 
 Formally:
 
-> **xLemma is an open decentralized protocol for identifying, financing,
-> producing, independently reproducing, certifying, attributing, publishing,
-> licensing, reusing, and economically rewarding verifiable research objects.**
+> **xLemma is an open decentralized protocol for financing, producing,
+> formally verifying, independently reproducing, attributing, publishing,
+> licensing, and funding the reuse of research artifacts.**
+
+xLemma does not create ownership of mathematical truth, guarantee royalties
+from future use, or define a universal unit of scientific value.
 
 ## XLMP/1 is the protocol boundary
 
@@ -37,7 +42,7 @@ conservation. Named external technologies are replaceable adapters:
                             │
          ┌──────────────────┼──────────────────┐
          │                  │                  │
-   Research graph       Node network       Economics
+   Evidence graph       Node network       Economic graph
    claims/proofs        PoIR/challenge     credits/revenue
    provenance/rights    discovery/markets  compute/bounties
    dependencies         identity/sortition dividends
@@ -172,6 +177,12 @@ regions. The selector admits at most one committee member per
 strictest collision rule wins. Running more machines or rotating keys never
 creates more independence.
 
+Beneficial-control detection is imperfect. `OperatorClusterID` is therefore a
+conservative policy judgment backed by evidence and challenge procedures, not
+a claim of mathematical certainty. Production issuer and cluster policies must
+publish confidence, limitations, and conflicts, and must avoid dependence on a
+single credential issuer.
+
 The reference implementation includes typed credential IDs, canonical XLMP
 credential and revocation messages, an append-only registry behind a required
 cryptographic proof-verifier adapter, exact credential-chain commitments,
@@ -194,11 +205,20 @@ Lean validity
   ≠ license rights
   ≠ novelty
   ≠ significance
+  ≠ statement alignment
   ≠ LaTeX interpretation
   ≠ payment settlement
 ```
 
 Under a pinned environment, formal validity is deterministic. Nodes independently reproduce and sign observations. The network reaches consensus over **evidence sufficiency and state transitions**, not over truth by majority vote.
+
+Lean certification and statement alignment are separate. A
+`StatementAlignmentReceipt` binds the exact `ClaimID` to hashes of the informal
+claim and LaTeX presentation, disclosed assumptions, reviewed definitions,
+domain reviewers, limitations, and signatures. A formally valid but vacuous,
+weakened, or misleadingly presented statement can therefore remain
+`misaligned` or `inconclusive`; no interface should combine these statuses into
+one badge.
 
 ## Researcher-first object model
 
@@ -210,7 +230,7 @@ DecentralizedResearcherNode
 ├── ContributionIdentity
 ├── ReputationRecord
 ├── LemmaCapsules[]
-├── ComputePositions[]
+├── ComputeReservations[]
 ├── RevenueAccounts[]
 ├── Licenses[]
 └── GovernancePolicy
@@ -229,13 +249,31 @@ LemmaCapsule
 ├── DependencyRoot
 ├── VerificationReceipts
 ├── NoveltyReceipts
+├── StatementAlignmentReceipts
 ├── RightsManifest
+├── EconomicMode
 ├── RevenueRoute
 ├── ComputeHistory
 └── VersionLineage
 ```
 
 One researcher has one primary research-credit economy and many immutable lemma capsules. xLemma deliberately avoids launching one freely tradable token for every lemma.
+
+## Five conservation laws
+
+| Law | Protocol consequence |
+|---|---|
+| Truth | Stake, votes, reputation, and tokens never establish formal validity. |
+| Value | Withdrawable rewards trace to settled value from an external payer. |
+| Rights | Registration records evidence; it cannot manufacture legal rights or ownership of mathematics. |
+| Independence | Many machines under common beneficial control count as one independence domain. |
+| Causality | Formal dependency proves use, not commercial causation or debt. |
+
+The last rule creates two graphs. The evidence graph records
+`FORMALLY_DEPENDS_ON`; the economic graph records explicitly agreed obligations.
+The invariant is `FORMALLY_DEPENDS_ON != OWES_PAYMENT_TO`. An upstream payment
+requires settled revenue, an active economic policy, an eligible economic edge,
+a bounded pool, and non-recursive treatment of that revenue event.
 
 ## Proof of Independent Reproduction
 
@@ -288,7 +326,24 @@ auto-compound rate = 60%
 260 USDC paid to researcher
 ```
 
-## Compute curve
+## Rights and economic modes
+
+Each capsule distinguishes nontransferable origin/provenance, rights in actual
+artifacts or contracts, and economic participation in a defined revenue source.
+It selects one mode:
+
+| Mode | Default economic behavior |
+|---|---|
+| Open Commons | No mandatory per-use protocol fee; eligible for grants, donations, and capped impact pools. |
+| Commercial Research | Controlled artifacts/services may use explicit, bounded license and upstream-pool terms. |
+| Sponsored Challenge | Sponsor declares and funds acceptance, allocation, rights, deadline, and dispute terms before work. |
+
+Economic terms identify the payer, revenue source, calculation base, exclusions,
+duration, share, cap, transfer rules, policy root, and dispute process. Token
+ownership never substitutes for those terms. Open Commons is the default
+configuration; its mandatory dependency pool is zero.
+
+## Job-specific service curve
 
 xLemma tracks service-specific forward curves:
 
@@ -297,15 +352,26 @@ xLemma tracks service-specific forward curves:
 - `Fʳᵉᵛⁱᵉʷ(d,T)` — novelty and expert review;
 - `Fˢᵗᵒʳᵃᵍᵉ(T)` — replicated proof availability.
 
-The expected cost of a Gold-verified, novelty-cleared result is represented by a Verified Proof Cost curve:
+The quality-adjusted certification cost (`QAC`) for a specific job is:
 
 ```text
-VPC(d,T) = min over models and compute classes of
-           (generation + verification + expert review cost)
-           / (probability of Gold verification × probability of novelty clearance)
+QAC(n,j) = expected total cost for route n on job j
+           / protocol-estimated probability of Gold certification by deadline
 ```
 
-Reusable upstream lemmas may receive a capped share of **conservatively measured downstream compute savings**, but only from realized protocol revenue and only when the lemma is present in the final dependency graph.
+The units remain concrete and job-specific: reasoning tokens, proof-search
+attempts, Lean build seconds, checker executions, review hours, and storage
+byte-months. Providers publish price and capacity, but provider-advertised
+success probabilities do not control routing; signed, expiring protocol
+calibration records do. Basis-point probabilities, upward rounding, checked
+integer arithmetic, and stable offer-ID tie-breaking keep money quotes
+deterministic. Forward offers begin as reserved service capacity, not tradeable
+financial derivatives.
+
+Compute savings are one uncertain impact signal. They may allocate an explicit,
+capped Research Impact Pool only when a settled economic policy authorizes the
+edge; they are not an invoice automatically created by the proof dependency
+graph.
 
 ## ASTRA and Lean adapters
 
@@ -337,6 +403,20 @@ x402 is one optional payment and paid-HTTP adapter. xLemma maps compatible resea
 | Continuous research-agent session | `batch-settlement` |
 
 The payment facilitator validates and settles payment payloads. It is intentionally outside research consensus. `PaymentReceipt` and `VerificationReceipt` remain separate, though both bind the same immutable job and artifact identifiers.
+
+## Launch profile
+
+The first credible deployment is intentionally narrower than a universal
+research market: a sponsor-backed marketplace for ASTRA-assisted Lean
+formalization and independently reproduced certification in one domain with
+identifiable buyers. Cryptographic protocols, smart-contract properties,
+verified algorithms, or selected optimization results are suitable starting
+profiles. Expansion follows repeat external demand and measured completion—not
+token issuance.
+
+Per-lemma speculative tokens, researcher profit tokens, universal mandatory
+royalties, universal research-value units, tradeable compute futures, and
+token-weighted research governance are outside the core launch.
 
 ## Repository map
 

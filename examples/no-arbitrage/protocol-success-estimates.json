@@ -1,0 +1,21 @@
+{
+  "estimator_id": "ed25519:6kpsY-KcUgq-9VB7Ey7F-ZVHdq6-vnuSQh7qaRRG0iw",
+  "policy_id": "xlpolicy:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "estimated_at": "2026-09-03T20:00:00Z",
+  "valid_until": "2027-09-04T20:00:00Z",
+  "service_estimates": [
+    { "offer_id": "offer-astra_generation", "completion_probability_bps": 8000, "sample_size": 100, "evidence_root": "blake3:astra-calibration-evidence" },
+    { "offer_id": "offer-lean_build", "completion_probability_bps": 9900, "sample_size": 100, "evidence_root": "blake3:lean-build-calibration-evidence" },
+    { "offer_id": "offer-official_kernel_check", "completion_probability_bps": 9950, "sample_size": 100, "evidence_root": "blake3:kernel-calibration-evidence" },
+    { "offer_id": "offer-independent_check", "completion_probability_bps": 9900, "sample_size": 100, "evidence_root": "blake3:independent-check-calibration-evidence" },
+    { "offer_id": "offer-novelty_review", "completion_probability_bps": 8500, "sample_size": 100, "evidence_root": "blake3:novelty-calibration-evidence" },
+    { "offer_id": "offer-storage", "completion_probability_bps": 9990, "sample_size": 100, "evidence_root": "blake3:storage-calibration-evidence" }
+  ],
+  "certification": {
+    "gold_probability_bps": 7500,
+    "novelty_clearance_probability_bps": 6000,
+    "sample_size": 100,
+    "evidence_root": "blake3:job-certification-calibration-evidence"
+  },
+  "signature": "ed25519:q3aMfezhI4aZgGnchmmWVtpznrR0n8poO_vjQbtK7Rdf1XptBCDhnbUyy0jYqg9Sw_J5X3I2na-muHE_Q5vPBw"
+}

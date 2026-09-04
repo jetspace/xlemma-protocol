@@ -15,18 +15,23 @@
     "xlr:blake3:5555555555555555555555555555555555555555555555555555555555555555"
   ],
   "novelty_receipt_ids": [],
+  "statement_alignment_receipt_ids": [
+    "xlr:blake3:535ca8c4b0a8b801dee9e6235e673f91df9db25ea9133f14930a010ebad4a633"
+  ],
+  "economic_mode": "open_commons",
   "revenue_route": {
     "settlement_asset": "USDC",
     "researcher_vault": "0x1111111111111111111111111111111111111111",
     "waterfall": {
       "creator_pool_bps": 6500,
-      "upstream_dependency_pool_bps": 1000,
+      "upstream_dependency_pool_bps": 0,
       "reverification_security_pool_bps": 800,
-      "open_research_pool_bps": 700,
+      "open_research_pool_bps": 1700,
       "dispute_insurance_pool_bps": 500,
       "protocol_operations_bps": 500
     },
     "contributor_manifest_hash": "blake3:8888888888888888888888888888888888888888888888888888888888888888",
+    "economic_policy_root": "blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "dependency_reward_cap_bps": 1000,
     "auto_compound_bps_by_researcher": {
       "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777": 6000

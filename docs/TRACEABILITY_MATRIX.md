@@ -40,7 +40,11 @@ Every major concept requested or developed in the design is mapped to its primar
 | Origin certificate | `spec/002-proof-rights-capsule.md` | `OriginCertificate` |
 | Contribution graph | `spec/002-proof-rights-capsule.md` | `ContributionManifest` and schema |
 | Human versus machine contribution | `docs/LEGAL_BOUNDARIES.md`, `spec/007-astra-lean.md` | `MachineContributionRecord`, `AstraComputeReceipt` |
+| Formal statement versus informal alignment | `spec/021-alignment-rights-and-impact.md` | `StatementAlignmentReceipt`, schema and example vector |
+| Content-derived alignment evidence | same | `StatementAlignmentReceipt::validate_integrity` |
 | Rights manifest | `spec/002-proof-rights-capsule.md` | `RightsManifest`, `rights.schema.json` |
+| Origin, artifact rights, and economic participation separation | `spec/021-alignment-rights-and-impact.md`, `docs/LEGAL_BOUNDARIES.md` | `CapsuleEconomicMode`, `EconomicParticipationTerms` |
+| Open Commons / Commercial Research / Sponsored Challenge | same | `LemmaCapsule.economic_mode`, license and capsule schemas |
 | Employment/university/grant clearance | `docs/LEGAL_BOUNDARIES.md` | `RightsManifest.employer_university_grant_clearance` |
 | Immutable object graph | `spec/001-identifiers.md` | `xlemma-core`, `ProofRegistry.sol` |
 | TheoryID | `spec/001-identifiers.md` | `TheoryId`, `theory.schema.json` |
@@ -96,14 +100,16 @@ Every major concept requested or developed in the design is mapped to its primar
 | Payment idempotency | same | `payment_identifier` |
 | Reverse-direction bounty | `spec/012-bounties-and-support.md` | `BountyEscrow.sol` |
 | Compute spot/forward offers | `spec/005-compute-curve.md` | `ServiceOffer` |
-| Verified Proof Cost | same | `quote_verified_proof_cost` |
+| Quality-Adjusted Certification Cost | same | `quote_quality_adjusted_certification_cost` |
+| Protocol-calibrated success estimates | same, `spec/021-alignment-rights-and-impact.md` | `ProtocolSuccessEstimates`; provider offers carry no routing probability |
 | Model migration spread | same | `migration_spread` |
 | Research Lead Signal | same | `research_lead_signal` |
 | Spot/economy/deadline/reserved routing | same | policy documentation/config |
-| Compute-savings dividend | `spec/006-revenue-and-dividends.md` | `compute_savings_dividend` |
-| Lower confidence bound | same | `ComputeSavingsEvidence` |
-| Final dependency requirement | same | dividend guard |
-| Revenue cap / no recursive explosion | same | `ComputeSavingsPolicy` |
+| Compute-savings impact signal | `spec/006-revenue-and-dividends.md` | `compute_impact_pool_allocation` |
+| Lower confidence bound / fixed-point payment math | same | content-derived `ComputeSavingsEvidence`, checked integer allocation |
+| Evidence/economic graph separation | `spec/021-alignment-rights-and-impact.md` | `ImpactPoolAuthorization`, `DependencyDividend` guards |
+| Final dependency requirement | `spec/006-revenue-and-dividends.md` | impact-allocation guard |
+| Revenue and pool caps / no recursive explosion | same | `ComputeSavingsPolicy`, evidence-bound `ImpactPoolAuthorization` |
 | Bounties/grants/pre-purchase/co-development | `spec/012-bounties-and-support.md` | manifests and bounty contract |
 | Negative-result funding | same | open-research pool design |
 | Optional ERC-1155 proof capsule | `spec/011-tokenization.md` | `LemmaCapsule1155.sol` |

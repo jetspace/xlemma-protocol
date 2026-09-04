@@ -2,6 +2,29 @@
 
 This is an architectural issue list, not legal advice.
 
+Under U.S. Copyright Office guidance, ideas, procedures, processes, systems,
+methods, principles, and discoveries are not protected merely because they are
+described in an artifact; original text, diagrams, code, or other expression
+may be treated differently. USPTO eligibility analysis likewise does not make
+a mathematical formula patent eligible by tokenizing it; the claim as a whole
+must satisfy the applicable statutory analysis. Other jurisdictions differ,
+and every deployment requires qualified counsel.
+
+## Three objects hidden by “ownership”
+
+1. **Origin/provenance:** nontransferable evidence that a researcher committed
+   a claim or artifact at a time. It establishes a protocol record, not
+   exclusive ownership of truth.
+2. **Artifact/legal rights:** rights actually controlled in manuscripts, code,
+   diagrams, data, experimental records, commercial implementations, eligible
+   patent interests, or contracts.
+3. **Economic participation:** entitlement to a defined revenue source under an
+   explicit policy or agreement.
+
+Economic participation must state the payer, source, calculation base,
+exclusions, duration, share, cap, transfer rules, and dispute procedure. “Token
+holders own future theorem royalties” is not a valid protocol representation.
+
 ## What a proof capsule can credibly represent
 
 - a signed and timestamped priority claim;
@@ -38,6 +61,17 @@ This is an architectural issue list, not legal advice.
 ## Token architecture boundary
 
 The V1 researcher token is a fully backed restricted service credit. A freely transferable token promoted around future researcher or protocol profits has a materially different risk profile and belongs in a separate legally reviewed vehicle. A technical ERC-4626 interface does not resolve that legal analysis.
+
+## Capsule modes
+
+- **Open Commons** permits public reuse without mandatory per-use protocol
+  fees and may receive grants, donations, sponsorship, or impact-pool funding.
+- **Commercial Research** licenses only controlled artifacts or services under
+  bounded, explicit terms.
+- **Sponsored Challenge** declares funded acceptance, allocation, result
+  rights, and disputes before work begins.
+
+A formal dependency is never, by itself, a license or royalty obligation.
 
 ## Public claims
 

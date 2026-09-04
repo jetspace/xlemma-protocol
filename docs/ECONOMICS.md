@@ -34,7 +34,19 @@ Cash_{i,j}=(1-\alpha_i)s_iN_j.
 
 Backing enters the Research Vault before or atomically with credit issuance.
 
-## Compute savings
+## Evidence graph is not the economic graph
+
+`FORMALLY_DEPENDS_ON` records actual use in a final proof. It does not mean
+`OWES_PAYMENT_TO`, establish commercial causation, or let an upstream
+participant block publication. Payment requires a separately signed economic
+policy, an eligible economic edge, a settled external revenue event, and a
+bounded pool.
+
+Open Commons is the default: its mandatory upstream pool is zero. Commercial
+Research and Sponsored Challenge may define a bounded upstream pool before
+monetization.
+
+## Compute-savings impact signal
 
 \[
 \Delta C_{k\to j}=LCB_\alpha[\widehat C_j^{(-k)}-C_j^{(+k)}].
@@ -44,7 +56,21 @@ Backing enters the Research Vault before or atomically with credit issuance.
 D_{k\to j}=\min[\rho\max(0,\Delta C_{k\to j}),\kappa N_j].
 \]
 
-This creates an economic reward for open reusable lemmas without requiring exclusive ownership of the underlying truth.
+The estimate is an uncertain impact signal, not a counterfactual fact or
+invoice. It can allocate only from the smaller of the conservative estimate,
+the revenue cap, and a separately authorized impact-pool budget. The same
+revenue event cannot be recursively charged. Authorization binds the exact
+revenue event, and settlement must atomically consume the authorization and
+remaining pool budget to prevent replay.
+The evidence record is content-addressed and names its settlement asset and
+decimals. Confidence multipliers use basis points; allocation math is checked
+integer arithmetic with conservative upward rounding of uncertainty.
+
+Impact policies should combine independently observed downstream use,
+conservative compute contribution, adoption across independent operators,
+maintenance/revalidation, and external economic use. They should apply
+equivalence clustering, depth decay, concentration caps, and anti-collusion
+review.
 
 ## Anti-reflexivity rules
 
@@ -54,3 +80,4 @@ This creates an economic reward for open reusable lemmas without requiring exclu
 - Related-party purchases are identified separately from arm's-length demand.
 - Revenue routes use stable settlement accounting.
 - Public profit-linked tokens are outside the V1 protocol core.
+- Compute markets price concrete services, not universal scientific worth.

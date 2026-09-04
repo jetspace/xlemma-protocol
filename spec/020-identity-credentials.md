@@ -37,6 +37,12 @@ VerifiedUserID ── controls ──> OperatorID ── delegates ──> NodeI
   suspected common control MAY merge multiple OperatorIDs for independence
   purposes; it MUST NOT split one verified participant into extra votes.
 
+No identity process proves beneficial control perfectly. Issuer and clustering
+policies SHOULD publish evidence classes, confidence, limitations, conflicts,
+and a challenge route rather than presenting independence as mathematical
+certainty. Networks SHOULD accept multiple qualified credential issuers while
+preserving one conservative cross-issuer control domain.
+
 One verified participant MAY operate multiple machines and MAY rotate node
 keys. That creates multiple NodeIDs but never additional committee
 independence.

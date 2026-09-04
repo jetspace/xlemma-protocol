@@ -9,7 +9,38 @@
     "rights_manifest_hash": { "$ref": "common.schema.json#/$defs/hash" },
     "licensor": { "type": "string", "minLength": 1 },
     "licensee": { "type": "string", "minLength": 1 },
+    "mode": {
+      "type": "string",
+      "enum": ["open_commons", "commercial_research", "sponsored_challenge"]
+    },
     "scope": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "economic_terms": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "revenue_source": { "type": "string", "minLength": 1 },
+            "payer": { "type": "string", "minLength": 1 },
+            "calculation_base": { "type": "string", "minLength": 1 },
+            "exclusions": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "share_bps": { "type": "integer", "minimum": 0, "maximum": 10000 },
+            "payout_cap": { "$ref": "common.schema.json#/$defs/amount" },
+            "transferable": { "type": "boolean" },
+            "term_starts_at": { "type": "string", "format": "date-time" },
+            "term_ends_at": { "type": "string", "format": "date-time" },
+            "dispute_process": { "type": "string", "minLength": 1 },
+            "economic_policy_root": { "$ref": "common.schema.json#/$defs/hash" }
+          },
+          "required": [
+            "revenue_source", "payer", "calculation_base", "exclusions", "share_bps",
+            "payout_cap", "transferable", "term_starts_at", "term_ends_at",
+            "dispute_process", "economic_policy_root"
+          ]
+        },
+        { "type": "null" }
+      ]
+    },
     "consideration_receipt_id": {
       "anyOf": [
         { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
@@ -27,7 +58,15 @@
     "signatures": { "type": "array", "minItems": 1, "items": { "$ref": "common.schema.json#/$defs/signature" } }
   },
   "required": [
-    "license_id", "rights_manifest_hash", "licensor", "licensee", "scope",
-    "consideration_receipt_id", "effective_at", "expires_at", "supersedes", "signatures"
+    "license_id", "rights_manifest_hash", "licensor", "licensee", "mode", "scope",
+    "economic_terms", "consideration_receipt_id", "effective_at", "expires_at",
+    "supersedes", "signatures"
+  ],
+  "allOf": [
+    {
+      "if": { "properties": { "mode": { "const": "open_commons" } }, "required": ["mode"] },
+      "then": { "properties": { "economic_terms": { "type": "null" } } },
+      "else": { "properties": { "economic_terms": { "type": "object" } } }
+    }
   ]
 }

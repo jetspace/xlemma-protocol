@@ -165,6 +165,19 @@ pub struct RightsManifest {
     pub signed_at: DateTime<Utc>,
 }
 
+/// Economic treatment selected for a capsule. This never changes origin,
+/// formal validity, or the scope of legal rights actually held.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CapsuleEconomicMode {
+    /// Public artifact use carries no mandatory per-use protocol payment.
+    OpenCommons,
+    /// Defined commercial artifacts may carry explicit, bounded license terms.
+    CommercialResearch,
+    /// A sponsor precommits bounty, allocation, acceptance, and result terms.
+    SponsoredChallenge,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RevenueWaterfall {
     pub creator_pool_bps: u16,
@@ -192,6 +205,9 @@ pub struct RevenueRoute {
     pub researcher_vault: String,
     pub waterfall: RevenueWaterfall,
     pub contributor_manifest_hash: String,
+    /// Root of the prescriptive economic graph. The formal dependency root is
+    /// evidence only and cannot substitute for this authorization.
+    pub economic_policy_root: String,
     pub dependency_reward_cap_bps: u16,
     pub auto_compound_bps_by_researcher: BTreeMap<ResearcherId, u16>,
 }
@@ -210,6 +226,8 @@ pub struct LemmaCapsule {
     pub dependency_root: String,
     pub verification_receipt_ids: Vec<ReceiptId>,
     pub novelty_receipt_ids: Vec<ReceiptId>,
+    pub statement_alignment_receipt_ids: Vec<ReceiptId>,
+    pub economic_mode: CapsuleEconomicMode,
     pub revenue_route: RevenueRoute,
     pub formal_status: FormalStatus,
     pub novelty_status: NoveltyDecision,

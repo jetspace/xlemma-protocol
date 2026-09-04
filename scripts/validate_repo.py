@@ -61,6 +61,7 @@ REQUIRED_FILES = [
     "spec/018-xlmp-wire-protocol.md",
     "spec/019-node-network.md",
     "spec/020-identity-credentials.md",
+    "spec/021-alignment-rights-and-impact.md",
     "openapi/openapi.yaml",
     "contracts/src/ResearchVault.sol",
     "contracts/src/ResearcherCredit.sol",
@@ -97,6 +98,10 @@ REQUIRED_FILES = [
     "schemas/credential-status-proof.schema.json",
     "schemas/node-credential-chain.schema.json",
     "schemas/credential-revocation.schema.json",
+    "schemas/statement-alignment-receipt.schema.json",
+    "schemas/protocol-success-estimates.schema.json",
+    "schemas/compute-savings-evidence.schema.json",
+    "schemas/impact-pool-authorization.schema.json",
     "examples/node-network/advertisement.json",
     "examples/node-network/reputation.json",
     "examples/node-network/bond.json",
@@ -110,6 +115,10 @@ REQUIRED_FILES = [
     "examples/node-network/credential-status.json",
     "examples/node-network/credential-chain.json",
     "examples/node-network/credential-revocation.json",
+    "examples/no-arbitrage/statement-alignment-receipt.json",
+    "examples/no-arbitrage/protocol-success-estimates.json",
+    "examples/no-arbitrage/compute-savings-evidence.json",
+    "examples/no-arbitrage/impact-pool-authorization.json",
 ]
 
 EXAMPLE_SCHEMA_MAP = {
@@ -124,6 +133,10 @@ EXAMPLE_SCHEMA_MAP = {
     "lemma-capsule.json": "lemma-capsule.schema.json",
     "x402-extension.json": "x402-extension.schema.json",
     "xlmp-envelope.json": "xlmp-envelope.schema.json",
+    "statement-alignment-receipt.json": "statement-alignment-receipt.schema.json",
+    "protocol-success-estimates.json": "protocol-success-estimates.schema.json",
+    "compute-savings-evidence.json": "compute-savings-evidence.schema.json",
+    "impact-pool-authorization.json": "impact-pool-authorization.schema.json",
 }
 
 NODE_EXAMPLE_SCHEMA_MAP = {
@@ -170,8 +183,8 @@ def validate_json_syntax_and_schemas() -> None:
     for path in sorted(SCHEMAS.glob("*.json")):
         schema_objects[path.name] = load_json(path)
 
-    if len(schema_objects) < 50:
-        fail(f"expected at least 50 protocol schemas, found {len(schema_objects)}")
+    if len(schema_objects) < 54:
+        fail(f"expected at least 54 protocol schemas, found {len(schema_objects)}")
 
     try:
         import jsonschema
@@ -291,6 +304,14 @@ def validate_toml() -> None:
         fail("ASTRA self-certification must remain disabled")
     if config["x402"]["facilitator_participates_in_research_consensus"]:
         fail("payment facilitator must remain outside research consensus")
+    if config["revenue"]["upstream_dependency_pool_bps"] != 0:
+        fail("Open Commons default must not impose a dependency royalty pool")
+    if not config["impact_pool"]["economic_policy_required"]:
+        fail("compute impact allocations require a prescriptive economic policy")
+    if not config["impact_pool"]["non_recursive"]:
+        fail("impact pool allocations must not recursively charge one revenue event")
+    if config["impact_pool"]["lower_confidence_multiplier_bps"] != 16_450:
+        fail("impact confidence multiplier must use the fixed-point basis-point field")
     if config["protocol_version"] != "XLMP/1":
         fail("the canonical protocol version must be XLMP/1")
 
@@ -437,6 +458,18 @@ def validate_example_invariants() -> None:
         fail("example policy must require two Lean-kernel observations")
     if policy["required_family_counts"].get("nanoda") != 1:
         fail("example policy must require one independent nanoda observation")
+
+    alignment = load_json(EXAMPLE / "statement-alignment-receipt.json")
+    reviewer_clusters = [
+        reviewer["operator_cluster_id"] for reviewer in alignment["domain_reviewers"]
+    ]
+    if len(set(reviewer_clusters)) != len(reviewer_clusters):
+        fail("statement-alignment reviewers share an operator-control cluster")
+
+    impact_evidence = load_json(EXAMPLE / "compute-savings-evidence.json")
+    impact_authorization = load_json(EXAMPLE / "impact-pool-authorization.json")
+    if impact_authorization["compute_savings_evidence_id"] != impact_evidence["evidence_id"]:
+        fail("impact authorization does not bind the published evidence")
 
 
 def validate_documented_invariants() -> None:

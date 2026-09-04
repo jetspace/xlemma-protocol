@@ -17,4 +17,10 @@ Lean is the default XLMP/1 formal-verification implementation, not the protocol 
 
 A model, builder, or checker MUST NOT silently modify the trusted claim.
 
+Formal checking establishes that the exact theorem follows under declared
+definitions, imports, and axioms. It does not establish that the theorem
+faithfully represents an informal claim or empirical interpretation. ASTRA and
+Lean MUST NOT issue their own final `StatementAlignmentReceipt`; that record is
+produced through the independent human/domain-review boundary in XLIP-021.
+
 Other formal systems MAY implement `VerifierAdapter` under explicit theory, canonicalization, trust, and checker-policy identifiers. Supporting another system MUST NOT permit proof-producer self-certification, majority resolution of checker divergence, or text-derived formal ClaimIDs.

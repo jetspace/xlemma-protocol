@@ -29,9 +29,9 @@ def main() -> None:
     assert net == Decimal("1000")
     waterfall = {
         "creator": 6500,
-        "upstream": 1000,
+        "upstream": 0,
         "security": 800,
-        "open_research": 700,
+        "open_research": 1700,
         "dispute": 500,
         "operations": 500,
     }
@@ -46,7 +46,13 @@ def main() -> None:
     assert compound == Decimal("390.000000")
     assert cash == Decimal("260.000000")
 
-    # Conservative compute-savings dividend.
+    # Conservative compute-savings signal, payable only from one explicitly
+    # authorized, non-recursive impact pool.
+    economic_policy_root = "blake3:economic-policy"
+    eligible_economic_edge_root = "blake3:eligible-economic-edge"
+    settlement_receipt_id = "xlr:blake3:settlement"
+    impact_pool_budget = Decimal("100")
+    assert economic_policy_root and eligible_economic_edge_root and settlement_receipt_id
     mean_without = Decimal("10")
     standard_error = Decimal("1")
     lcb_multiplier = Decimal("1.645")
@@ -56,15 +62,15 @@ def main() -> None:
     )
     uncapped = conservative_savings * Decimal("0.20")
     cap = net * Decimal("0.10")
-    dividend = min(uncapped, cap)
-    assert dividend == Decimal("0.67100")
+    impact_allocation = min(uncapped, cap, impact_pool_budget)
+    assert impact_allocation == Decimal("0.67100")
 
     print("Research-credit backing after 40-unit settlement: 960")
     print("Net external research revenue: 1000")
     print("Creator allocation: 650")
     print("Auto-compounded into backed research credits: 390")
     print("Researcher cash payout: 260")
-    print(f"Conservative compute-savings dividend: {dividend}")
+    print(f"Authorized compute-impact allocation: {impact_allocation}")
     print("economic sanity simulation passed")
 
 

@@ -1,6 +1,6 @@
 # Source register
 
-As-of date: **2026-09-03**. URLs are included for repository maintainers; re-check current versions before production implementation.
+As-of date: **2026-09-04**. URLs are included for repository maintainers; re-check current versions before production implementation.
 
 ## OpenAI / ASTRA
 
@@ -8,6 +8,8 @@ As-of date: **2026-09-03**. URLs are included for repository maintainers; re-che
 - Current model guidance and Responses API usage: https://developers.openai.com/api/docs/guides/latest-model
 - Responses API migration and object model: https://developers.openai.com/api/docs/guides/migrate-to-responses
 - Reasoning model guidance: https://developers.openai.com/api/docs/guides/reasoning
+- OpenAI, “Ten advances in mathematics and theoretical computer science”:
+  https://openai.com/index/ten-advances-in-mathematics/
 
 The ASTRA adapter keeps the model name configurable and records model/version data in compute receipts because availability, pricing, and capabilities can change.
 
@@ -49,11 +51,17 @@ The verification architecture follows the official distinction between ordinary 
 - HotStuff: BFT consensus with linear communication: https://arxiv.org/abs/1803.05069
 - Generalized Byzantine quorums: https://arxiv.org/abs/2006.04616
 - Algorand cryptographic sortition dissertation/paper materials: https://dspace.mit.edu/handle/1721.1/129446
+- W3C Verifiable Credentials Data Model 2.0:
+  https://www.w3.org/TR/vc-data-model-2.0/
 
 ## Rights and token boundaries
 
 - U.S. Copyright Office, Copyright and Artificial Intelligence: https://www.copyright.gov/ai/
+- U.S. Copyright Office Circular 33, Works Not Protected by Copyright:
+  https://www.copyright.gov/circs/circ33.pdf
 - U.S. Copyright Act §102: https://www.copyright.gov/title17/92chap1.html#102
+- USPTO MPEP §2106, Patent Subject Matter Eligibility:
+  https://www.uspto.gov/web/offices/pac/mpep/s2106.html
 - SEC digital-asset investment-contract framework archive/current materials: https://www.sec.gov/corpfin/framework-investment-contract-analysis-digital-assets
 - Molecule IP-NFT materials as prior art: https://molecule.xyz/
 - Proofgold prior art: https://drops.dagstuhl.de/entities/document/10.4230/OASIcs.FMBC.2022.4

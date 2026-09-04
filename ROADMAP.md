@@ -6,6 +6,7 @@
 - Complete Lean exporter for elaborated expression and proof-term serialization.
 - Add reproducible bundle builder and deterministic test vectors.
 - Establish trust-policy registry and axiom profiles.
+- Publish cross-implementation `StatementAlignmentReceipt`, capsule economic-mode, and evidence/economic-graph vectors.
 
 ## Phase 1 — independent verification network
 
@@ -25,6 +26,7 @@
 
 ## Phase 3 — research marketplace
 
+- Launch one sponsor-backed ASTRA/Lean formalization and certification vertical with identifiable external buyers before broadening domains.
 - Deploy the implemented XLMP node advertisement, constrained discovery, service-order, immutable match, multidimensional-reputation, and bond records through multiple independent indexers.
 - Add public bounties, grants, certified proof services, encrypted delivery, and license manifests.
 - Qualify ASTRA and alternative implementations in the provider-neutral research-prover marketplace.
@@ -33,15 +35,17 @@
 ## Phase 4 — compute economics
 
 - Publish spot and forward compute offers.
-- Train proof-cost estimators on proof-state, model, domain and checker telemetry.
-- Introduce conservative compute-savings dividends with randomized holdout re-proving.
+- Train independent protocol success estimators on proof-state, model, domain and checker telemetry; provider self-estimates do not control routing.
+- Introduce conservative compute-impact signals with randomized holdout re-proving and separately authorized bounded impact pools.
 - Add public-goods and negative-result funding.
+- Defer tradeable compute futures until service profiles and settlement history are standardized and liquid.
 
 ## Phase 5 — optional rights wrappers
 
 - Add audited ERC-1155 capsule and license editions.
 - Add jurisdiction-specific contractual rights vaults.
 - Keep public profit-sharing or tokenized-vault interests outside the protocol core and subject to separate legal design.
+- Keep per-lemma speculative tokens, universal mandatory royalties, and universal research-value units outside the protocol core.
 
 ## Production blockers
 

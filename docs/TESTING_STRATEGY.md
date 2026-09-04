@@ -6,7 +6,15 @@ The reference repository is not complete merely because it compiles. xLemma need
 
 ### Unit tests
 
-Cover canonicalization, typed IDs, credential-chain integrity, delegation and revocation, XLMP envelope integrity and message round trips, protocol lifecycle transitions, money arithmetic, contribution shares, node advertisement identity and supersession, constrained discovery and order matching, multidimensional reputation, committee eligibility and exact sortition reproduction, commit-reveal, formal quorum, novelty aggregation, quote construction, backing conservation, revenue allocation, dividend caps, payment-adapter encoding, and storage path safety.
+Cover canonicalization, typed IDs, credential-chain integrity, delegation and
+revocation, XLMP envelope integrity and message round trips, protocol lifecycle
+transitions, statement-alignment identity, capsule economic modes, money
+arithmetic, contribution shares, node advertisement identity and supersession,
+constrained discovery and order matching, multidimensional reputation,
+committee eligibility and exact sortition reproduction, commit-reveal, formal
+quorum, novelty aggregation, protocol-calibrated quote construction, backing
+conservation, revenue allocation, impact-pool caps, payment-adapter encoding,
+and storage path safety.
 
 ### Property tests
 
@@ -35,6 +43,13 @@ Required properties include:
 - one trusted signing key cannot impersonate two committee NodeIDs;
 - every supported transport decodes to the same canonical XLMP envelope;
 - no payment, finality, prover, verifier, or storage adapter can advance an XLMP state without the required protocol evidence.
+- formal certification cannot manufacture or mutate a statement-alignment verdict;
+- changing the informal claim, presentation, assumptions, definitions, or reviewer set changes the alignment ReceiptID;
+- a formal dependency without an active eligible economic-policy edge never creates payment;
+- Open Commons rejects hidden economic participation terms and defaults mandatory upstream allocation to zero;
+- a compute offer without an independent protocol success estimate cannot enter quality-adjusted routing;
+- no floating-point value determines a quote or impact-pool payment; fixed-point overflow fails closed;
+- one settled revenue event cannot be recursively allocated through an upstream or impact pool.
 
 ### Integration tests
 

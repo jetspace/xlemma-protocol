@@ -60,7 +60,8 @@ Explain the externally verified Lean theorem in LaTeX. The Lean declaration is
 authoritative. Include assumptions, scope, definitions, edge cases, proof idea,
 direct dependencies, axiom profile, and explicit warnings where ordinary
 language could overstate the formal result. Do not attribute novelty or legal
-ownership unless separate receipts support those claims.
+ownership unless separate receipts support those claims. Do not issue or imply
+a StatementAlignmentReceipt; credentialed domain reviewers do that separately.
 ```
 
 ## Novelty-assistance prompt
@@ -79,4 +80,6 @@ Estimate proof-search branches, likely Lean repair iterations, context needs,
 model tier, checker cost, and delivery risk. Produce multiple routes: spot,
 economy, deadline, reserved capacity, and competitive multi-prover. Optimize
 expected cost per Gold-verified novelty-cleared result, not raw token cost.
+Return uncertainty as a provider claim only; the protocol's independent,
+signed calibration record controls quality-adjusted routing.
 ```

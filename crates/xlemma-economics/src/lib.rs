@@ -1,4 +1,4 @@
-//! Research-credit, vault, revenue, and compute-dividend accounting.
+//! Research-credit, vault, revenue, and bounded impact-pool accounting.
 
 pub mod credit;
 pub mod dividend;

@@ -33,11 +33,11 @@ Schemas are part of the conformance surface.
 
 | Plane | Native objects |
 |---|---|
-| Research graph | `ResearcherID`, `TheoryID`, `ClaimID`, `ProofID`, `LemmaCapsule`, `ContributionManifest` |
+| Evidence graph | `ResearcherID`, `TheoryID`, `ClaimID`, `ProofID`, `LemmaCapsule`, `ContributionManifest`, `StatementAlignmentReceipt` |
 | Identity | `VerifiedUserID`, `OperatorID`, `XLMP_UserCredential`, `XLMP_OperatorCredential`, `XLMP_NodeCredential`, `CredentialRevocation` |
 | Node network | `NodeServiceAdvertisement`, `NodeDiscoveryRequest`, `ServiceOrder`, `ServiceMatch`, `NodeReputationSnapshot`, `NodeBond`, `CommitteeSortitionRequest`, `CommitteeSelection` |
 | Verification | `VerificationJob`, `ObservationReceipt`, `PoIRCertificate`, `Challenge`, `QuarantineRecord` |
-| Economics | `ComputeQuote`, `ComputeReceipt`, `ResearchCredit`, `ResearchVault`, `RevenueEvent`, `DependencyDividend` |
+| Economic graph | `ComputeQuote`, `ComputeReceipt`, `ResearchCredit`, `ResearchVault`, `RevenueEvent`, `ImpactPoolAuthorization`, `DependencyDividend` |
 | Rights/publication | `RightsManifest`, `License`, `PublicationRecord` |
 
 Object identifiers are typed and domain-separated. A formal `ClaimID` MUST be
@@ -217,14 +217,23 @@ or unrealized token appreciation is not backing.
 
 An `XLMP_REVENUE` event MUST reference finalized external settlement evidence.
 A `DependencyDividend` MUST reference a dependency used by the final proof,
-conservative compute-savings evidence, realized downstream net revenue, and an
-explicit cap. Recursive or uncapped royalties are non-conforming.
+conservative compute-savings evidence, realized downstream net revenue, a
+prescriptive economic-policy root, an eligible economic edge, a fixed pool,
+and an explicit cap. A formal dependency alone MUST NOT create payment.
+Recursive or uncapped royalties are non-conforming. Open Commons capsules MUST
+default mandatory upstream payments to zero; compute savings are an impact
+signal rather than a precise invoice.
 
 ## 8. Rights and attribution
 
 Token transfers and payment settlement MUST NOT rewrite origin attribution,
 formal validity, contribution history, or a rights manifest. A `License` grants
 only the scope supported by its referenced rights manifest and legal context.
+A capsule MUST distinguish its nontransferable origin, rights in actual
+artifacts/contracts, and any explicitly bounded economic participation. It MUST
+select one of `open_commons`, `commercial_research`, or `sponsored_challenge`.
+A `StatementAlignmentReceipt` is independent of formal status and MUST bind the
+formal claim to the reviewed informal claim and presentation.
 A `PublicationRecord` binds a specific claim, proof, certificate, artifact,
 rights root, and publication location; later corrections use supersession.
 

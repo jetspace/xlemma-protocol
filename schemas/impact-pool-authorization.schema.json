@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/impact-pool-authorization.schema.json",
+  "title": "ImpactPoolAuthorization",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "authorization_id": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
+    "revenue_event_id": { "type": "string", "pattern": "^xlrevenue:blake3:[0-9a-f]{64}$" },
+    "compute_savings_evidence_id": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
+    "economic_policy_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "eligible_economic_edge_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "settlement_receipt_id": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
+    "pool_budget": { "$ref": "common.schema.json#/$defs/amount" },
+    "non_recursive": { "const": true },
+    "authorizer": { "type": "string", "pattern": "^ed25519:[A-Za-z0-9_-]{43}$" },
+    "signature": { "type": "string", "pattern": "^ed25519:[A-Za-z0-9_-]{86}$" }
+  },
+  "required": [
+    "authorization_id", "revenue_event_id", "compute_savings_evidence_id",
+    "economic_policy_root", "eligible_economic_edge_root",
+    "settlement_receipt_id", "pool_budget", "non_recursive", "authorizer", "signature"
+  ]
+}

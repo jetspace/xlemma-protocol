@@ -25,6 +25,12 @@ independent checker evidence      → PoIR outcome
 Price, bond size, token ownership, and reputation MUST NOT weight a formal
 vote or override a conflicting required checker family.
 
+Beneficial-control and operator-cluster classification are evidence-backed
+confidence judgments, not mathematical proofs. Policies SHOULD disclose the
+evidence class, confidence, issuer concentration, limitations, and challenge
+path. Multiple credential issuers SHOULD be supported so one issuer cannot
+unilaterally define all consensus eligibility.
+
 ## 2. Native records
 
 ### 2.1 NodeServiceAdvertisement

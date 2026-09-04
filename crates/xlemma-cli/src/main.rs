@@ -3,16 +3,21 @@ use chrono::{DateTime, Utc};
 use clap::{Parser, Subcommand, ValueEnum};
 use serde::{de::DeserializeOwned, Serialize};
 use std::{fs, path::PathBuf};
-use xlemma_compute_curve::{quote_verified_proof_cost, ExpectedWork, ServiceOffer};
+use xlemma_compute_curve::{
+    quote_quality_adjusted_certification_cost, ExpectedWork, ProtocolSuccessEstimates, ServiceOffer,
+};
 use xlemma_consensus::{
     eligible_set_root, evaluate_formal_consensus, randomness_commitment, FormalConsensusPolicy,
 };
 use xlemma_core::{
     Amount, ArtifactId, ClaimManifest, CredentialRevocation, EligibleNode, NodeCredential,
     NodeCredentialChain, NodeServiceAdvertisement, ObservationReceipt, OperatorCredential,
-    ProofManifest, TheoryId, UserCredential,
+    PolicyId, ProofManifest, TheoryId, UserCredential,
 };
-use xlemma_economics::{compute_savings_dividend, ComputeSavingsEvidence, ComputeSavingsPolicy};
+use xlemma_economics::{
+    compute_impact_pool_allocation, ComputeSavingsEvidence, ComputeSavingsPolicy,
+    ImpactPoolAuthorization,
+};
 use xlemma_storage::{build_bundle_manifest, BundleInput};
 use xlemma_xlmp::XlmpEnvelope;
 
@@ -51,20 +56,24 @@ enum Command {
     Quote {
         offers: PathBuf,
         work: PathBuf,
+        success_estimates: PathBuf,
+        /// Estimator key authorized by the deployment for this quote.
+        #[arg(long)]
+        trusted_estimator: String,
         #[arg(long)]
         deadline: DateTime<Utc>,
-        #[arg(long)]
-        gold_probability: f64,
-        #[arg(long)]
-        novelty_probability: f64,
         #[arg(long, default_value_t = 500)]
         risk_premium_bps: u16,
     },
-    /// Calculate a conservative, revenue-capped compute-savings dividend.
-    ComputeDividend {
+    /// Allocate a conservative compute-savings signal from an authorized impact pool.
+    ComputeImpact {
         evidence: PathBuf,
         policy: PathBuf,
         downstream_net_revenue: PathBuf,
+        impact_pool_authorization: PathBuf,
+        /// Impact-pool authorizer key trusted by the deployment.
+        #[arg(long)]
+        trusted_authorizer: String,
     },
     /// Build a content-addressed artifact manifest from explicit files.
     Pack {
@@ -154,33 +163,43 @@ fn main() -> Result<()> {
         Command::Quote {
             offers,
             work,
+            success_estimates,
+            trusted_estimator,
             deadline,
-            gold_probability,
-            novelty_probability,
             risk_premium_bps,
         } => {
             let offers: Vec<ServiceOffer> = read_json(offers)?;
             let work: ExpectedWork = read_json(work)?;
-            let quote = quote_verified_proof_cost(
+            let estimates: ProtocolSuccessEstimates = read_json(success_estimates)?;
+            let quote = quote_quality_adjusted_certification_cost(
                 Utc::now(),
                 deadline,
                 &work,
                 &offers,
-                gold_probability,
-                novelty_probability,
+                &estimates,
+                &|signer: &str, _: &PolicyId| signer == trusted_estimator,
                 risk_premium_bps,
             )?;
             print_json(&quote)?;
         }
-        Command::ComputeDividend {
+        Command::ComputeImpact {
             evidence,
             policy,
             downstream_net_revenue,
+            impact_pool_authorization,
+            trusted_authorizer,
         } => {
             let evidence: ComputeSavingsEvidence = read_json(evidence)?;
             let policy: ComputeSavingsPolicy = read_json(policy)?;
             let revenue: Amount = read_json(downstream_net_revenue)?;
-            print_json(&compute_savings_dividend(&evidence, &policy, &revenue)?)?;
+            let authorization: ImpactPoolAuthorization = read_json(impact_pool_authorization)?;
+            print_json(&compute_impact_pool_allocation(
+                &evidence,
+                &policy,
+                &revenue,
+                &authorization,
+                &|authorizer: &str, _: &str| authorizer == trusted_authorizer,
+            )?)?;
         }
         Command::Pack {
             root,

@@ -403,17 +403,20 @@ paths:
           application/json:
             schema:
               type: object
-              required: [expected_work, deadline, gold_probability, novelty_probability]
+              required: [expected_work, deadline, success_estimates]
               properties:
                 expected_work:
                   type: object
-                  additionalProperties: { type: number, minimum: 0 }
+                  additionalProperties: { type: integer, minimum: 0 }
                 deadline: { type: string, format: date-time }
-                gold_probability: { type: number, exclusiveMinimum: 0, maximum: 1 }
-                novelty_probability: { type: number, exclusiveMinimum: 0, maximum: 1 }
+                success_estimates: { $ref: ../schemas/protocol-success-estimates.schema.json }
                 risk_premium_bps: { type: integer, minimum: 0, maximum: 10000 }
       responses:
-        "200": { description: Compute quote }
+        "200":
+          description: Compute quote
+          content:
+            application/json:
+              schema: { $ref: ../schemas/compute-quote.schema.json }
   /v1/lemmas/{lemmaId}:
     get:
       operationId: getLemmaCapsule

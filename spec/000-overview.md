@@ -6,7 +6,13 @@ The key words MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY are normative.
 
 ## Purpose
 
-XLMP is xLemma's canonical, provider-neutral protocol for proof production, deterministic verification, provenance, rights manifests, researcher funding, paid access, compute markets, and downstream rewards for decentralized researchers. ASTRA, Lean, x402, chains, transports, and storage systems are adapters; none defines XLMP research state or consensus.
+XLMP is xLemma's canonical, provider-neutral protocol for financing and
+producing research artifacts, deterministic formal verification, independent
+reproduction, provenance, rights manifests, licensing, research services, and
+bounded impact funding. ASTRA, Lean, x402, chains, transports, and storage
+systems are adapters; none defines XLMP research state or consensus. XLMP does
+not create ownership of mathematical truth, universal mandatory royalties, or
+a universal unit of scientific value.
 
 ## Normative invariants
 
@@ -29,3 +35,9 @@ XLMP is xLemma's canonical, provider-neutral protocol for proof production, dete
 17. Payment, transport, chain, model, checker, and storage adapters MUST NOT redefine XLMP object identity or research-state transitions.
 18. An XLMP message MUST preserve its content-derived MessageID across transport adapters.
 19. No node may contribute to XLMP consensus without a valid, non-revoked OperatorCredential controlled by a verified participant; multiple nodes under one participant MUST count as one independence domain.
+20. Formal validity and statement alignment MUST remain separate statuses with separate receipts.
+21. A formal dependency edge MUST NOT by itself create an economic obligation or block downstream publication or use.
+22. Every withdrawable reward MUST trace to settled value from an external payer and an explicit economic policy.
+23. Compute-savings estimates MUST be treated as uncertain impact signals, not precise invoices or self-executing debts.
+24. Provider-advertised success probability MUST NOT control quality-adjusted service routing.
+25. Open Commons capsules MUST NOT impose mandatory per-use protocol fees.

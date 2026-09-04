@@ -2,6 +2,25 @@
 
 ## Unreleased — XLMP/1 protocol independence
 
+- Narrowed the protocol promise to verifiable research artifacts, explicit
+  rights, defined services, and bounded impact funding; xLemma does not claim
+  ownership of mathematical truth or universal future royalties.
+- Added content-derived `StatementAlignmentReceipt` records and a required
+  signature-verifier boundary so formal validity and informal/domain alignment
+  remain separate statuses.
+- Separated descriptive formal-dependency edges from prescriptive economic
+  edges; impact allocation now requires a signed, content-derived, bounded,
+  non-recursive authorization backed by settled external revenue.
+- Added Open Commons, Commercial Research, and Sponsored Challenge capsule
+  modes; Open Commons defaults mandatory dependency allocation to zero.
+- Replaced provider-reported routing probability with signed, time-bounded
+  protocol calibration evidence and Quality-Adjusted Certification Cost;
+  quote and impact-payment math now uses checked fixed-point integers.
+- Bound impact authorization to the exact revenue event and content-derived,
+  asset-denominated compute-savings evidence; authorization remains subject to
+  an explicit trusted-signer policy and atomic settlement consumption.
+- Deferred universal research units, per-lemma speculative tokens, mandatory
+  royalties, and tradeable compute futures from the core launch profile.
 - Added `xlemma-xlmp` as the canonical wire, message, lifecycle, and adapter-contract layer.
 - Added typed, content-derived XLMP MessageIDs and twenty-five XLMP/1 message discriminators, including native user, operator, node credential, and revocation messages.
 - Added the constitutional `VerifiedUserID → OperatorID → NodeID(s)` identity chain, pseudonymous credentials, tiered role qualifications, delegation, fresh non-revocation status, and append-only revocation records.

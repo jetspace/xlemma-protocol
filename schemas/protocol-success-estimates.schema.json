@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/protocol-success-estimates.schema.json",
+  "title": "ProtocolSuccessEstimates",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "estimator_id": { "type": "string", "pattern": "^ed25519:[A-Za-z0-9_-]{43}$" },
+    "policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "estimated_at": { "type": "string", "format": "date-time" },
+    "valid_until": { "type": "string", "format": "date-time" },
+    "service_estimates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "offer_id": { "type": "string", "minLength": 1 },
+          "completion_probability_bps": { "type": "integer", "minimum": 1, "maximum": 10000 },
+          "sample_size": { "type": "integer", "minimum": 1 },
+          "evidence_root": { "$ref": "common.schema.json#/$defs/hash" }
+        },
+        "required": ["offer_id", "completion_probability_bps", "sample_size", "evidence_root"]
+      }
+    },
+    "certification": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "gold_probability_bps": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "novelty_clearance_probability_bps": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "sample_size": { "type": "integer", "minimum": 1 },
+        "evidence_root": { "$ref": "common.schema.json#/$defs/hash" }
+      },
+      "required": [
+        "gold_probability_bps", "novelty_clearance_probability_bps",
+        "sample_size", "evidence_root"
+      ]
+    },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "estimator_id", "policy_id", "estimated_at", "valid_until",
+    "service_estimates", "certification", "signature"
+  ]
+}

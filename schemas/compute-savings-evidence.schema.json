@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/compute-savings-evidence.schema.json",
+  "title": "ComputeSavingsEvidence",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "evidence_id": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
+    "counterfactual_without_mean_units": { "type": "integer", "minimum": 0 },
+    "counterfactual_without_std_error_units": { "type": "integer", "minimum": 0 },
+    "observed_with_units": { "type": "integer", "minimum": 0 },
+    "lower_confidence_multiplier_bps": { "type": "integer", "minimum": 1, "maximum": 100000 },
+    "settlement_asset": { "type": "string", "minLength": 1 },
+    "settlement_decimals": { "type": "integer", "minimum": 0, "maximum": 38 },
+    "evidence_sample_size": { "type": "integer", "minimum": 1 },
+    "upstream_is_in_final_dependency_graph": { "type": "boolean" },
+    "equivalent_cluster_id": { "type": "string", "minLength": 1 }
+  },
+  "required": [
+    "evidence_id", "counterfactual_without_mean_units",
+    "counterfactual_without_std_error_units", "observed_with_units",
+    "lower_confidence_multiplier_bps", "settlement_asset", "settlement_decimals",
+    "evidence_sample_size", "upstream_is_in_final_dependency_graph",
+    "equivalent_cluster_id"
+  ]
+}

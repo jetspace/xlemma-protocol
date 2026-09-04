@@ -24,6 +24,8 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] Domain separation reviewed cryptographically.
 - [ ] Every signature domain binds all context required by its transport, including network/contract where applicable, nonce, expiry, policy, and artifact.
 - [ ] Append-only correction/supersession semantics tested.
+- [ ] StatementAlignmentReceipt identity and cross-implementation vectors published.
+- [ ] Formal status and statement-alignment status are displayed as separate badges.
 
 ## Verifier and checker assurance
 
@@ -45,6 +47,7 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] Independent discovery providers reproduce the same constrained ordered set.
 - [ ] Price arithmetic is integer, overflow-checked, rounded upward, and asset/unit compatible.
 - [ ] Capacity, latency, checker-family, hardware, and terms claims have challengeable evidence.
+- [ ] Provider-advertised success rates are excluded from routing; independent protocol calibration is signed, fresh, and outcome-backed.
 - [ ] Every reputation dimension has role-specific evidence and minimum sample-size policy.
 - [ ] No scalar reputation, bond amount, or token balance becomes committee or formal-vote weight.
 - [ ] Eligible-set publication is decentralized and committed before randomness reveal.
@@ -93,7 +96,7 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] Unrealized token price is excluded from revenue.
 - [ ] Public/profit-linked token layer legally and technically separated.
 
-## Revenue and compute dividends
+## Revenue and impact pools
 
 - [ ] Gross-to-net revenue definition is explicit and auditable.
 - [ ] Waterfall shares and contributor shares conserve value.
@@ -102,7 +105,12 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] Dependency graph uses only final proof dependencies.
 - [ ] Equivalence clustering and cycle/self-citation detection deployed.
 - [ ] Compute-savings estimator uses conservative uncertainty bounds.
+- [ ] Compute-impact evidence is content-derived, asset-bound, and authorized by exact ID.
+- [ ] Quote and impact payment arithmetic is fixed-point, checked, and deterministically rounded.
 - [ ] Dividends are capped by realized downstream net revenue.
+- [ ] Evidence graph edges cannot execute payments without an eligible economic-policy edge.
+- [ ] Open Commons paths impose no mandatory per-use or dependency fee.
+- [ ] Impact allocations bind one settled event and one bounded pool, and settlement atomically consumes authorization and non-recursion state.
 - [ ] Measurement disputes and corrections are append-only.
 
 ## Payment adapters
@@ -146,10 +154,12 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] Prior-art corpus and cutoff are recorded.
 - [ ] Reviewers disclose conflicts and are calibration-scored.
 - [ ] Minority reports remain accessible.
+- [ ] Statement-alignment review binds the exact informal claim, presentation, assumptions, definitions, reviewers, conflicts, and limitations.
 - [ ] Triviality/spam gates are implemented.
 - [ ] Rights clearance covers employer, university, sponsor, grant, and collaborator claims.
 - [ ] AI/human contribution record is accurate.
 - [ ] Commercial licenses bind actual rights and jurisdictions.
+- [ ] Every capsule declares Open Commons, Commercial Research, or Sponsored Challenge mode and exposes all bounded economic terms.
 - [ ] Negative results have an honest status and funding route.
 - [ ] Marketing claims report denominators, uncertainty, and policy versions.
 

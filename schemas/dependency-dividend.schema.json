@@ -11,16 +11,23 @@
     "upstream_claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
     "used_in_final_proof": { "const": true },
     "final_dependency_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "eligible_economic_edge_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "economic_policy_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "settlement_receipt_id": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
     "compute_savings_evidence_root": { "$ref": "common.schema.json#/$defs/hash" },
     "downstream_net_revenue": { "$ref": "common.schema.json#/$defs/amount" },
+    "upstream_pool": { "$ref": "common.schema.json#/$defs/amount" },
     "payout": { "$ref": "common.schema.json#/$defs/amount" },
     "cap_bps": { "type": "integer", "minimum": 0, "maximum": 10000 },
+    "non_recursive": { "const": true },
     "finalized_at": { "type": "string", "format": "date-time" },
     "signature": { "$ref": "common.schema.json#/$defs/signature" }
   },
   "required": [
     "dividend_id", "revenue_event_id", "downstream_claim_id", "upstream_claim_id",
-    "used_in_final_proof", "final_dependency_root", "compute_savings_evidence_root",
-    "downstream_net_revenue", "payout", "cap_bps", "finalized_at", "signature"
+    "used_in_final_proof", "final_dependency_root", "eligible_economic_edge_root",
+    "economic_policy_root", "settlement_receipt_id", "compute_savings_evidence_root",
+    "downstream_net_revenue", "upstream_pool", "payout", "cap_bps",
+    "non_recursive", "finalized_at", "signature"
   ]
 }

@@ -1,8 +1,11 @@
 {
-  "counterfactual_without_mean_units": 10000000.0,
-  "counterfactual_without_std_error_units": 1000000.0,
+  "evidence_id": "xlr:blake3:dba2b460a3ea99483e1c1b5400bf8eacd08c88f0914f827e9a63316d0bf1ca55",
+  "counterfactual_without_mean_units": 10000000,
+  "counterfactual_without_std_error_units": 1000000,
   "observed_with_units": 5000000,
-  "lower_confidence_multiplier": 1.645,
+  "lower_confidence_multiplier_bps": 16450,
+  "settlement_asset": "USDC",
+  "settlement_decimals": 6,
   "evidence_sample_size": 50,
   "upstream_is_in_final_dependency_graph": true,
   "equivalent_cluster_id": "cluster-example"

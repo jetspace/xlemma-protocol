@@ -70,6 +70,17 @@
         "pattern": "^xlr:blake3:[0-9a-f]{64}$"
       }
     },
+    "statement_alignment_receipt_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+      }
+    },
+    "economic_mode": {
+      "type": "string",
+      "enum": ["open_commons", "commercial_research", "sponsored_challenge"]
+    },
     "revenue_route": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "title": "RevenueRoute",
@@ -133,6 +144,11 @@
           "minLength": 16,
           "maxLength": 512
         },
+        "economic_policy_root": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 512
+        },
         "dependency_reward_cap_bps": {
           "type": "integer",
           "minimum": 0,
@@ -152,6 +168,7 @@
         "researcher_vault",
         "waterfall",
         "contributor_manifest_hash",
+        "economic_policy_root",
         "dependency_reward_cap_bps",
         "auto_compound_bps_by_researcher"
       ]
@@ -224,6 +241,8 @@
     "dependency_root",
     "verification_receipt_ids",
     "novelty_receipt_ids",
+    "statement_alignment_receipt_ids",
+    "economic_mode",
     "revenue_route",
     "formal_status",
     "novelty_status",

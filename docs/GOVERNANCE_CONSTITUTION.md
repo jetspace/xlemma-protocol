@@ -15,6 +15,10 @@ This constitution defines powers that protocol governance may exercise and bound
 9. Protocol revenue cannot be manufactured from unrealized token valuation.
 10. Public profit-linked instruments remain outside the core until separately reviewed and legally wrapped.
 11. No node may contribute to xLemma consensus without a valid, non-revoked OperatorCredential ultimately controlled by a verified xLemma participant; multiple nodes under the same participant form one operator-independence domain.
+12. Formal validity and statement alignment are separate evidence classes; governance cannot infer either from the other.
+13. A formal dependency cannot create a payment obligation, compulsory license, or publication veto without an explicit economic agreement.
+14. Open Commons artifacts carry no mandatory per-use protocol fee.
+15. Compute markets price defined services, not universal scientific value; provider success claims do not control routing.
 
 These principles should be encoded as immutable contract constraints where practical and as social/governance constraints where not.
 
@@ -43,6 +47,8 @@ Governance may not decide:
 - that a payment receipt substitutes for a verification receipt;
 - that a novelty vote changes the result of formal checking.
 - that additional NodeIDs under one verified participant create additional independence.
+- that a formal dependency creates an economic debt or that an economic payment proves scientific importance.
+- that a token or capsule registration creates rights in mathematical truth.
 
 ## 3. Roles
 
@@ -119,7 +125,8 @@ A chamber vote can approve policies. It still cannot change the observed output 
 - vault solvency dispute;
 - storage availability failure;
 - operator-cluster or conflict-of-interest concealment;
-- compute-savings measurement dispute.
+- statement-alignment dispute;
+- compute-impact measurement or economic-edge dispute.
 
 Each class has a distinct evidence type and remedy. A rights dispute may pause commercial revenue without changing formal validity. A checker compromise may quarantine validity without erasing authorship.
 

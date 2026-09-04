@@ -1,0 +1,12 @@
+{
+  "authorization_id": "xlr:blake3:46c73432da613f0b1a820f3b2e4ba476237ddb4196b649c4647aaa07b58cff10",
+  "revenue_event_id": "xlrevenue:blake3:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "compute_savings_evidence_id": "xlr:blake3:dba2b460a3ea99483e1c1b5400bf8eacd08c88f0914f827e9a63316d0bf1ca55",
+  "economic_policy_root": "blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "eligible_economic_edge_root": "blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "settlement_receipt_id": "xlr:blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "pool_budget": { "units": 100000000, "asset": "USDC", "decimals": 6 },
+  "non_recursive": true,
+  "authorizer": "ed25519:_RckOFqgx1tk-3jNYC-h2ZH96_drE8WO1wLqyDXp9hg",
+  "signature": "ed25519:bwOJia-Bhq3F_gdVsRnALK_Td--ssSFQ2UdvjIBLEzcIlQEx1VreIcWzWR0mo_L0ASs_J5RBfTsDI86iodtAAA"
+}

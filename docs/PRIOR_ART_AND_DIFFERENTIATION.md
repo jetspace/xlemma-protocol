@@ -22,7 +22,10 @@ x402 provides accountless/machine-oriented payment negotiation over HTTP. xLemma
 
 ### Decentralized compute markets
 
-Existing compute markets price hardware and tasks. xLemma adds theorem-specific success probability, checker diversity, novelty clearance, and a Verified Proof Cost curve rather than treating raw compute units as the final output.
+Existing compute markets price hardware and tasks. xLemma adds independently
+calibrated job-specific success probability, checker diversity, novelty
+clearance, and Quality-Adjusted Certification Cost rather than treating raw
+compute units as scientific value.
 
 ### Byzantine consensus and sortition
 
@@ -38,10 +41,12 @@ BFT protocols, generalized quorums, and cryptographic sortition provide mechanis
 6. **ASTRA/Lean separation:** ASTRA produces and repairs candidates; Lean and independent checkers establish formal acceptance.
 7. **Backed researcher credits:** the researcher can pay with their own token without forcing nodes to accept circular self-minted value.
 8. **External-revenue compounding:** realized income can automatically create new backed research capacity.
-9. **Verified Proof Cost curve:** compares providers and models on cost per accepted, novelty-cleared result rather than unit price alone.
-10. **Compute-savings dividend:** useful upstream lemmas can earn from conservatively measured reductions in downstream proof cost, capped by actual revenue.
-11. **Open-proof monetization:** creators can earn from services, certified delivery, implementation rights, compute savings, grants, and reputation without privatizing mathematical truth.
-12. **Portable architecture:** existing chains, model providers, storage systems, and checkers are adapters rather than permanent sovereign dependencies.
+9. **Statement alignment:** domain review separately binds the formal ClaimID to the informal claim, presentation, assumptions, and limitations.
+10. **Quality-Adjusted Certification Cost:** compares routes using independently calibrated cost per accepted result rather than provider claims or unit price alone.
+11. **Separate evidence and economic graphs:** formal use never creates debt without an explicit bounded economic-policy edge.
+12. **Three capsule modes:** Open Commons, Commercial Research, and Sponsored Challenge expose different economic terms without privatizing truth.
+13. **Impact-pool allocation:** compute savings are one conservative signal for a bounded pool funded by actual settled value.
+14. **Portable architecture:** existing chains, model providers, storage systems, and checkers are adapters rather than permanent sovereign dependencies.
 
 ## What xLemma deliberately is not
 
@@ -50,6 +55,7 @@ BFT protocols, generalized quorums, and cryptographic sortition provide mechanis
 - not one speculative token per theorem;
 - not an ASTRA self-verification service;
 - not an uncapped recursive royalty graph;
+- not a universal research-value currency or tradeable compute-futures market;
 - not a replacement for peer review, novelty analysis, legal rights clearance, or scientific replication;
 - not a production-ready financial or smart-contract system in this reference release.
 

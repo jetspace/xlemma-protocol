@@ -8,8 +8,10 @@ A Lemma Capsule MUST separate:
 - rights manifest;
 - presentations;
 - verification and novelty receipts;
+- statement-alignment receipts;
 - dependencies;
 - compute history;
+- exactly one economic mode;
 - revenue route;
 - lineage.
 
@@ -24,6 +26,26 @@ Creator-pool shares MUST sum to 10,000 basis points. Amendments MUST reference t
 ## Rights
 
 Rights manifests MUST identify controllers, transferability, sublicense terms, jurisdiction where applicable, source-agreement roots, limitations, and employment/university/grant clearance. Token minting MUST NOT expand those rights.
+
+Origin/provenance, artifact/legal rights, and economic participation are three
+distinct objects. Economic terms MUST identify a specific payer, revenue
+source, calculation base, exclusions, duration, cap, transfer rule, policy
+root, and dispute process. A formal dependency MUST NOT create those terms.
+
+## Statement alignment
+
+Formal validity proves an exact formal statement under declared assumptions;
+it does not prove that the statement faithfully captures its informal or
+scientific interpretation. A `StatementAlignmentReceipt` MUST bind the exact
+ClaimID to the informal-claim and presentation hashes, assumptions, reviewed
+definitions, domain reviewers, verdict, limitations, and signatures. Formal
+and alignment statuses MUST be displayed separately.
+
+## Economic mode
+
+Every capsule selects `open_commons`, `commercial_research`, or
+`sponsored_challenge` under XLIP-021. Open Commons MUST NOT contain mandatory
+per-use fees. Commercial and sponsored modes require explicit, bounded terms.
 
 ## Presentation
 

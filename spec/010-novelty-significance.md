@@ -2,6 +2,10 @@
 
 Formal validity, novelty, and significance are separate statuses.
 
+Statement alignment is a fourth separate status governed by XLIP-021. A
+formal proof can be valid while the corresponding informal or scientific claim
+is misaligned, weaker than advertised, vacuous, or inconclusive.
+
 Novelty reviewers MUST return evidence roots, corpus cutoff, prior-art coverage, probabilities, confidence, conflicts, and signatures. Weights SHOULD be capped functions of calibration, domain competence, independence, and evidence quality.
 
 The protocol SHOULD preserve minority reports and MUST NOT pay reviewers merely for majority agreement.

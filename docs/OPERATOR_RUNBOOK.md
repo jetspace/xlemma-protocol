@@ -10,7 +10,7 @@ This runbook applies to reference-service, prover, builder, checker, storage, ag
 - obtain a pseudonymous UserCredential and V2-or-higher OperatorCredential, then delegate one NodeCredential per node key and role lineage;
 - keep raw legal/uniqueness evidence with the issuer rather than publishing it in protocol records;
 - declare the conservative OperatorClusterID covering common control;
-- publish role, checker/model version, binary/image digest, provider, region, capacity, price, privacy, retention, and contact metadata;
+- publish role, checker/model version, binary/image digest, provider, region, capacity, price, privacy, retention, and contact metadata; provider success claims are not routing authority;
 - bond neutral collateral where policy requires it;
 - pass conformance and adversarial qualification suites;
 - configure monitoring and incident contacts;
@@ -30,6 +30,7 @@ Never create several nominal NodeIDs to evade operator-diversity requirements.
 8. Check job queue, assignment, commit, reveal, and challenge backlogs.
 9. Confirm telemetry export does not contain private proof content or secrets.
 10. Run a known-answer test against each active checker family.
+11. Verify protocol success-calibration signatures/expiry and impact-pool authorization state where those services are enabled.
 
 ## 3. Job handling
 
@@ -47,6 +48,10 @@ Validate:
 - artifact availability and content hash.
 
 Reject rather than silently substituting a dependency, model, checker, or environment.
+
+For statement-alignment assignments, bind the exact ClaimID, informal-claim
+hash, presentation hash, assumptions, definitions, reviewer credential and
+conflicts. Never infer alignment from a successful Lean run.
 
 ### Execute
 

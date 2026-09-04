@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/statement-alignment-receipt.schema.json",
+  "title": "StatementAlignmentReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "receipt_id": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
+    "claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "informal_claim_hash": { "$ref": "common.schema.json#/$defs/hash" },
+    "latex_presentation_hash": { "$ref": "common.schema.json#/$defs/hash" },
+    "assumptions_disclosed": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "definitions_reviewed": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "domain_reviewers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reviewer_id": { "type": "string", "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$" },
+          "operator_cluster_id": { "type": "string", "pattern": "^xloperator:blake3:[0-9a-f]{64}$" },
+          "credential_reference": { "type": "string", "minLength": 1 },
+          "conflict_disclosures": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "signature": { "$ref": "common.schema.json#/$defs/signature" }
+        },
+        "required": [
+          "reviewer_id", "operator_cluster_id", "credential_reference",
+          "conflict_disclosures", "signature"
+        ]
+      }
+    },
+    "alignment_verdict": {
+      "type": "string",
+      "enum": ["aligned", "partially_aligned", "misaligned", "inconclusive"]
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "evidence_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "reviewed_at": { "type": "string", "format": "date-time" }
+  },
+  "required": [
+    "receipt_id", "claim_id", "informal_claim_hash", "latex_presentation_hash",
+    "assumptions_disclosed", "definitions_reviewed", "domain_reviewers",
+    "alignment_verdict", "limitations", "evidence_root", "reviewed_at"
+  ]
+}

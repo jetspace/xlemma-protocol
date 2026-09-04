@@ -11,7 +11,8 @@ This document defines the expected end-to-end experience for the protocol's targ
 5. Deposit backing or receive a grant allocation; mint no more research credits than backing received.
 6. Configure default ASTRA budget, Lean trust policy, novelty policy, storage policy, revenue waterfall, and auto-compound rate.
 7. Register public disclosures for institutional, university, employment, sponsor, and grant-related rights restrictions.
-8. Run a local proof-validation dry run before purchasing independent assurance.
+8. Select Open Commons, Commercial Research, or Sponsored Challenge as the default capsule economic mode.
+9. Run a local proof-validation dry run before purchasing independent assurance.
 
 The protocol supports pseudonymity, but economic counterparties, jurisdictions, and regulated service providers may impose separate identity or screening requirements.
 
@@ -23,6 +24,7 @@ research idea / formula
   → human-readable LaTeX statement
   → ASTRA-assisted formal target
   → researcher approves exact Lean target
+  → independent statement-alignment review where the policy requires it
   → ClaimID derived from elaborated type
   → ASTRA proof search and repair
   → reproducible artifact bundle
@@ -45,6 +47,7 @@ The researcher selects:
 - assurance level;
 - publication visibility;
 - rights and license terms that the researcher is actually entitled to grant;
+- capsule economic mode and any explicit bounded economic-policy edges;
 - revenue allocation and auto-compound percentage.
 
 The researcher cannot select friendly final verifiers, weight validity with their own token, remove dissent, or bypass a mandatory challenge period.
@@ -70,10 +73,10 @@ A result can generate realized revenue through:
 - certified artifact access;
 - commercial code, data, or implementation licenses;
 - interactive explanations or integrations;
-- downstream proof use;
+- explicitly funded downstream impact or contractual use;
 - retrospective public-goods funding;
 - training-data and proof-trajectory compensation;
-- conservatively measured compute-savings dividends.
+- conservatively measured compute-impact allocations from a bounded pool.
 
 Gross receipts are reduced by direct delivery cost, compute cost, refunds, maintenance reserves, and other declared costs. The remaining net revenue flows through an immutable revenue route.
 
@@ -157,10 +160,13 @@ A downstream researcher:
 2. records only dependencies present in the final proof object;
 3. receives a lower proof-search cost or smaller context requirement;
 4. earns from the downstream result under its own contribution manifest;
-5. may route a capped share of realized downstream revenue to upstream dependencies;
-6. optionally participates in randomized withholding experiments that estimate conservative compute savings.
+5. separately accepts an economic policy, if any, that may fund a bounded upstream or impact pool;
+6. optionally participates in randomized withholding experiments that estimate conservative compute impact.
 
-Dependency rewards are clustered, capped, and cycle-checked to avoid dependency stuffing and recursive royalty explosions.
+The formal dependency never creates a debt. An allocation requires a settled
+revenue event, eligible economic-policy edge, explicit pool, and non-recursive
+treatment. Dependencies are clustered, capped, and cycle-checked to avoid
+stuffing and royalty explosions.
 
 ## 10. Publish a negative result
 

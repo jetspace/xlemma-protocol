@@ -1,0 +1,28 @@
+{
+  "receipt_id": "xlr:blake3:535ca8c4b0a8b801dee9e6235e673f91df9db25ea9133f14930a010ebad4a633",
+  "claim_id": "xlc:blake3:1117d892ad3a90b5c40d700b96fa1df96882dfc4a52dc23a00ebf1eefc5815f8",
+  "informal_claim_hash": "blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "latex_presentation_hash": "blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "assumptions_disclosed": [
+    "Market.noArbitrage is assumed by the formal statement itself."
+  ],
+  "definitions_reviewed": [
+    "Market.noArbitrage",
+    "Market.noFreeLunch"
+  ],
+  "domain_reviewers": [
+    {
+      "reviewer_id": "xlresearcher:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+      "operator_cluster_id": "xloperator:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+      "credential_reference": "ed25519:Zr5-Myx6RTMyvZ0Kf32wVfXF7xoGraZtmLOftoEMRzo",
+      "conflict_disclosures": [],
+      "signature": "ed25519:SfQXFDmPNi_J1old_pkwBBdvYgCOu8OVlJK0UT4lZ000748sK61mpB1KdCazhdj-p4huRUUWoZyWqszZzVBJCA"
+    }
+  ],
+  "alignment_verdict": "partially_aligned",
+  "limitations": [
+    "This tautological wiring example is not evidence for a substantive financial theorem."
+  ],
+  "evidence_root": "blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "reviewed_at": "2026-09-03T20:30:00Z"
+}

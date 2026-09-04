@@ -131,9 +131,28 @@ in-memory and must be replaced by durable transactional stores before HA use.
 
 Controls: only finalized external settlement events enter gross revenue; costs, refunds, and reserves are deducted first; related-party demand is labeled; unrealized token changes are excluded.
 
+### Semantic-gap laundering
+
+Attack: a valid proof is marketed as supporting a stronger, different, or
+real-world claim by weakening the theorem, hiding assumptions, or redefining
+terms.
+
+Controls: `StatementAlignmentReceipt` binds the exact ClaimID to the informal
+claim and presentation hashes, disclosed assumptions, reviewed definitions,
+credentialed domain reviewers, conflicts, limitations, and signatures. Formal
+and alignment statuses remain separate and challengeable.
+
 ### Dependency stuffing and royalty farming
 
-Controls: only final proof-term dependencies, equivalence clusters, fixed upstream pool, per-result cap, graph-cycle analysis, and delayed payment based on measured use.
+Controls: evidence and economic graphs are separate; a final proof-term
+dependency is necessary evidence but never sufficient authorization. Payment
+also requires settled external revenue, an active economic policy, an eligible
+economic edge, a fixed pool, a per-result cap, equivalence clustering,
+graph-cycle analysis, and non-recursive event treatment. Open Commons has no
+mandatory dependency pool. Impact authorization binds the exact revenue event
+and content-derived impact evidence; settlement atomically consumes it to
+prevent replay. Fixed-point checked arithmetic prevents floating-point drift or
+overflow from changing a payment.
 
 ### Novelty cartel or popularity contest
 
@@ -164,6 +183,8 @@ Slashing requires objectively provable misconduct: equivocation, false artifact 
 - A credential issuer can mis-verify uniqueness, be compromised, censor applicants, or leak private evidence.
 - Novelty corpora are incomplete.
 - Compute counterfactuals are model-dependent.
+- Statement alignment remains a human/domain judgment and can be mistaken or captured.
+- Beneficial-control confidence and credential-issuer independence cannot be proven perfectly.
 - Rights disputes can exceed what on-chain evidence resolves.
 - Stable backing can face issuer, chain, bridge, custody, and regulatory risk.
 - Succinct proof systems add their own trusted setup, circuit, and implementation assumptions.

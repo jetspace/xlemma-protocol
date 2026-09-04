@@ -6,17 +6,16 @@
     "model_or_checker": "gpt-6-astra",
     "hardware_class": "reference",
     "domain": "finance",
-    "delivery_start": "2026-09-03T20:00:00Z",
-    "delivery_end": "2026-09-04T20:00:00Z",
+    "delivery_start": "2027-09-03T20:00:00Z",
+    "delivery_end": "2027-09-04T20:00:00Z",
     "price_minor_units": 500000,
     "quantity_scale": 1000000,
-    "capacity_units": 100000,
-    "completion_probability": 0.8,
+    "capacity_units": 1000000,
     "p95_latency_ms": 60000,
     "collateral_reference": "neutral-bond-example",
     "quote_asset": "USDC",
     "quote_decimals": 6,
-    "expires_at": "2026-09-04T00:00:00Z"
+    "expires_at": "2027-09-03T23:00:00Z"
   },
   {
     "offer_id": "offer-lean_build",
@@ -25,17 +24,16 @@
     "model_or_checker": null,
     "hardware_class": "reference",
     "domain": null,
-    "delivery_start": "2026-09-03T20:00:00Z",
-    "delivery_end": "2026-09-04T20:00:00Z",
+    "delivery_start": "2027-09-03T20:00:00Z",
+    "delivery_end": "2027-09-04T20:00:00Z",
     "price_minor_units": 50000,
     "quantity_scale": 1,
     "capacity_units": 10,
-    "completion_probability": 0.99,
     "p95_latency_ms": 60000,
     "collateral_reference": "neutral-bond-example",
     "quote_asset": "USDC",
     "quote_decimals": 6,
-    "expires_at": "2026-09-04T00:00:00Z"
+    "expires_at": "2027-09-03T23:00:00Z"
   },
   {
     "offer_id": "offer-official_kernel_check",
@@ -44,17 +42,16 @@
     "model_or_checker": null,
     "hardware_class": "reference",
     "domain": null,
-    "delivery_start": "2026-09-03T20:00:00Z",
-    "delivery_end": "2026-09-04T20:00:00Z",
+    "delivery_start": "2027-09-03T20:00:00Z",
+    "delivery_end": "2027-09-04T20:00:00Z",
     "price_minor_units": 100000,
     "quantity_scale": 1,
     "capacity_units": 10,
-    "completion_probability": 0.995,
     "p95_latency_ms": 60000,
     "collateral_reference": "neutral-bond-example",
     "quote_asset": "USDC",
     "quote_decimals": 6,
-    "expires_at": "2026-09-04T00:00:00Z"
+    "expires_at": "2027-09-03T23:00:00Z"
   },
   {
     "offer_id": "offer-independent_check",
@@ -63,17 +60,16 @@
     "model_or_checker": null,
     "hardware_class": "reference",
     "domain": null,
-    "delivery_start": "2026-09-03T20:00:00Z",
-    "delivery_end": "2026-09-04T20:00:00Z",
+    "delivery_start": "2027-09-03T20:00:00Z",
+    "delivery_end": "2027-09-04T20:00:00Z",
     "price_minor_units": 150000,
     "quantity_scale": 1,
     "capacity_units": 10,
-    "completion_probability": 0.99,
     "p95_latency_ms": 60000,
     "collateral_reference": "neutral-bond-example",
     "quote_asset": "USDC",
     "quote_decimals": 6,
-    "expires_at": "2026-09-04T00:00:00Z"
+    "expires_at": "2027-09-03T23:00:00Z"
   },
   {
     "offer_id": "offer-novelty_review",
@@ -82,17 +78,16 @@
     "model_or_checker": null,
     "hardware_class": "reference",
     "domain": "finance",
-    "delivery_start": "2026-09-03T20:00:00Z",
-    "delivery_end": "2026-09-04T20:00:00Z",
+    "delivery_start": "2027-09-03T20:00:00Z",
+    "delivery_end": "2027-09-04T20:00:00Z",
     "price_minor_units": 2500000,
     "quantity_scale": 1,
     "capacity_units": 10,
-    "completion_probability": 0.85,
     "p95_latency_ms": 60000,
     "collateral_reference": "neutral-bond-example",
     "quote_asset": "USDC",
     "quote_decimals": 6,
-    "expires_at": "2026-09-04T00:00:00Z"
+    "expires_at": "2027-09-03T23:00:00Z"
   },
   {
     "offer_id": "offer-storage",
@@ -101,16 +96,15 @@
     "model_or_checker": null,
     "hardware_class": "reference",
     "domain": null,
-    "delivery_start": "2026-09-03T20:00:00Z",
-    "delivery_end": "2026-09-04T20:00:00Z",
+    "delivery_start": "2027-09-03T20:00:00Z",
+    "delivery_end": "2027-09-04T20:00:00Z",
     "price_minor_units": 10000,
     "quantity_scale": 1000,
     "capacity_units": 1000000,
-    "completion_probability": 0.999,
     "p95_latency_ms": 60000,
     "collateral_reference": "neutral-bond-example",
     "quote_asset": "USDC",
     "quote_decimals": 6,
-    "expires_at": "2026-09-04T00:00:00Z"
+    "expires_at": "2027-09-03T23:00:00Z"
   }
 ]

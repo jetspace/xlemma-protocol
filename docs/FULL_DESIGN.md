@@ -44,7 +44,7 @@ DecentralizedResearcherNode
 ├── contribution identity
 ├── reputation and calibration record
 ├── Lemma Capsules[]
-├── compute positions[]
+├── compute reservations[]
 ├── revenue accounts[]
 ├── licenses[]
 └── governance and recovery policy
@@ -75,12 +75,19 @@ The system must preserve the following distinctions:
 \neq
 \text{significance}
 \neq
+\text{statement alignment}
+\neq
 \text{LaTeX interpretation}
 \neq
 \text{payment settlement}.
 \]
 
-A Lean proof can be valid but unoriginal. A result can be novel but trivial. A token can point to a proof without conveying any copyright or patent right. A LaTeX explanation can misstate a valid Lean theorem. A payment can settle for a failed verification job. A researcher can establish priority without proving exclusive legal ownership.
+A Lean proof can be valid but unoriginal. A result can be novel but trivial. A
+formally valid statement can be vacuous, weaker than advertised, or misaligned
+with its informal interpretation. A token can point to a proof without
+conveying any copyright or patent right. A payment can settle for a failed
+verification job. A researcher can establish priority without proving
+exclusive legal ownership.
 
 ### 2.1 What Lean establishes
 
@@ -93,6 +100,13 @@ The economic ledger establishes ordering, escrow, settlement, challenge deadline
 ### 2.3 What reviewers establish
 
 Novelty, usefulness, interpretation, significance, and prior-art coverage are evidence-weighted judgments. These judgments must remain separately labeled, calibrated, challengeable, and reversible when new evidence appears.
+
+### 2.4 What statement alignment establishes
+
+Domain reviewers may attest that a specific informal claim and LaTeX
+presentation correspond to the exact formal ClaimID, with disclosed
+assumptions, reviewed definitions, conflicts, and limitations. This
+`StatementAlignmentReceipt` remains separate from formal certification.
 
 ---
 
@@ -133,6 +147,7 @@ TheoryID
         ├── Rights Manifest
         ├── Contribution Manifest
         ├── Novelty Receipts
+        ├── Statement Alignment Receipts
         ├── Availability Receipts
         └── Revenue Route
 ```
@@ -231,7 +246,9 @@ ProofRightsCapsule
 ├── Compute Ledger
 ├── Verification Receipts
 ├── Novelty and significance evidence
-├── Dependency and usage graph
+├── Statement Alignment Receipts
+├── Evidence/dependency graph
+├── Economic mode and economic-policy graph
 ├── Revenue Route
 └── optional token handle
 ```
@@ -276,6 +293,23 @@ The rights manifest states what the contributor actually claims to control:
 - or no exclusive right in the underlying mathematical proposition.
 
 It must include employment, university, grant, collaborator, and sponsor clearance. A token cannot create rights the minter never owned.
+
+The capsule keeps three objects distinct: nontransferable origin/provenance;
+rights actually held in artifacts or contracts; and economic participation in
+a defined revenue source. The last requires payer, calculation base,
+exclusions, duration, share, cap, transfer rule, and dispute procedure.
+
+### 5.5 Economic modes
+
+- **Open Commons** permits public reuse without mandatory per-use protocol
+  fees and may receive impact-pool, grant, donation, or sponsor funding.
+- **Commercial Research** licenses controlled artifacts or services with
+  explicit bounded terms.
+- **Sponsored Challenge** fixes funded acceptance, contribution/upstream
+  allocation, result rights, and disputes before work.
+
+Formal dependency edges remain descriptive evidence. Only a separate economic
+policy graph can authorize payment.
 
 ---
 
@@ -368,9 +402,9 @@ An increase in the quoted market price of `Rᵢ` is not revenue.
 | Destination | Share |
 |---|---:|
 | Creator and formalizer pool | 65% |
-| Upstream lemma/library pool | 10% |
+| Mandatory upstream lemma/library pool | 0% |
 | Reverification and security | 8% |
-| Open research and unsuccessful-work fund | 7% |
+| Open research, impact, and unsuccessful-work fund | 17% |
 | Dispute and insurance reserve | 5% |
 | Protocol operations | 5% |
 
@@ -878,26 +912,30 @@ For expected quantities `q`:
 Q_j(T)=q^A_jF^{ASTRA}_{d,T}+q^L_jF^{Lean}_T+q^R_jF^{review}_{d,T}+q^S_jF^{storage}_T+\pi^{risk}_j.
 \]
 
-### 18.3 Verified Proof Cost curve
+### 18.3 Quality-Adjusted Certification Cost
 
 For prover model `m`, compute class `g`, probability of Gold verification `P_G`, and novelty clearance `P_N`:
 
 \[
-\mathrm{VPC}_{d,T}=
+\mathrm{QAC}_{d,T}=
 \min_{m,g}
 \frac{C_{m,g,T}+C^{verify}_{g,T}+H_{d,T}}
 {P_G(m,d,T)P_N(d,T)}.
 \]
 
-This compares models on cost per accepted, novelty-cleared result—not token price alone.
+This compares routes on cost per accepted, novelty-cleared result—not token
+price alone. Concrete service units include reasoning tokens, proof-search
+attempts, build seconds, checker executions, reviewer hours, and byte-months.
+The probabilities come from signed, expiring protocol calibration records,
+not provider-advertised success claims.
 
 ### 18.4 Quality-adjusted migration spread
 
 \[
 \mathrm{MigrationSpread}_{Astra/small,d,T}
 =
-\frac{\mathrm{VPC}_{Astra,d,T}}
-{\mathrm{VPC}_{small,d,T}}.
+\frac{\mathrm{QAC}_{Astra,d,T}}
+{\mathrm{QAC}_{small,d,T}}.
 \]
 
 A higher-priced model can still be economically superior if it materially improves proof yield.
@@ -922,13 +960,18 @@ funding → reserved compute → consumed compute → Lean-valid output
 
 ### 18.6 Scheduling choices
 
-Researchers may choose spot, economy queue, deadline, reserved capacity, or competitive multi-prover routing. A forward contract is a claim on future service, not stored compute.
+Researchers may choose spot, economy queue, deadline, reserved capacity, or
+competitive multi-prover routing. A forward contract is a claim on a defined
+future service profile, not stored compute. Tradeable compute futures remain a
+deferred layer until service profiles and settlement history are standardized.
 
 ---
 
-## 19. Compute-savings dividend
+## 19. Compute-savings impact allocation
 
-A reusable lemma can lower future context size, branching, retries, wall time, model tier, and checker work. xLemma can reward this without enclosing the theorem.
+A reusable lemma can lower future context size, branching, retries, wall time,
+model tier, and checker work. This unobserved counterfactual is one impact
+signal, not a precise invoice.
 
 For upstream lemma `k` and downstream proof `j`:
 
@@ -942,20 +985,27 @@ For upstream lemma `k` and downstream proof `j`:
 The dividend is:
 
 \[
-D_{k\rightarrow j}
+I_{k\rightarrow j}
 =
 \min\left[
 \rho\max(0,\Delta C_{k\rightarrow j}),
-\kappa N_j
+\kappa N_j,
+U_j
 \right].
 \]
+
+`U_j` is the remaining budget of an explicit, settled impact pool. The
+evidence graph records formal dependencies; a separate economic graph records
+agreed payment obligations. `FORMALLY_DEPENDS_ON` never means
+`OWES_PAYMENT_TO`.
 
 Requirements:
 
 - the upstream lemma appears in the final proof dependency graph;
 - equivalent duplicates are clustered;
 - the estimate uses conservative lower confidence bounds;
-- payments are capped by realized downstream net revenue;
+- an active economic policy and eligible economic edge authorize allocation;
+- payments are capped by realized downstream net revenue and the pool budget;
 - no unlimited transitive royalty recursion;
 - counterfactual estimation is audited and periodically re-sampled.
 
@@ -970,7 +1020,7 @@ Measurement methods include holdout re-proving, matched tasks, proof-state branc
 - defined proof bounties;
 - x402 proof search, formalization, verification, explanation, and artifact services;
 - commercial licenses to code, datasets, implementations, or other enforceable assets;
-- compute-savings dividends;
+- capped research-impact allocations;
 - retrospective public-goods funding;
 - verifier and expert-review work;
 - high-quality proof-state trajectory licensing for model training;
@@ -1096,6 +1146,12 @@ Protocol upgrades create new policy IDs and versioned adapters. Historical objec
 
 ## 25. Recommended launch sequence
 
+The initial product is a sponsor-backed ASTRA-assisted Lean formalization and
+independent-certification marketplace in one domain with identifiable buyers,
+not a universal market for all research. Cryptographic protocol proofs,
+smart-contract properties, verified algorithms, and selected optimization
+results are suitable wedges.
+
 ### V0.1 — research objects
 
 Canonical IDs, deterministic bundles, Lean annotations/export, local CLI, LaTeX mapping, signed receipts.
@@ -1110,7 +1166,8 @@ Backed researcher credits, Research Vaults, pluggable payments with x402 exact/u
 
 ### V0.4 — revenue and impact
 
-Contribution splits, bounties, paid access, compute-savings dividends, retrospective funding, negative-result support.
+Contribution splits, bounties, paid access, bounded impact-pool allocations,
+retrospective funding, negative-result support.
 
 ### V0.5 — optional rights wrappers
 

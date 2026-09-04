@@ -17,3 +17,13 @@ jobs retain their server-side policy and exact checker roster; a reveal must
 match both its signed commit and that stored job state.
 Durable replay state, researcher credential resolution, privacy controls, and
 production key custody remain deployment integrations.
+
+Formal status does not imply semantic alignment. XLMP/1 defines the
+content-addressed `StatementAlignmentReceipt` separately, and license/capsule
+responses distinguish Open Commons, Commercial Research, and Sponsored
+Challenge economic modes. Formal dependency fields are evidence only; payment
+requires a separate economic-policy edge and settled revenue record.
+Compute-quote callers supply a signed protocol calibration record, not their
+own success probabilities; deployments authorize estimator keys under the
+referenced policy and calculate monetary amounts with checked fixed-point
+integer arithmetic.

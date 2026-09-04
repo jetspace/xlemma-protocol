@@ -6,10 +6,10 @@
 //! records that reference the object they supersede.
 
 use crate::{
-    Amount, ArtifactId, AssuranceLevel, CertificateId, ChallengeId, CheckerFamily, ClaimId,
-    ComputeQuoteId, CreditId, DividendId, FormalStatus, JobId, LicenseId, MessageId, NodeId,
-    ObservationVerdict, OperatorClusterId, PolicyId, ProofId, PublicationId, QuarantineId,
-    ReceiptId, ResearcherId, RevenueEventId, TheoryId, VaultId, VerificationState,
+    Amount, ArtifactId, AssuranceLevel, CapsuleEconomicMode, CertificateId, ChallengeId,
+    CheckerFamily, ClaimId, ComputeQuoteId, CreditId, DividendId, FormalStatus, JobId, LicenseId,
+    MessageId, NodeId, ObservationVerdict, OperatorClusterId, PolicyId, ProofId, PublicationId,
+    QuarantineId, ReceiptId, ResearcherId, RevenueEventId, TheoryId, VaultId, VerificationState,
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -211,33 +211,62 @@ pub struct DependencyDividend {
     pub revenue_event_id: RevenueEventId,
     pub downstream_claim_id: ClaimId,
     pub upstream_claim_id: ClaimId,
+    /// A formal dependency is evidence of use, not payment authorization.
     pub used_in_final_proof: bool,
     pub final_dependency_root: String,
+    /// Prescriptive economic edge and policy agreed before allocation.
+    pub eligible_economic_edge_root: String,
+    pub economic_policy_root: String,
+    pub settlement_receipt_id: ReceiptId,
     pub compute_savings_evidence_root: String,
     pub downstream_net_revenue: Amount,
+    pub upstream_pool: Amount,
     pub payout: Amount,
     pub cap_bps: u16,
+    pub non_recursive: bool,
     pub finalized_at: DateTime<Utc>,
     pub signature: String,
 }
 
 impl DependencyDividend {
     pub fn respects_protocol_cap(&self) -> bool {
-        if !self.used_in_final_proof || self.cap_bps > 10_000 {
+        if !self.used_in_final_proof
+            || !self.non_recursive
+            || self.cap_bps > 10_000
+            || self.eligible_economic_edge_root.trim().is_empty()
+            || self.economic_policy_root.trim().is_empty()
+            || self.settlement_receipt_id.validate().is_err()
+        {
             return false;
         }
         if self
             .downstream_net_revenue
             .ensure_compatible(&self.payout)
             .is_err()
+            || self.upstream_pool.ensure_compatible(&self.payout).is_err()
         {
             return false;
         }
-        self.downstream_net_revenue
-            .mul_bps(self.cap_bps)
-            .map(|cap| self.payout.units <= cap.units)
-            .unwrap_or(false)
+        let Ok(revenue_cap) = self.downstream_net_revenue.mul_bps(self.cap_bps) else {
+            return false;
+        };
+        self.payout.units <= revenue_cap.units && self.payout.units <= self.upstream_pool.units
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EconomicParticipationTerms {
+    pub revenue_source: String,
+    pub payer: String,
+    pub calculation_base: String,
+    pub exclusions: Vec<String>,
+    pub share_bps: u16,
+    pub payout_cap: Amount,
+    pub transferable: bool,
+    pub term_starts_at: DateTime<Utc>,
+    pub term_ends_at: DateTime<Utc>,
+    pub dispute_process: String,
+    pub economic_policy_root: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -246,12 +275,46 @@ pub struct License {
     pub rights_manifest_hash: String,
     pub licensor: String,
     pub licensee: String,
+    pub mode: CapsuleEconomicMode,
     pub scope: Vec<String>,
+    pub economic_terms: Option<EconomicParticipationTerms>,
     pub consideration_receipt_id: Option<ReceiptId>,
     pub effective_at: DateTime<Utc>,
     pub expires_at: Option<DateTime<Utc>>,
     pub supersedes: Option<LicenseId>,
     pub signatures: Vec<String>,
+}
+
+impl License {
+    pub fn has_bounded_economic_scope(&self) -> bool {
+        if self.licensor.trim().is_empty()
+            || self.licensee.trim().is_empty()
+            || self.scope.is_empty()
+            || self.signatures.is_empty()
+            || self.expires_at.is_some_and(|end| end <= self.effective_at)
+        {
+            return false;
+        }
+        match (&self.mode, &self.economic_terms) {
+            (CapsuleEconomicMode::OpenCommons, None) => true,
+            (CapsuleEconomicMode::OpenCommons, Some(_)) => false,
+            (_, Some(terms)) => {
+                !terms.revenue_source.trim().is_empty()
+                    && !terms.payer.trim().is_empty()
+                    && !terms.calculation_base.trim().is_empty()
+                    && !terms.dispute_process.trim().is_empty()
+                    && !terms.economic_policy_root.trim().is_empty()
+                    && terms.share_bps <= 10_000
+                    && terms.payout_cap.units > 0
+                    && terms.term_starts_at >= self.effective_at
+                    && terms.term_ends_at > terms.term_starts_at
+                    && self
+                        .expires_at
+                        .is_none_or(|license_end| terms.term_ends_at <= license_end)
+            }
+            (_, None) => false,
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -330,13 +393,113 @@ mod tests {
             .unwrap(),
             used_in_final_proof: false,
             final_dependency_root: "blake3:final-dependencies".into(),
+            eligible_economic_edge_root: "blake3:economic-edge".into(),
+            economic_policy_root: "blake3:economic-policy".into(),
+            settlement_receipt_id: ReceiptId::derive(&"settlement").unwrap(),
             compute_savings_evidence_root: "blake3:savings".into(),
             downstream_net_revenue: amount(1_000),
+            upstream_pool: amount(100),
             payout: amount(10),
             cap_bps: 1_000,
+            non_recursive: true,
             finalized_at: Utc::now(),
             signature: "signature".into(),
         };
         assert!(!dividend.respects_protocol_cap());
+    }
+
+    #[test]
+    fn formal_dependency_without_an_economic_edge_never_creates_payment() {
+        let claim = |name| {
+            ClaimId::from_canonical_elaborated_type(&TheoryId::derive(&"theory").unwrap(), name)
+                .unwrap()
+        };
+        let dividend = DependencyDividend {
+            dividend_id: DividendId::derive(&"dividend").unwrap(),
+            revenue_event_id: RevenueEventId::derive(&"revenue").unwrap(),
+            downstream_claim_id: claim("downstream"),
+            upstream_claim_id: claim("upstream"),
+            used_in_final_proof: true,
+            final_dependency_root: "blake3:final-dependencies".into(),
+            eligible_economic_edge_root: String::new(),
+            economic_policy_root: "blake3:economic-policy".into(),
+            settlement_receipt_id: ReceiptId::derive(&"settlement").unwrap(),
+            compute_savings_evidence_root: "blake3:impact-signal".into(),
+            downstream_net_revenue: amount(1_000),
+            upstream_pool: amount(100),
+            payout: amount(10),
+            cap_bps: 1_000,
+            non_recursive: true,
+            finalized_at: Utc::now(),
+            signature: "signature".into(),
+        };
+        assert!(!dividend.respects_protocol_cap());
+    }
+
+    #[test]
+    fn open_commons_license_cannot_hide_revenue_participation_terms() {
+        let license = License {
+            license_id: LicenseId::derive(&"license").unwrap(),
+            rights_manifest_hash: "blake3:rights".into(),
+            licensor: "licensor".into(),
+            licensee: "public".into(),
+            mode: CapsuleEconomicMode::OpenCommons,
+            scope: vec!["formal artifact".into()],
+            economic_terms: Some(EconomicParticipationTerms {
+                revenue_source: "future use".into(),
+                payer: "unknown".into(),
+                calculation_base: "undefined".into(),
+                exclusions: vec![],
+                share_bps: 100,
+                payout_cap: amount(1),
+                transferable: false,
+                term_starts_at: Utc::now(),
+                term_ends_at: Utc::now() + chrono::Duration::days(30),
+                dispute_process: "review".into(),
+                economic_policy_root: "blake3:policy".into(),
+            }),
+            consideration_receipt_id: None,
+            effective_at: Utc::now(),
+            expires_at: None,
+            supersedes: None,
+            signatures: vec!["signature".into()],
+        };
+        assert!(!license.has_bounded_economic_scope());
+    }
+
+    #[test]
+    fn commercial_economic_participation_requires_a_finite_term() {
+        let now = Utc::now();
+        let mut license = License {
+            license_id: LicenseId::derive(&"commercial-license").unwrap(),
+            rights_manifest_hash: "blake3:rights".into(),
+            licensor: "licensor".into(),
+            licensee: "commercial-buyer".into(),
+            mode: CapsuleEconomicMode::CommercialResearch,
+            scope: vec!["certified implementation".into()],
+            economic_terms: Some(EconomicParticipationTerms {
+                revenue_source: "license receipts".into(),
+                payer: "commercial-buyer".into(),
+                calculation_base: "net settled receipts".into(),
+                exclusions: vec!["refunds".into()],
+                share_bps: 1_000,
+                payout_cap: amount(100),
+                transferable: false,
+                term_starts_at: now,
+                term_ends_at: now + chrono::Duration::days(30),
+                dispute_process: "contract arbitration".into(),
+                economic_policy_root: "blake3:commercial-policy".into(),
+            }),
+            consideration_receipt_id: None,
+            effective_at: now,
+            expires_at: Some(now + chrono::Duration::days(90)),
+            supersedes: None,
+            signatures: vec!["signature".into()],
+        };
+        assert!(license.has_bounded_economic_scope());
+
+        let terms = license.economic_terms.as_mut().unwrap();
+        terms.term_ends_at = terms.term_starts_at;
+        assert!(!license.has_bounded_economic_scope());
     }
 }

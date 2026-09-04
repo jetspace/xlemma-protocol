@@ -13,9 +13,9 @@ unbacked_minting_enabled = false
 
 [revenue]
 creator_pool_bps = 6500
-upstream_dependency_pool_bps = 1000
+upstream_dependency_pool_bps = 0
 reverification_security_pool_bps = 800
-open_research_pool_bps = 700
+open_research_pool_bps = 1700
 dispute_insurance_pool_bps = 500
 protocol_operations_bps = 500
 dependency_reward_cap_bps = 1000
@@ -84,12 +84,14 @@ minimum_prior_art_coverage = 0.75
 maximum_reviewer_weight = 0.25
 minimum_independent_operators = 3
 
-[compute_dividend]
+[impact_pool]
 savings_share_bps = 2000
 downstream_revenue_cap_bps = 1000
 minimum_counterfactual_sample_size = 20
-lower_confidence_multiplier = 1.645
+lower_confidence_multiplier_bps = 16450
 final_dependency_required = true
+economic_policy_required = true
+non_recursive = true
 
 [astra]
 provider = "openai"

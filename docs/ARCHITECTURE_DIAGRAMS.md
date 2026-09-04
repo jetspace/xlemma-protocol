@@ -204,7 +204,7 @@ flowchart LR
 
     ExtRev[Settled external research revenue] --> Router[Revenue Router]
     Router --> Cash[Researcher cash payout]
-    Router --> Pools[Dependency / security / public-goods pools]
+    Router --> Pools[Explicit economic-policy / security / public-goods pools]
     Router -->|chosen auto-compound share| Vault
     Vault -->|new backing received first| NewCredits[New backed R_i]
 ```
@@ -217,21 +217,22 @@ The required conservation invariant is:
 
 No claim, token price, expected royalty, or unverified future profit counts as backing.
 
-## 6. Compute-curve loop
+## 6. Job-specific service-cost loop
 
 ```mermaid
 flowchart TD
-    O[Signed provider offers] --> Curves[ASTRA / Lean / Review / Storage curves]
-    T[Proof-task features] --> Estimator[Expected work and success estimator]
-    Curves --> Quote[Verified Proof Cost quote]
+    O[Signed provider price/capacity offers] --> Curves[ASTRA / Lean / Review / Storage curves]
+    T[Proof-task features and audited outcomes] --> Estimator[Independent protocol success estimator]
+    Curves --> Quote[Quality-Adjusted Certification Cost]
     Estimator --> Quote
     Quote --> Scheduler[Spot / economy / deadline / reserved scheduler]
     Scheduler --> Execution[Measured execution]
     Execution --> Receipts[Compute and verification receipts]
     Receipts --> Calibration[Point-in-time calibration]
     Calibration --> Estimator
-    Receipts --> Savings[Counterfactual compute-savings estimator]
-    Savings --> Dividend[Capped dividend from realized downstream revenue]
+    Receipts --> Savings[Counterfactual compute-impact estimator]
+    Policy[Settled economic policy and bounded pool] --> Allocation[Capped impact allocation]
+    Savings --> Allocation
 ```
 
 ## 7. Research object graph
@@ -248,13 +249,16 @@ graph TD
     AID1 --> VR1[Verification receipts]
     AID2 --> VR2[Verification receipts]
     CID --> ORI[Origin certificate]
+    CID --> ALIGN[Statement alignment receipts]
     CID --> CM[Contribution manifest]
     CID --> RM[Rights manifest]
     CID --> PR1[PresentationID: LaTeX v1]
     CID --> PR2[PresentationID: LaTeX v2]
     PID1 --> DEP[Direct proof dependencies]
     VR1 --> CERT[PoIR certificate]
-    CERT --> REV[Revenue route]
+    ECON[Economic policy graph] --> REV[Revenue route]
+    SETTLE[Settled external revenue] --> REV
+    DEP -. evidence only .-> ECON
     LID -->|supersedes| OLD[Prior LemmaID]
 ```
 

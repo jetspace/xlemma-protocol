@@ -5,8 +5,9 @@ As-of date: 2026-09-04.
 ## Scope
 
 This report records checks actually executed for the XLMP/1 security-hardening
-revision. It distinguishes local evidence from checks delegated to CI and from
-production assurance that the reference implementation does not claim.
+and conservation-law refinement. It distinguishes local evidence from checks
+delegated to CI and from production assurance that the reference
+implementation does not claim.
 
 ## Executed successfully
 
@@ -19,7 +20,9 @@ deterministic source manifest. It checked:
   including the XLMP/1 envelope, node advertisement/reputation/bond vectors,
   pseudonymous user/operator/node credential and revocation vectors, the
   published credential-bound eligible-set/sortition/committee vector, and all
-  provider-neutral native-object schemas;
+  provider-neutral native-object schemas, including statement alignment,
+  signed protocol success calibration, capsule modes, and impact-pool
+  authorization;
 - TOML and YAML syntax, OpenAPI 3.1 operations, routes, response maps, external
   references, fragments, and local reference resolution;
 - revenue and contributor-share conservation, checker-root agreement, and
@@ -39,15 +42,22 @@ cargo clippy --locked --workspace --all-targets -- -D warnings
 cargo test --locked --workspace
 ```
 
-The Rust suite contains 88 unit/async-test declarations. It exercises RFC 8785
+The Rust suite contains 106 unit/async-test declarations. It exercises RFC 8785
 canonicalization and safe-integer rejection, strict XLMP typed ingress,
 content-bound receipt identity, Ed25519 signature and signer/NodeID binding,
-message and advertisement identity/mutation rejection, append-only HTTP and
+statement-alignment identity and signature-verifier boundaries, signed
+protocol success calibration, exclusion of uncalibrated provider offers,
+signed impact-pool authorization and exact revenue-event binding,
+evidence/economic graph separation,
+content-derived impact evidence, checked fixed-point quote/allocation math and
+deterministic equal-cost routing,
+Open Commons economic constraints, message and advertisement
+identity/mutation rejection, append-only HTTP and
 node-market records, asset-compatible capacity matching, eight-dimensional
 reputation gates, pseudonymous credential integrity, append-only revocation,
 reproducible future-randomness committee sortition, duplicate node, operator,
 and verified-participant exclusion, lifecycle gates and revalidation, PoIR divergence,
-backed credits, revenue conservation, dependency-dividend caps, provider
+backed credits, revenue conservation, impact-pool caps, provider
 adapters, bounded and symlink-safe storage, hardened Lean/ASTRA adapter
 boundaries, and x402-to-XLMP binding.
 
@@ -57,7 +67,7 @@ advisories with no vulnerable packages reported.
 
 `scripts/simulate_economics.py` completed successfully for backing,
 authorization, settlement, refund, solvency, revenue allocation, compounding,
-and conservative compute-savings dividends. Python bytecode compilation also
+and conservative compute-impact allocations. Python bytecode compilation also
 completed successfully for the repository scripts.
 
 Foundry 1.4.0 formatting, build-size, unit, fuzz, and invariant checks completed
@@ -73,7 +83,7 @@ secrets. The committed runtime and service image references use immutable
 digests, the API binds only to loopback by default, and the container profile is
 read-only, non-root, capability-free, and protected by `no-new-privileges`.
 
-The snapshot contains 13 Rust crates, 50 JSON schemas, 21 numbered
+The snapshot contains 13 Rust crates, 54 JSON schemas, 22 numbered
 specifications, 9 Solidity contracts, and 8 Solidity test suites. These source
 counts establish repository coverage; they do not substitute for an audit.
 
@@ -82,7 +92,7 @@ counts establish repository coverage; they do not substitute for an audit.
 This environment did not include Lean/Lake. The following checks are therefore
 delegated to the included CI workflow and are not claimed as locally executed:
 
-- Lean package build, official kernel replay, nanoda replay, and axiom audit;
+- Lean package build, official kernel replay, nanoda replay, and axiom audit.
 
 The following production activities were also outside this validation scope:
 

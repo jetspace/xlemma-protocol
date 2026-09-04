@@ -5,10 +5,12 @@
   "additionalProperties": false,
   "properties": {
     "offer_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "provider_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "service": {
       "type": "string",
@@ -62,22 +64,19 @@
     },
     "capacity_units": {
       "type": "integer",
-      "minimum": 0
-    },
-    "completion_probability": {
-      "type": "number",
-      "exclusiveMinimum": 0,
-      "maximum": 1
+      "minimum": 1
     },
     "p95_latency_ms": {
       "type": "integer",
       "minimum": 0
     },
     "collateral_reference": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "quote_asset": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "quote_decimals": {
       "type": "integer",
@@ -98,7 +97,6 @@
     "price_minor_units",
     "quantity_scale",
     "capacity_units",
-    "completion_probability",
     "p95_latency_ms",
     "collateral_reference",
     "quote_asset",
