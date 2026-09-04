@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/trust-policy.schema.json",
+  "title": "TrustPolicy",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "protocol_version": { "const": "XLMP/1" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "axiom_profile_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "permitted_checker_families": {
+      "type": "array",
+      "items": { "enum": ["lean_kernel", "nanoda", "other_independent"] },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "minimum_independent_checker_families": { "type": "integer", "minimum": 1 },
+    "permitted_canonical_encodings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 128 },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "require_exact_challenge": { "const": true },
+    "require_pinned_toolchain": { "const": true },
+    "require_dependency_lock": { "const": true },
+    "supersedes": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" }
+      ]
+    }
+  },
+  "required": [
+    "policy_id",
+    "protocol_version",
+    "name",
+    "axiom_profile_id",
+    "permitted_checker_families",
+    "minimum_independent_checker_families",
+    "permitted_canonical_encodings",
+    "require_exact_challenge",
+    "require_pinned_toolchain",
+    "require_dependency_lock",
+    "supersedes"
+  ]
+}

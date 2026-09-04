@@ -17,6 +17,13 @@ Lean is the default XLMP/1 formal-verification implementation, not the protocol 
 
 A model, builder, or checker MUST NOT silently modify the trusted claim.
 
+The deployment MUST resolve the theory's content-derived trust policy through
+an authenticated registry snapshot and compare the proof manifest with the
+checker-produced trust evidence. Unlisted axioms, `sorry`/`admit`, unsafe
+declarations, compiler-trusted `native_decide`, an unpinned toolchain, an
+unverified dependency lock, or insufficient checker-family evidence fail
+closed under the reference Gold policy. See XLIP-023.
+
 Formal checking establishes that the exact theorem follows under declared
 definitions, imports, and axioms. It does not establish that the theorem
 faithfully represents an informal claim or empirical interpretation. ASTRA and

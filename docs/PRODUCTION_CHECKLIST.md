@@ -15,7 +15,10 @@ Every box is a release gate. The reference repository intentionally leaves many 
 
 - [ ] XLMP/1 envelope and all required message vectors independently implemented.
 - [x] Reference HTTP ingress rejects unsupported XLMP versions, unknown/non-canonical typed fields, invalid signatures, and untrusted signers.
-- [ ] HTTP and one non-HTTP transport preserve identical MessageIDs.
+- [x] Reference API mutations are hash-chained, fsynced before acknowledgement, and recovered fail-closed after restart.
+- [ ] Journal checkpoints are externally anchored and replicated through a transactional HA log/outbox with exercised rollback recovery.
+- [x] HTTP JSON and the reference non-HTTP canonical binary frame preserve identical MessageIDs.
+- [ ] A live WebSocket or libp2p adapter passes reconnect, backpressure, replay, and interoperability tests.
 - [ ] Canonical serialization frozen and independently implemented.
 - [ ] RFC 8785-compatible behavior covered by published vectors.
 - [ ] ClaimID derived from elaborated Lean expressions, including universes and implicit structure.
@@ -154,7 +157,7 @@ Every box is a release gate. The reference repository intentionally leaves many 
 
 ## Storage and privacy
 
-- [ ] Content-addressed bundle builder has cross-language vectors.
+- [ ] Content-addressed bundle builder's published reference vector has an independent cross-language reproduction.
 - [ ] Traversal, symlink, decompression, and resource attacks tested.
 - [ ] Encryption and key-release path audited.
 - [ ] Multiple independent operators/providers/regions satisfy policy.

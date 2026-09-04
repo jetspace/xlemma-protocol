@@ -126,12 +126,40 @@ bytes, cryptographically verified inner observation signatures, prior signed
 commit lookup, job-specific committee-roster matching, and rejection of formal
 or generalized certificates whose observations did not previously pass
 authenticated XLMP ingress. Body/concurrency limits and append-only MessageID
-storage bound the HTTP surface. The reference nonce and state stores remain
-in-memory and must be replaced by durable transactional stores before HA use.
+storage bound the HTTP surface. The reference API journal fsyncs each complete
+mutation before acknowledgement and links entries with canonical,
+domain-separated hashes; restart replay fails closed on tampering, gaps,
+duplicates, or invalid job-update predecessors. It remains a single-writer
+local journal, so multi-process writes, filesystem loss, rollback to an older
+whole-file snapshot, backup compromise, and HA replication require external
+controls.
+
+### Binary transport framing confusion
+
+Controls: the reference non-HTTP frame carries exactly one length-delimited
+canonical XLMP envelope, caps payloads at one MiB, rejects trailing or
+truncated bytes and non-canonical JSON, and revalidates the content-derived
+MessageID after decoding. Framing bytes never acquire research-consensus or
+payment meaning.
 
 ### Revenue fabrication
 
 Controls: only finalized external settlement events enter gross revenue; costs, refunds, and reserves are deducted first; related-party demand is labeled; unrealized token changes are excluded.
+
+### Trust-policy substitution or axiom laundering
+
+Attack: a producer substitutes a permissive policy, mutates a registry entry,
+omits an observed axiom, uses `sorry`, unsafe declarations, or compiler-trusted
+evaluation, or supplies only one checker family while presenting the result as
+Gold assurance.
+
+Controls: TheoryID binds the trust policy; content-derived PolicyIDs bind every
+semantic policy field; the registry root binds strictly sorted immutable
+profiles and policies; proof and checker axiom inventories must be identical;
+exact challenge, pinned toolchain, dependency lock, and independent
+checker-family requirements fail closed. Production governance must separately
+authenticate the accepted registry root—content integrity does not grant
+publisher authority.
 
 ### Semantic-gap laundering
 
@@ -221,7 +249,7 @@ Slashing requires objectively provable misconduct: equivocation, false artifact 
 - Rights disputes can exceed what on-chain evidence resolves.
 - Stable backing can face issuer, chain, bridge, custody, and regulatory risk.
 - Succinct proof systems add their own trusted setup, circuit, and implementation assumptions.
-- The prototype HTTP ingress uses one baseline Ed25519 profile; production key rotation, threshold keys, durable replay state, and issuer-backed key resolution remain deployment work.
+- The prototype HTTP ingress uses one baseline Ed25519 profile; production key rotation, threshold keys, replicated durable state, journal rollback detection anchored outside the host, and issuer-backed key resolution remain deployment work.
 - Public beacon/VRF authentication and decentralized eligible-set publication are not yet integrated into the prototype service.
 - Capacity, latency, hardware, reputation evidence, and operator clustering still require independent measurement and challenge infrastructure.
 - The reference credential registry supplies deterministic structure and an adapter boundary; production issuer, delegation-signature, key-resolution, privacy, and accumulator-proof implementations remain deployment work.

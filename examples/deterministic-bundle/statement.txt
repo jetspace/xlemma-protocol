@@ -1,0 +1,1 @@
+Every proposition implies itself under the supplied hypothesis.

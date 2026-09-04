@@ -1,0 +1,18 @@
+{
+  "policy_id": "xlpolicy:blake3:0b123f6c712cc553bf598e6f7f9455abc494c7c7dc37c8360ea9cfa07c085437",
+  "protocol_version": "XLMP/1",
+  "name": "xlemma-gold-formal-v1",
+  "axiom_profile_id": "xlpolicy:blake3:b533ab4924c15c1ebb95e9a91b235b1eff37721a1ff2ef289af9145742cd003d",
+  "permitted_checker_families": [
+    "lean_kernel",
+    "nanoda"
+  ],
+  "minimum_independent_checker_families": 2,
+  "permitted_canonical_encodings": [
+    "xlemma-lean-expr-v1"
+  ],
+  "require_exact_challenge": true,
+  "require_pinned_toolchain": true,
+  "require_dependency_lock": true,
+  "supersedes": null
+}

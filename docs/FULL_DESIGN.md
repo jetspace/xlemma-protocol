@@ -482,7 +482,23 @@ The production exporter must extract:
 - exact toolchain and lockfile;
 - source and build artifact roots.
 
-### 9.2 LaTeX integration
+### 9.2 Trust-policy registry
+
+Every formal theory selects a content-derived `TrustPolicy`, which in turn
+selects a content-derived `AxiomProfile`. A canonical registry snapshot binds
+the exact policies and profiles under one root. The reference evaluator rejects
+unknown policies, mutated registry content, noncanonical ordering, unlisted or
+explicitly forbidden axioms, `sorry`/`admit`, unsafe declarations,
+compiler-trusted `native_decide`, challenge mismatch, unpinned toolchains,
+unverified dependency locks, and insufficient checker-family evidence.
+
+The registry defines certification eligibility, not truth. Deployments must
+authenticate registry-root publication through independent key resolution and
+constitutional governance; a valid content hash alone does not authorize a
+publisher. Supersession adds a new immutable policy and preserves its parent.
+See XLIP-023.
+
+### 9.3 LaTeX integration
 
 ```latex
 \begin{lemma}[No-arbitrage condition]

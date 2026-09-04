@@ -1,0 +1,18 @@
+{
+  "profile_id": "xlpolicy:blake3:b533ab4924c15c1ebb95e9a91b235b1eff37721a1ff2ef289af9145742cd003d",
+  "protocol_version": "XLMP/1",
+  "name": "xlemma-lean-standard-v1",
+  "permitted_axioms": [
+    "Classical.choice",
+    "Quot.sound",
+    "propext"
+  ],
+  "explicitly_forbidden_axioms": [
+    "sorryAx"
+  ],
+  "allow_unlisted_axioms": false,
+  "allow_sorry": false,
+  "allow_unsafe_declarations": false,
+  "allow_native_decide": false,
+  "supersedes": null
+}

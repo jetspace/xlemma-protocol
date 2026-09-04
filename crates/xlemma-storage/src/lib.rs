@@ -25,7 +25,7 @@ pub struct BundleInput {
     pub encrypted: bool,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BuiltBundle {
     pub artifact_id: ArtifactId,
     pub manifest: ArtifactManifest,
@@ -65,16 +65,6 @@ pub enum StorageError {
     Id(#[from] xlemma_core::IdError),
 }
 
-#[derive(Serialize)]
-struct ArtifactIdentityMaterial<'a> {
-    protocol_version: &'a str,
-    entries: &'a [ArtifactEntry],
-    root: &'a str,
-    lean_toolchain: &'a str,
-    dependency_lock_hash: &'a str,
-    build_image_digest: &'a Option<String>,
-}
-
 pub fn build_bundle_manifest(
     root: &Path,
     inputs: &[BundleInput],
@@ -82,6 +72,29 @@ pub fn build_bundle_manifest(
     dependency_lock_hash: impl Into<String>,
     source_commit: Option<String>,
     build_image_digest: Option<String>,
+) -> Result<BuiltBundle, StorageError> {
+    build_bundle_manifest_at(
+        root,
+        inputs,
+        lean_toolchain,
+        dependency_lock_hash,
+        source_commit,
+        build_image_digest,
+        Utc::now(),
+    )
+}
+
+/// Build a bundle using an explicit timestamp so separate implementations can
+/// reproduce the complete JSON manifest byte-for-byte, not merely its
+/// content-derived ArtifactID.
+pub fn build_bundle_manifest_at(
+    root: &Path,
+    inputs: &[BundleInput],
+    lean_toolchain: impl Into<String>,
+    dependency_lock_hash: impl Into<String>,
+    source_commit: Option<String>,
+    build_image_digest: Option<String>,
+    created_at: DateTime<Utc>,
 ) -> Result<BuiltBundle, StorageError> {
     if inputs.is_empty() {
         return Err(StorageError::EmptyBundle);
@@ -152,39 +165,21 @@ pub fn build_bundle_manifest(
     }
 
     entries.sort_by(|left, right| left.path.cmp(&right.path));
-    let mut root_hasher = blake3::Hasher::new();
-    root_hasher.update(b"xlemma-artifact-root-v1\0");
-    for entry in &entries {
-        root_hasher.update(entry.path.as_bytes());
-        root_hasher.update(b"\0");
-        root_hasher.update(entry.content_hash.as_bytes());
-        root_hasher.update(b"\0");
-        root_hasher.update(&entry.byte_length.to_le_bytes());
-    }
-    let root_hash = format!("blake3:{}", root_hasher.finalize().to_hex());
-
-    let manifest = ArtifactManifest {
+    let mut manifest = ArtifactManifest {
         protocol_version: XLMP_VERSION.to_owned(),
         entries,
-        root: root_hash,
+        root: String::new(),
         source_commit,
         lean_toolchain,
         dependency_lock_hash,
         build_image_digest,
-        created_at: Utc::now(),
+        created_at,
     };
+    manifest.root = manifest.expected_root();
     // Timestamps and source-control labels are provenance metadata, not content
     // identity. Repacking identical bytes under the same verified environment
     // therefore produces the same ArtifactId.
-    let identity = ArtifactIdentityMaterial {
-        protocol_version: &manifest.protocol_version,
-        entries: &manifest.entries,
-        root: &manifest.root,
-        lean_toolchain: &manifest.lean_toolchain,
-        dependency_lock_hash: &manifest.dependency_lock_hash,
-        build_image_digest: &manifest.build_image_digest,
-    };
-    let artifact_id = ArtifactId::derive(&identity)?;
+    let artifact_id = manifest.derive_artifact_id()?;
     Ok(BuiltBundle {
         artifact_id,
         manifest,
@@ -269,7 +264,8 @@ pub fn availability_satisfied(
 }
 
 fn validate_relative_path(path: &Path) -> Result<(), StorageError> {
-    if path.is_absolute()
+    if path.to_string_lossy().contains('\\')
+        || path.is_absolute()
         || path.components().any(|component| {
             matches!(
                 component,
@@ -348,6 +344,76 @@ mod tests {
     }
 
     #[test]
+    fn published_bundle_vector_is_byte_for_byte_reproducible() {
+        let vector_root =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/deterministic-bundle");
+        let inputs: Vec<BundleInput> = serde_json::from_slice(
+            &fs::read(vector_root.join("inputs.json")).expect("read vector inputs"),
+        )
+        .expect("parse vector inputs");
+        let expected: BuiltBundle = serde_json::from_slice(
+            &fs::read(vector_root.join("expected-bundle.json")).expect("read expected bundle"),
+        )
+        .expect("parse expected bundle");
+        let created_at = "2026-09-04T12:00:00Z".parse().unwrap();
+
+        let actual = build_bundle_manifest_at(
+            &vector_root,
+            &inputs,
+            "leanprover/lean4:v4.33.1",
+            "blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            Some("vector-1".to_owned()),
+            Some(
+                "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                    .to_owned(),
+            ),
+            created_at,
+        )
+        .expect("build deterministic vector");
+
+        assert_eq!(actual, expected);
+        assert_eq!(
+            serde_json::to_vec(&actual).unwrap(),
+            serde_json::to_vec(&expected).unwrap()
+        );
+        assert_eq!(
+            xlemma_core::canonical_json_bytes(&actual).unwrap(),
+            xlemma_core::canonical_json_bytes(&expected).unwrap()
+        );
+
+        let mut reversed_inputs = inputs;
+        reversed_inputs.reverse();
+        let reversed = build_bundle_manifest_at(
+            &vector_root,
+            &reversed_inputs,
+            "leanprover/lean4:v4.33.1",
+            "blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            Some("vector-1".to_owned()),
+            Some(
+                "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                    .to_owned(),
+            ),
+            created_at,
+        )
+        .expect("build reordered deterministic vector");
+        assert_eq!(reversed, expected);
+
+        let mut mutated = expected.clone();
+        mutated.manifest.entries[0].encrypted = true;
+        assert!(matches!(
+            mutated.manifest.derive_artifact_id(),
+            Err(xlemma_core::IdError::InvalidArtifactManifest(_))
+        ));
+
+        let mut unsorted = expected;
+        unsorted.manifest.entries.reverse();
+        assert!(matches!(
+            unsorted.manifest.derive_artifact_id(),
+            Err(xlemma_core::IdError::InvalidArtifactManifest(_))
+        ));
+    }
+
+    #[test]
     fn traversal_and_duplicate_paths_are_rejected() {
         let root = temp_root("unsafe");
         fs::write(root.join("proof.lean"), "example : True := by trivial\n").unwrap();
@@ -358,6 +424,16 @@ mod tests {
         };
         assert!(matches!(
             build_bundle_manifest(&root, &[unsafe_input], "lean", "lock", None, None,),
+            Err(StorageError::UnsafePath(_))
+        ));
+
+        let platform_ambiguous = BundleInput {
+            relative_path: PathBuf::from("..\\proof.lean"),
+            media_type: "text/x-lean".into(),
+            encrypted: false,
+        };
+        assert!(matches!(
+            build_bundle_manifest(&root, &[platform_ambiguous], "lean", "lock", None, None,),
             Err(StorageError::UnsafePath(_))
         ));
 

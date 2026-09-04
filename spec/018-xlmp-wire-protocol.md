@@ -217,6 +217,13 @@ HTTP, libp2p, WebSocket, x402-protected HTTP, and chain event streams MAY carry
 the same XLMP envelope. A transport MUST preserve the exact canonical bytes or
 provide a reversible encoding whose decoded envelope has the same MessageID.
 
+The XLMP/1 reference binary frame is `uint32_be(payload_length) || payload`,
+where `payload` is one canonical RFC 8785 envelope and `payload_length` is from
+1 through 1,048,576 bytes. A decoder MUST reject truncated headers, declared
+length mismatches, trailing bytes, oversized frames, non-canonical JSON, and an
+envelope whose content-derived MessageID does not match. The length prefix is a
+transport concern and is not part of MessageID derivation.
+
 ### 6.5 Finality and storage
 
 Chains MAY anchor state roots, ordering, settlement, and challenge deadlines.

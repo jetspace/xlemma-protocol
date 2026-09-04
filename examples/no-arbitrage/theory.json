@@ -2,7 +2,7 @@
   "protocol_version": "XLMP/1",
   "lean_toolchain": "leanprover/lean4:v4.33.1",
   "dependency_merkle_root": "blake3:1111111111111111111111111111111111111111111111111111111111111111",
-  "trust_policy_id": "xlpolicy:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+  "trust_policy_id": "xlpolicy:blake3:0b123f6c712cc553bf598e6f7f9455abc494c7c7dc37c8360ea9cfa07c085437",
   "checker_policy_id": "xlpolicy:blake3:9999999999999999999999999999999999999999999999999999999999999999",
   "permitted_axioms": [
     "propext",

@@ -1,13 +1,28 @@
 # Roadmap
 
+This roadmap distinguishes a checked-in reference implementation from a
+production deployment. A checked item is reproducible in this repository; it
+does not imply an independent audit, live-network deployment, or legal review.
+
+## Current execution focus — Phase 0 closure
+
+- [x] Publish versioned, domain-separated ID derivation and RFC 8785 canonicalization code.
+- [x] Provide a safe content-addressed bundle builder with an explicit timestamp and a byte-for-byte deterministic vector.
+- [x] Add content-derived axiom profiles, fail-closed trust policies, a canonical registry snapshot, schemas, tests, and a CLI evaluator.
+- [x] Publish reference vectors for statement alignment, capsule economic modes, and separate evidence/economic graph edges.
+- [x] Run all eleven documented participant journeys through a repeatable conformance harness with machine-readable and human-readable reports.
+- [x] Replace volatile API history with a single-writer durable, hash-chained event journal that fsyncs before acknowledgement and fails closed during restart recovery.
+- [x] Add canonical length-delimited XLMP framing for non-HTTP binary transports with exact MessageID preservation and malformed/non-canonical frame rejection.
+- [ ] Obtain clean-room cross-implementation results before declaring the encodings or schemas frozen.
+- [ ] Complete and independently test the Lean environment exporter; the current `#xlemma_export` command remains a prototype print boundary.
+
 ## Phase 0 — deterministic research objects
 
-- Freeze canonical encodings for TheoryID, ClaimID, ProofID, ArtifactRoot and ReceiptID.
-- Complete Lean exporter for elaborated expression and proof-term serialization.
-- Add reproducible bundle builder and deterministic test vectors.
-- Establish trust-policy registry and axiom profiles.
-- Publish cross-implementation `StatementAlignmentReceipt`, capsule economic-mode, and evidence/economic-graph vectors.
-- Freeze the implemented sovereignty, residual-right, portability, economic-constitution/compliance, generalized-verification, funding, capture, and governance schemas after independent implementation review.
+- Freeze canonical encodings for TheoryID, ClaimID, ProofID, ArtifactRoot and ReceiptID after the published reference vectors pass clean-room reproduction.
+- Complete the Lean exporter for elaborated expression, universe, dependency, proof-term, and trust-evidence serialization.
+- Extend deterministic vectors to every XLMP message and receipt type in a second implementation.
+- Authenticate trust-registry root publication through production governance and key resolution.
+- Freeze sovereignty, residual-right, portability, economic-constitution/compliance, generalized-verification, funding, capture, governance, trust-policy, and axiom-profile schemas after independent implementation review.
 
 ## Phase 1 — independent verification network
 
@@ -17,7 +32,7 @@
 - Integrate Lean `comparator`, official kernel replay and independent checkers.
 - Deploy PoIR commit-reveal committees with verified-user, OperatorID, and operator-cluster controls.
 - Add watcher, dispute, quarantine and revalidation services.
-- Replace the reference API's in-memory XLMP history and commit stores with a durable transactional event log, preserving the implemented authenticated-observation certificate gate.
+- Scale the implemented durable single-writer API event journal to a replicated transactional log/outbox, preserving hash-chain verification and the authenticated-observation certificate gate.
 
 ## Phase 2 — researcher credits and x402
 

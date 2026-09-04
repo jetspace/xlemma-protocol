@@ -6,10 +6,12 @@
 //! research state or consensus.
 
 pub mod adapter;
+pub mod framing;
 pub mod state;
 pub mod wire;
 
 pub use adapter::*;
+pub use framing::*;
 pub use state::*;
 pub use wire::*;
 pub use xlemma_core::{XLMP_MAJOR_VERSION, XLMP_PROTOCOL, XLMP_VERSION};

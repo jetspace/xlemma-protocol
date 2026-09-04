@@ -529,7 +529,7 @@ components:
           minItems: 1
           maxItems: 32
           items: { $ref: ../schemas/committee-selection.schema.json#/properties/members/items }
-        maximum_budget_minor_units: { type: integer, minimum: 1 }
+        maximum_budget_minor_units: { type: integer, format: int64, minimum: 1, maximum: 9007199254740991 }
         settlement_asset: { type: string }
     VerificationJob:
       type: object

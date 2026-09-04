@@ -6,6 +6,8 @@ RUN cargo build --locked --release -p xlemma-api -p xlemma-cli
 
 FROM debian:12.12-slim@sha256:d5d3f9c23164ea16f31852f95bd5959aad1c5e854332fe00f7b3a20fcc9f635c AS runtime
 RUN useradd --create-home --uid 10001 xlemma \
+    && mkdir -p /var/lib/xlemma \
+    && chown xlemma:xlemma /var/lib/xlemma \
     && apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*

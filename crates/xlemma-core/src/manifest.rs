@@ -1,6 +1,6 @@
 use crate::{
     Amount, ArtifactId, ClaimId, FormalStatus, IdError, LemmaId, NoveltyDecision, PolicyId,
-    ProofId, ReceiptId, ResearcherId, TheoryId,
+    ProofId, ReceiptId, ResearcherId, TheoryId, XLMP_VERSION,
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -75,6 +75,98 @@ pub struct ArtifactManifest {
     pub dependency_lock_hash: String,
     pub build_image_digest: Option<String>,
     pub created_at: DateTime<Utc>,
+}
+
+#[derive(Serialize)]
+struct ArtifactIdentityMaterial<'a> {
+    protocol_version: &'a str,
+    entries: &'a [ArtifactEntry],
+    root: &'a str,
+    lean_toolchain: &'a str,
+    dependency_lock_hash: &'a str,
+    build_image_digest: &'a Option<String>,
+}
+
+impl ArtifactManifest {
+    pub fn expected_root(&self) -> String {
+        let mut hasher = blake3::Hasher::new();
+        hasher.update(b"xlemma-artifact-root-v1\0");
+        for entry in &self.entries {
+            hasher.update(entry.path.as_bytes());
+            hasher.update(b"\0");
+            hasher.update(entry.media_type.as_bytes());
+            hasher.update(b"\0");
+            hasher.update(entry.content_hash.as_bytes());
+            hasher.update(b"\0");
+            hasher.update(&entry.byte_length.to_le_bytes());
+            hasher.update(&[u8::from(entry.encrypted)]);
+        }
+        format!("blake3:{}", hasher.finalize().to_hex())
+    }
+
+    pub fn validate_for_identity(&self) -> Result<(), IdError> {
+        if self.protocol_version != XLMP_VERSION {
+            return Err(IdError::InvalidArtifactManifest("protocol version"));
+        }
+        if self.entries.is_empty() {
+            return Err(IdError::InvalidArtifactManifest("empty entry set"));
+        }
+        if !self
+            .entries
+            .windows(2)
+            .all(|pair| pair[0].path < pair[1].path)
+        {
+            return Err(IdError::InvalidArtifactManifest(
+                "entries are not strictly path-sorted",
+            ));
+        }
+        for entry in &self.entries {
+            if !is_safe_canonical_artifact_path(&entry.path)
+                || entry.media_type.trim().is_empty()
+                || entry.content_hash.trim().is_empty()
+            {
+                return Err(IdError::InvalidArtifactManifest("invalid entry"));
+            }
+        }
+        if self.lean_toolchain.trim().is_empty()
+            || self.dependency_lock_hash.trim().is_empty()
+            || self.root != self.expected_root()
+        {
+            return Err(IdError::InvalidArtifactManifest(
+                "environment or artifact root mismatch",
+            ));
+        }
+        Ok(())
+    }
+
+    /// Derive artifact identity from reproducibility-critical content. Source
+    /// labels and creation time remain provenance metadata and cannot change
+    /// the identity of an otherwise identical bundle.
+    pub fn derive_artifact_id(&self) -> Result<ArtifactId, IdError> {
+        self.validate_for_identity()?;
+        ArtifactId::derive(&ArtifactIdentityMaterial {
+            protocol_version: &self.protocol_version,
+            entries: &self.entries,
+            root: &self.root,
+            lean_toolchain: &self.lean_toolchain,
+            dependency_lock_hash: &self.dependency_lock_hash,
+            build_image_digest: &self.build_image_digest,
+        })
+    }
+}
+
+fn is_safe_canonical_artifact_path(path: &str) -> bool {
+    !path.is_empty()
+        && !path.starts_with('/')
+        && !path.contains('\\')
+        && !path.contains('\0')
+        && !path
+            .split('/')
+            .any(|component| component.is_empty() || component == "." || component == "..")
+        && !path
+            .split('/')
+            .next()
+            .is_some_and(|component| component.ends_with(':'))
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

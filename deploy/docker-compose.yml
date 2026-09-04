@@ -8,12 +8,15 @@ services:
       XLEMMA_API_AUTH_TOKEN: ${XLEMMA_API_AUTH_TOKEN:?set a random API bearer token of at least 32 characters}
       XLEMMA_TRUSTED_SIGNERS: ${XLEMMA_TRUSTED_SIGNERS:?set comma-separated ed25519 signer identifiers}
       XLEMMA_TRUSTED_NODE_SIGNERS: ${XLEMMA_TRUSTED_NODE_SIGNERS:?set a JSON map from NodeID to Ed25519 signer}
+      XLEMMA_EVENT_LOG_PATH: /var/lib/xlemma/api-events.jsonl
       RUST_LOG: info,xlemma_api=debug
     ports:
       - "127.0.0.1:8080:8080"
     read_only: true
     tmpfs:
       - /tmp:size=256m,noexec,nosuid,nodev
+    volumes:
+      - api-event-data:/var/lib/xlemma
     security_opt:
       - no-new-privileges:true
     cap_drop: [ALL]
@@ -44,5 +47,6 @@ services:
       - nats-data:/data
 
 volumes:
+  api-event-data:
   postgres-data:
   nats-data:

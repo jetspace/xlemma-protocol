@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/axiom-profile.schema.json",
+  "title": "AxiomProfile",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "profile_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "protocol_version": { "const": "XLMP/1" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "permitted_axioms": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 512 },
+      "uniqueItems": true
+    },
+    "explicitly_forbidden_axioms": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 512 },
+      "uniqueItems": true
+    },
+    "allow_unlisted_axioms": { "const": false },
+    "allow_sorry": { "const": false },
+    "allow_unsafe_declarations": { "const": false },
+    "allow_native_decide": { "const": false },
+    "supersedes": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" }
+      ]
+    }
+  },
+  "required": [
+    "profile_id",
+    "protocol_version",
+    "name",
+    "permitted_axioms",
+    "explicitly_forbidden_axioms",
+    "allow_unlisted_axioms",
+    "allow_sorry",
+    "allow_unsafe_declarations",
+    "allow_native_decide",
+    "supersedes"
+  ]
+}

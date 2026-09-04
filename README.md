@@ -570,7 +570,7 @@ token-weighted research governance are outside the core launch.
 
 ```text
 crates/
-  xlemma-core/           IDs, credentials, research objects, node-market records, receipts and state types
+  xlemma-core/           IDs, trust policies, credentials, research objects, node-market records, receipts and state types
   xlemma-xlmp/           XLMP/1 envelopes, messages, lifecycle and adapter traits
   xlemma-crypto/         domain-separated envelopes, signatures and replay protection
   xlemma-consensus/      PoIR, auditable sortition, quorums, commit-reveal and novelty aggregation
@@ -590,6 +590,7 @@ latex/                   xlemma.sty and example document
 schemas/                 JSON Schema definitions for protocol objects
 spec/                    normative protocol specifications
 docs/                    integrated design, diagrams, economics, governance, operations, testing and threats
+reports/                 machine-readable conformance and simulation evidence
 openapi/                  REST API contract
 config/                   default policy configuration
 examples/no-arbitrage/    end-to-end illustrative lemma package
@@ -602,16 +603,18 @@ scripts/                  validation, simulation and archiving tools
 
 1. Read `spec/018-xlmp-wire-protocol.md` for the canonical protocol and adapter boundary.
 2. Read `spec/020-identity-credentials.md` for verified-participant, operator, node, privacy, and revocation rules.
-3. Read `docs/FULL_DESIGN.md` for the complete integrated architecture.
-4. Read `docs/ARCHITECTURE_DIAGRAMS.md` for system, trust-plane, lifecycle, economic, and deployment diagrams.
-5. Read `docs/TRACEABILITY_MATRIX.md` to locate every requested concept.
-6. Read `docs/RESEARCHER_USER_JOURNEYS.md` for researcher, supporter, node, bounty, reuse, and correction workflows.
-7. Read `spec/000-overview.md` and `spec/003-poir-consensus.md` before modifying consensus.
-8. Review `docs/THREAT_MODEL.md`, `docs/GOVERNANCE_CONSTITUTION.md`, and `docs/LEGAL_BOUNDARIES.md` before deployment.
-9. Use `docs/OPERATOR_RUNBOOK.md`, `docs/TESTING_STRATEGY.md`, and `docs/PRODUCTION_CHECKLIST.md` as implementation gates.
-10. Run `python3 scripts/validate_repo.py` to validate schemas, OpenAPI references, invariants, the source manifest, and repository completeness.
-11. Verify every source digest with `sha256sum -c MANIFEST.sha256`.
-12. Read `docs/VALIDATION_REPORT.md` for checks executed in this source snapshot and explicit limitations.
+3. Read `spec/023-trust-policy-registry.md` for fail-closed axiom, checker-family, toolchain, and dependency-lock policy.
+4. Read `docs/FULL_DESIGN.md` for the complete integrated architecture.
+5. Read `docs/ARCHITECTURE_DIAGRAMS.md` for system, trust-plane, lifecycle, economic, and deployment diagrams.
+6. Read `docs/TRACEABILITY_MATRIX.md` to locate every requested concept.
+7. Read `docs/RESEARCHER_USER_JOURNEYS.md` for researcher, supporter, node, bounty, reuse, and correction workflows.
+8. Read `spec/000-overview.md` and `spec/003-poir-consensus.md` before modifying consensus.
+9. Review `docs/THREAT_MODEL.md`, `docs/GOVERNANCE_CONSTITUTION.md`, and `docs/LEGAL_BOUNDARIES.md` before deployment.
+10. Use `docs/OPERATOR_RUNBOOK.md`, `docs/TESTING_STRATEGY.md`, and `docs/PRODUCTION_CHECKLIST.md` as implementation gates.
+11. Run `python3 scripts/validate_repo.py` to validate schemas, OpenAPI references, invariants, the source manifest, and repository completeness.
+12. Verify every source digest with `sha256sum -c MANIFEST.sha256`.
+13. Read `docs/VALIDATION_REPORT.md` for checks executed in this source snapshot and explicit limitations.
+14. Read `docs/USE_CASE_SIMULATION_REPORT.md` for executable coverage of all eleven documented participant journeys.
 
 > **Dependency-lock note:** `Cargo.lock` is committed for reproducible reference builds. Contract dependency locks still require review before a production release.
 
@@ -621,6 +624,7 @@ scripts/                  validation, simulation and archiving tools
 cp .env.example .env
 python3 scripts/validate_repo.py
 python3 scripts/simulate_economics.py
+python3 scripts/simulate_use_cases.py
 sha256sum -c MANIFEST.sha256
 
 # Requires Rust 1.82+
@@ -640,17 +644,41 @@ cargo run -p xlemma-cli -- verify-portability \
 cargo run -p xlemma-cli -- verify-economic-compliance \
   examples/no-arbitrage/economic-constitution.json \
   examples/no-arbitrage/economic-compliance-certificate.json
+cargo run -p xlemma-cli -- verify-trust \
+  examples/no-arbitrage/trust-policy-registry.json \
+  examples/no-arbitrage/theory.json \
+  examples/no-arbitrage/proof.json \
+  examples/no-arbitrage/proof-trust-evidence.json
+cargo run -p xlemma-cli -- pack \
+  examples/deterministic-bundle \
+  examples/deterministic-bundle/inputs.json \
+  --lean-toolchain leanprover/lean4:v4.33.1 \
+  --dependency-lock-hash blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+  --source-commit vector-1 \
+  --build-image-digest sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb \
+  --created-at 2026-09-04T12:00:00Z
 ```
+
+`xlemma-xlmp::encode_xlmp_frame` and `decode_xlmp_frame` provide the canonical
+one-envelope binary framing used by non-HTTP stream adapters. The frame is a
+four-byte big-endian length followed by RFC 8785 JSON; decoding preserves the
+same MessageID as HTTP ingress and rejects trailing, truncated, oversized, or
+non-canonical payloads.
 
 Before starting the API, replace every security placeholder in `.env`.
 `XLEMMA_API_AUTH_TOKEN` must contain at least 32 random bytes;
 `XLEMMA_TRUSTED_SIGNERS` authorizes baseline `ed25519:<base64url-public-key>`
 identities, and `XLEMMA_TRUSTED_NODE_SIGNERS` is the JSON NodeID-to-signer map.
+`XLEMMA_EVENT_LOG_PATH` must identify persistent local storage for the
+single-writer, hash-chained API event journal. Every accepted XLMP message and
+verification-job mutation is fsynced before acknowledgement, and startup fails
+closed on a broken hash chain, duplicate record, or invalid job update.
 Only `/health` is unauthenticated. Observation submission requires a signed
 XLMP commit, a cryptographically signed reveal, and an exact match to the job's
 committed checker roster. Distinct NodeIDs must use distinct trusted signing
 keys, and authenticated API inputs reject unknown or non-canonical XLMP fields.
-The reference state is in-memory and is not HA-safe.
+The journal provides durable restart recovery, but it is not a replicated HA
+database; run one writer per journal and include it in encrypted backups.
 
 Lean and Solidity toolchains are optional for the structural validator and required for their respective modules.
 

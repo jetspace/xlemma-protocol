@@ -14,6 +14,8 @@ pub enum IdError {
     InvalidDigest,
     #[error("canonical identity component {0} must not be empty")]
     EmptyCanonicalComponent(&'static str),
+    #[error("artifact manifest is not canonical: {0}")]
+    InvalidArtifactManifest(&'static str),
     #[error(transparent)]
     Canonicalization(#[from] CanonicalizationError),
 }

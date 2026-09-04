@@ -1,0 +1,600 @@
+{
+  "protocol_version": "XLMP/1",
+  "report_version": "xlemma-use-case-simulation-v2",
+  "generated_at": "2026-09-04T20:00:00Z",
+  "summary": {
+    "scenario_count": 11,
+    "passed_scenarios": 11,
+    "failed_scenarios": 0,
+    "gate_count": 13,
+    "passed_gates": 13,
+    "failed_gates": 0,
+    "rust_test_count": 162
+  },
+  "gates": [
+    {
+      "id": "repository_structure",
+      "title": "Repository and schema integrity",
+      "status": "pass",
+      "command": "python3 scripts/validate_repo.py --skip-simulation-report",
+      "evidence": "schemas, examples, source tree, invariants, and manifest passed",
+      "error": null
+    },
+    {
+      "id": "rust_workspace",
+      "title": "Rust workspace regression suite",
+      "status": "pass",
+      "command": "cargo test --locked --workspace --quiet",
+      "evidence": "all discovered Rust tests passed",
+      "error": null
+    },
+    {
+      "id": "durable_protocol_history",
+      "title": "Durable XLMP history and restart recovery",
+      "status": "pass",
+      "command": "cargo test --locked -p xlemma-api tests::accepted_xlmp_message_survives_api_restart -- --exact",
+      "evidence": "signed XLMP ingress was fsynced, reopened, hash-chain verified, and retrieved after restart",
+      "error": null
+    },
+    {
+      "id": "binary_transport_identity",
+      "title": "Canonical non-HTTP XLMP framing",
+      "status": "pass",
+      "command": "cargo test --locked -p xlemma-xlmp framing::tests::binary_transport_round_trip_preserves_message_identity -- --exact",
+      "evidence": "the published HTTP envelope survived canonical binary framing with the identical MessageID",
+      "error": null
+    },
+    {
+      "id": "trust_policy",
+      "title": "Trust-policy and axiom gate",
+      "status": "pass",
+      "command": "cargo run --quiet -p xlemma-cli -- verify-trust examples/no-arbitrage/trust-policy-registry.json examples/no-arbitrage/theory.json examples/no-arbitrage/proof.json examples/no-arbitrage/proof-trust-evidence.json",
+      "evidence": "content-derived policy and axiom profile accepted exact evidence",
+      "error": null
+    },
+    {
+      "id": "formal_poir",
+      "title": "Formal PoIR reproduction",
+      "status": "pass",
+      "command": "cargo run --quiet -p xlemma-cli -- evaluate-consensus examples/no-arbitrage/policy.json examples/no-arbitrage/observations.json",
+      "evidence": "3 independent observations: 2 Lean kernel + 1 nanoda",
+      "error": null
+    },
+    {
+      "id": "generalized_verification",
+      "title": "Computational-profile reproduction",
+      "status": "pass",
+      "command": "cargo run --quiet -p xlemma-cli -- evaluate-reproduction examples/no-arbitrage/computational-verification-profile.json examples/no-arbitrage/computational-verification-job.json examples/no-arbitrage/computational-observations.json",
+      "evidence": "computational profile reached its independent reproduction threshold",
+      "error": null
+    },
+    {
+      "id": "portable_exit",
+      "title": "Researcher portability and exit",
+      "status": "pass",
+      "command": "cargo run --quiet -p xlemma-cli -- verify-portability examples/no-arbitrage/portability-manifest.json",
+      "evidence": "portable exit manifest reconstructed across independent locations",
+      "error": null
+    },
+    {
+      "id": "economic_compliance",
+      "title": "Economic-constitution compliance",
+      "status": "pass",
+      "command": "cargo run --quiet -p xlemma-cli -- verify-economic-compliance examples/no-arbitrage/economic-constitution.json examples/no-arbitrage/economic-compliance-certificate.json",
+      "evidence": "economic compliance validated without changing research validity",
+      "error": null
+    },
+    {
+      "id": "economic_conservation",
+      "title": "Credit and revenue conservation",
+      "status": "pass",
+      "command": "python3 scripts/simulate_economics.py",
+      "evidence": "backing, settlement, refund, revenue, compounding, and impact caps conserved",
+      "error": null
+    },
+    {
+      "id": "compute_quote",
+      "title": "Calibrated compute-market quote",
+      "status": "pass",
+      "command": "cargo run --quiet -p xlemma-cli -- quote examples/no-arbitrage/compute-offers.json examples/no-arbitrage/expected-work.json examples/no-arbitrage/protocol-success-estimates.json --trusted-estimator ed25519:6kpsY-KcUgq-9VB7Ey7F-ZVHdq6-vnuSQh7qaRRG0iw --deadline 2027-09-04T20:00:00Z --quoted-at 2026-09-04T20:00:00Z",
+      "evidence": "six service offers routed using independently signed success calibration",
+      "error": null
+    },
+    {
+      "id": "compute_impact",
+      "title": "Bounded compute-impact allocation",
+      "status": "pass",
+      "command": "cargo run --quiet -p xlemma-cli -- compute-impact examples/no-arbitrage/compute-savings-evidence.json examples/no-arbitrage/compute-savings-policy.json examples/no-arbitrage/downstream-net-revenue.json examples/no-arbitrage/impact-pool-authorization.json --trusted-authorizer ed25519:_RckOFqgx1tk-3jNYC-h2ZH96_drE8WO1wLqyDXp9hg",
+      "evidence": "671000 minor units remained below revenue and authorized-pool caps",
+      "error": null
+    },
+    {
+      "id": "deterministic_bundle",
+      "title": "Deterministic artifact bundle",
+      "status": "pass",
+      "command": "cargo run --quiet -p xlemma-cli -- pack examples/deterministic-bundle examples/deterministic-bundle/inputs.json --lean-toolchain leanprover/lean4:v4.33.1 --dependency-lock-hash blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --source-commit vector-1 --build-image-digest sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb --created-at 2026-09-04T12:00:00Z",
+      "evidence": "complete bundle object matched the published deterministic vector",
+      "error": null
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "UC-01",
+      "title": "Researcher onboarding",
+      "status": "pass",
+      "protocol_path": "identity \u2192 sovereignty bundle \u2192 backed vault \u2192 policy selection",
+      "positive_outcome": "The researcher obtains portable protocol state and mints credits only against backing.",
+      "negative_invariant": "Missing sovereignty protections or insufficient backing is rejected.",
+      "gates": [
+        "repository_structure",
+        "rust_workspace",
+        "durable_protocol_history",
+        "binary_transport_identity",
+        "trust_policy",
+        "portable_exit"
+      ],
+      "required_tests": [
+        "sovereignty::tests::sovereignty_bundle_requires_every_durable_right",
+        "credit::tests::credits_remain_fully_backed_through_usage_settlement"
+      ],
+      "missing_tests": [],
+      "trace": [
+        {
+          "sequence": 1,
+          "step": "identity",
+          "status": "pass"
+        },
+        {
+          "sequence": 2,
+          "step": "sovereignty bundle",
+          "status": "pass"
+        },
+        {
+          "sequence": 3,
+          "step": "backed vault",
+          "status": "pass"
+        },
+        {
+          "sequence": 4,
+          "step": "policy selection",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "UC-02",
+      "title": "Create and verify a lemma",
+      "status": "pass",
+      "protocol_path": "CLAIM \u2192 COMMIT \u2192 FORMALIZE \u2192 PROVE \u2192 REPRODUCE \u2192 CERTIFY",
+      "positive_outcome": "Three independent observations reproduce one exact artifact under the selected trust policy.",
+      "negative_invariant": "A producer cannot self-certify, and missing or divergent evidence cannot advance.",
+      "gates": [
+        "repository_structure",
+        "rust_workspace",
+        "durable_protocol_history",
+        "binary_transport_identity",
+        "trust_policy",
+        "deterministic_bundle",
+        "formal_poir"
+      ],
+      "required_tests": [
+        "trust::tests::registered_policy_accepts_exact_fail_closed_evidence",
+        "formal::tests::gold_quorum_certifies_only_unanimous_exact_reproduction"
+      ],
+      "missing_tests": [],
+      "trace": [
+        {
+          "sequence": 1,
+          "step": "CLAIM",
+          "status": "pass"
+        },
+        {
+          "sequence": 2,
+          "step": "COMMIT",
+          "status": "pass"
+        },
+        {
+          "sequence": 3,
+          "step": "FORMALIZE",
+          "status": "pass"
+        },
+        {
+          "sequence": 4,
+          "step": "PROVE",
+          "status": "pass"
+        },
+        {
+          "sequence": 5,
+          "step": "REPRODUCE",
+          "status": "pass"
+        },
+        {
+          "sequence": 6,
+          "step": "CERTIFY",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "UC-03",
+      "title": "Pay with researcher credits",
+      "status": "pass",
+      "protocol_path": "deposit backing \u2192 mint R\u1d62 \u2192 authorize maximum \u2192 settle actual \u2192 unlock remainder",
+      "positive_outcome": "Only consumed credits burn and release an equal amount of neutral backing.",
+      "negative_invariant": "Over-authorization, replay, or under-collateralization fails without partial mutation.",
+      "gates": [
+        "repository_structure",
+        "rust_workspace",
+        "durable_protocol_history",
+        "binary_transport_identity",
+        "economic_conservation"
+      ],
+      "required_tests": [
+        "credit::tests::credits_remain_fully_backed_through_usage_settlement",
+        "credit::tests::forged_or_cloned_authorization_cannot_unlock_another_reservation"
+      ],
+      "missing_tests": [],
+      "trace": [
+        {
+          "sequence": 1,
+          "step": "deposit backing",
+          "status": "pass"
+        },
+        {
+          "sequence": 2,
+          "step": "mint R\u1d62",
+          "status": "pass"
+        },
+        {
+          "sequence": 3,
+          "step": "authorize maximum",
+          "status": "pass"
+        },
+        {
+          "sequence": 4,
+          "step": "settle actual",
+          "status": "pass"
+        },
+        {
+          "sequence": 5,
+          "step": "unlock remainder",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "UC-04",
+      "title": "Earn from a verified result",
+      "status": "pass",
+      "protocol_path": "settled external revenue \u2192 costs/refunds/reserves \u2192 bounded waterfall \u2192 cash + compounding",
+      "positive_outcome": "Net revenue is conserved and auto-compounded credits receive matching vault backing.",
+      "negative_invariant": "Token appreciation, unsettled revenue, or an unauthorized impact signal cannot fund payouts.",
+      "gates": [
+        "repository_structure",
+        "rust_workspace",
+        "durable_protocol_history",
+        "binary_transport_identity",
+        "economic_conservation",
+        "economic_compliance",
+        "compute_impact"
+      ],
+      "required_tests": [
+        "revenue::tests::revenue_is_conserved_across_waterfall_and_creator_rounding",
+        "dividend::tests::compute_signal_without_economic_authorization_cannot_pay"
+      ],
+      "missing_tests": [],
+      "trace": [
+        {
+          "sequence": 1,
+          "step": "settled external revenue",
+          "status": "pass"
+        },
+        {
+          "sequence": 2,
+          "step": "costs/refunds/reserves",
+          "status": "pass"
+        },
+        {
+          "sequence": 3,
+          "step": "bounded waterfall",
+          "status": "pass"
+        },
+        {
+          "sequence": 4,
+          "step": "cash + compounding",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "UC-05",
+      "title": "Support a decentralized researcher",
+      "status": "pass",
+      "protocol_path": "grant / bounty / compute pre-purchase / public-goods support \u2192 typed funding receipt",
+      "positive_outcome": "Funding has an explicit rail, backing source, restrictions, and settlement evidence.",
+      "negative_invariant": "Self-issued inflation and vague passive-profit promises do not qualify as funding.",
+      "gates": [
+        "repository_structure",
+        "rust_workspace",
+        "durable_protocol_history",
+        "binary_transport_identity",
+        "economic_compliance"
+      ],
+      "required_tests": [
+        "funding::tests::protocol_fees_conserve_value_and_fund_all_infrastructure",
+        "funding::tests::inflation_without_settlement_cannot_be_funding"
+      ],
+      "missing_tests": [],
+      "trace": [
+        {
+          "sequence": 1,
+          "step": "grant / bounty / compute pre-purchase / public-goods support",
+          "status": "pass"
+        },
+        {
+          "sequence": 2,
+          "step": "typed funding receipt",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "UC-06",
+      "title": "Operate a prover node",
+      "status": "pass",
+      "protocol_path": "advertise capacity \u2192 calibrated quote \u2192 candidate generation \u2192 compute receipt",
+      "positive_outcome": "A provider-neutral prover can earn for bounded work and return a candidate artifact.",
+      "negative_invariant": "The proof producer is excluded from independent reproduction of its own candidate.",
+      "gates": [
+        "repository_structure",
+        "rust_workspace",
+        "durable_protocol_history",
+        "binary_transport_identity",
+        "compute_quote"
+      ],
+      "required_tests": [
+        "protocol::tests::producer_cannot_count_as_an_independent_reproducer",
+        "tests::endpoint_must_be_https_and_explicitly_allowlisted"
+      ],
+      "missing_tests": [],
+      "trace": [
+        {
+          "sequence": 1,
+          "step": "advertise capacity",
+          "status": "pass"
+        },
+        {
+          "sequence": 2,
+          "step": "calibrated quote",
+          "status": "pass"
+        },
+        {
+          "sequence": 3,
+          "step": "candidate generation",
+          "status": "pass"
+        },
+        {
+          "sequence": 4,
+          "step": "compute receipt",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "UC-07",
+      "title": "Operate a checker node",
+      "status": "pass",
+      "protocol_path": "credential chain \u2192 advertisement \u2192 sortition \u2192 exact execution \u2192 commit/reveal \u2192 work payment",
+      "positive_outcome": "Distinct verified users, operators, clusters, providers, regions, and checker families reproduce the job.",
+      "negative_invariant": "More machines under common control do not create more independence or truth weight.",
+      "gates": [
+        "repository_structure",
+        "rust_workspace",
+        "durable_protocol_history",
+        "binary_transport_identity",
+        "formal_poir"
+      ],
+      "required_tests": [
+        "committee::tests::selection_is_reproducible_and_operator_independent",
+        "formal::tests::multiple_nodes_under_one_verified_user_are_not_independent_observations"
+      ],
+      "missing_tests": [],
+      "trace": [
+        {
+          "sequence": 1,
+          "step": "credential chain",
+          "status": "pass"
+        },
+        {
+          "sequence": 2,
+          "step": "advertisement",
+          "status": "pass"
+        },
+        {
+          "sequence": 3,
+          "step": "sortition",
+          "status": "pass"
+        },
+        {
+          "sequence": 4,
+          "step": "exact execution",
+          "status": "pass"
+        },
+        {
+          "sequence": 5,
+          "step": "commit/reveal",
+          "status": "pass"
+        },
+        {
+          "sequence": 6,
+          "step": "work payment",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "UC-08",
+      "title": "Challenge a certificate",
+      "status": "pass",
+      "protocol_path": "challenge \u2192 counterevidence \u2192 expanded reproduction \u2192 dismiss / quarantine / reject",
+      "positive_outcome": "A valid challenge can move the object into fail-closed quarantine and later revalidation.",
+      "negative_invariant": "Checker divergence is never resolved by a 2-to-1 majority or by slashing honest dissent.",
+      "gates": [
+        "repository_structure",
+        "rust_workspace",
+        "durable_protocol_history",
+        "binary_transport_identity"
+      ],
+      "required_tests": [
+        "formal::tests::checker_disagreement_is_divergent_not_majority_vote",
+        "tests::divergent_reproduction_can_fail_closed",
+        "capture::tests::honest_divergence_is_not_a_slashable_offense"
+      ],
+      "missing_tests": [],
+      "trace": [
+        {
+          "sequence": 1,
+          "step": "challenge",
+          "status": "pass"
+        },
+        {
+          "sequence": 2,
+          "step": "counterevidence",
+          "status": "pass"
+        },
+        {
+          "sequence": 3,
+          "step": "expanded reproduction",
+          "status": "pass"
+        },
+        {
+          "sequence": 4,
+          "step": "dismiss / quarantine / reject",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "UC-09",
+      "title": "Reuse an upstream lemma",
+      "status": "pass",
+      "protocol_path": "final proof dependency \u2192 separate economic edge \u2192 settled revenue \u2192 bounded nonrecursive pool",
+      "positive_outcome": "Eligible upstream contributors can receive a capped allocation from an authorized pool.",
+      "negative_invariant": "Formal dependency alone creates no debt; stuffing, cycles, dust, and recursive charging are blocked.",
+      "gates": [
+        "repository_structure",
+        "rust_workspace",
+        "durable_protocol_history",
+        "binary_transport_identity",
+        "compute_impact"
+      ],
+      "required_tests": [
+        "upstream::tests::one_pool_is_bounded_clustered_and_conserved",
+        "protocol::tests::formal_dependency_without_an_economic_edge_never_creates_payment"
+      ],
+      "missing_tests": [],
+      "trace": [
+        {
+          "sequence": 1,
+          "step": "final proof dependency",
+          "status": "pass"
+        },
+        {
+          "sequence": 2,
+          "step": "separate economic edge",
+          "status": "pass"
+        },
+        {
+          "sequence": 3,
+          "step": "settled revenue",
+          "status": "pass"
+        },
+        {
+          "sequence": 4,
+          "step": "bounded nonrecursive pool",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "UC-10",
+      "title": "Publish a negative result",
+      "status": "pass",
+      "protocol_path": "failed or inconclusive work \u2192 attributable evidence artifact \u2192 commons/public-goods funding",
+      "positive_outcome": "Useful negative evidence remains publishable and fundable without a false validity badge.",
+      "negative_invariant": "Negative results cannot be relabeled as certified proofs or used to mint unbacked credits.",
+      "gates": [
+        "repository_structure",
+        "rust_workspace",
+        "durable_protocol_history",
+        "binary_transport_identity",
+        "generalized_verification"
+      ],
+      "required_tests": [
+        "funding::tests::negative_results_are_commons_not_market_funding"
+      ],
+      "missing_tests": [],
+      "trace": [
+        {
+          "sequence": 1,
+          "step": "failed or inconclusive work",
+          "status": "pass"
+        },
+        {
+          "sequence": 2,
+          "step": "attributable evidence artifact",
+          "status": "pass"
+        },
+        {
+          "sequence": 3,
+          "step": "commons/public-goods funding",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "UC-11",
+      "title": "Correct or supersede work",
+      "status": "pass",
+      "protocol_path": "new immutable object \u2192 AMENDS / CORRECTS / SUPERSEDES edge \u2192 revalidation",
+      "positive_outcome": "The old artifact, attribution, receipts, and correction lineage remain reconstructable.",
+      "negative_invariant": "A superseded record cannot silently return to published state or overwrite history.",
+      "gates": [
+        "repository_structure",
+        "rust_workspace",
+        "durable_protocol_history",
+        "binary_transport_identity",
+        "portable_exit"
+      ],
+      "required_tests": [
+        "state::tests::supersession_is_append_only_and_cannot_restore_old_publication_state",
+        "marketplace::tests::order_book_preserves_superseded_advertisements"
+      ],
+      "missing_tests": [],
+      "trace": [
+        {
+          "sequence": 1,
+          "step": "new immutable object",
+          "status": "pass"
+        },
+        {
+          "sequence": 2,
+          "step": "AMENDS / CORRECTS / SUPERSEDES edge",
+          "status": "pass"
+        },
+        {
+          "sequence": 3,
+          "step": "revalidation",
+          "status": "pass"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Lean/Lake, official kernel replay, nanoda replay, and the hostile proof corpus were not executed by this harness.",
+    "Formal consensus simulation consumes structurally valid content-derived observations; production ingress must additionally authenticate node signatures, credentials, committee assignments, and non-revocation proofs.",
+    "ASTRA/model calls, x402 or stablecoin settlement, chains, storage providers, credential issuers, and randomness beacons are represented by deterministic adapters and fixtures rather than live external services.",
+    "No independent implementation, clean-room bundle reproduction, cryptographic audit, smart-contract audit, sandbox audit, economic audit, or legal review is claimed.",
+    "Passing scenarios demonstrate internal consistency of the checked snapshot, not theorem novelty, informal-statement alignment, commercial value, or production safety."
+  ]
+}

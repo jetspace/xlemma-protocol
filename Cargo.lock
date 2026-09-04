@@ -2060,8 +2060,10 @@ dependencies = [
  "base64",
  "chrono",
  "ed25519-dalek",
+ "hex",
  "serde",
  "serde_json",
+ "thiserror",
  "tokio",
  "tower",
  "tower-http",
@@ -2207,6 +2209,7 @@ dependencies = [
  "chrono",
  "libc",
  "serde",
+ "serde_json",
  "thiserror",
  "xlemma-core",
 ]

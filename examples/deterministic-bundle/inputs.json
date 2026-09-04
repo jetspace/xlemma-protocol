@@ -1,0 +1,12 @@
+[
+  {
+    "relative_path": "statement.txt",
+    "media_type": "text/plain",
+    "encrypted": false
+  },
+  {
+    "relative_path": "proof.lean",
+    "media_type": "text/x-lean",
+    "encrypted": false
+  }
+]

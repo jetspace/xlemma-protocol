@@ -16,6 +16,7 @@ pub mod protocol;
 pub mod receipt;
 pub mod sovereignty;
 pub mod state;
+pub mod trust;
 
 pub use canonical::{canonical_json_bytes, canonical_json_hash, CanonicalizationError};
 pub use capture::*;
@@ -29,6 +30,7 @@ pub use protocol::*;
 pub use receipt::*;
 pub use sovereignty::*;
 pub use state::*;
+pub use trust::*;
 
 /// Canonical name and version of the xLemma wire protocol.
 pub const XLMP_PROTOCOL: &str = "XLMP";

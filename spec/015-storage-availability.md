@@ -2,7 +2,12 @@
 
 IPFS, content-addressed object stores, archival nodes, and local stores are implementations of the XLMP `StorageAdapter`. Storage transport does not define research identity, validity, provenance, or rights.
 
-Artifact manifests MUST contain sorted safe relative paths, media types, byte hashes, lengths, and encryption flags. Bundle builders MUST reject absolute paths, parent traversal, symlinks, and non-regular files unless a future policy explicitly defines them.
+Artifact manifests MUST contain sorted safe relative paths, media types, byte hashes, lengths, and encryption flags. The artifact root binds every one of those fields. Bundle builders MUST reject absolute or platform-ambiguous paths, parent traversal, duplicate paths, symlinks, non-regular files, root mismatches, and bounded-resource violations unless a future policy explicitly defines them.
+
+Builders MUST accept an explicit creation timestamp for deterministic
+conformance runs. Given identical bytes, metadata, build parameters, and that
+timestamp, implementations MUST emit the same manifest and ArtifactID. The
+XLMP/1 test vector is published in `examples/deterministic-bundle/`.
 
 Availability receipts MUST bind artifact, storage node, operator cluster, provider, region, custody challenge root, retention horizon, time, and signature.
 

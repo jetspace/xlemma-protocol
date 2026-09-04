@@ -9,8 +9,13 @@ Ed25519 XLMP profile against an explicit signer allowlist, binds observation
 signers one-to-one to NodeIDs and committed committee identities, rejects
 unknown or non-canonical typed XLMP fields, and requires a prior signed commit.
 Committee reveals must match the exact stored job roster and server-side trust
-policy. Production deployments must replace its in-memory state with a durable
-transactional nonce/message/job store and implement key rotation.
+policy. The reference API persists complete mutations in a versioned,
+domain-separated BLAKE3 hash chain, fsyncs each entry before acknowledgement,
+and reconstructs messages, commitments, and job state on restart. Replay fails
+closed on a changed record, gap, duplicate, missing predecessor, or invalid job
+update. The reference journal is intentionally single-writer; production HA
+deployments must replicate or migrate it to a transactional log/outbox without
+weakening exact replay, and must implement key rotation and backup restoration.
 
 Payment offers MUST be derived from authorized server-side job and quote state.
 The reference HTTP server does not expose a payment-offer constructor; the

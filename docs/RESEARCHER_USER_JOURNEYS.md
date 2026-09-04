@@ -191,3 +191,12 @@ Historical objects are never silently edited. The researcher:
 4. updates presentation and public status;
 5. pauses or reroutes new revenue if a material issue affects validity or rights;
 6. retains original attribution and the complete correction history.
+
+## Executable simulation
+
+All eleven journeys are mapped to executable CLI gates and named regression
+tests by `scripts/simulate_use_cases.py`. The latest checked result is in
+`docs/USE_CASE_SIMULATION_REPORT.md`, with structured evidence in
+`reports/use-case-simulation.json`. The harness covers reference behavior and
+fail-closed invariants; it does not substitute fixtures for live services or
+claim production assurance.

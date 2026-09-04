@@ -10,21 +10,22 @@ use xlemma_consensus::{
     eligible_set_root, evaluate_formal_consensus, randomness_commitment, FormalConsensusPolicy,
 };
 use xlemma_core::{
-    evaluate_reproduction, observation_commitment, Amount, ArtifactId, CaptureResistanceDashboard,
-    ClaimManifest, ConstitutionalCommitment, CredentialRevocation, EconomicComplianceCertificate,
-    EconomicConstitution, EligibleNode, ForkExitPlan, GovernanceProposal,
-    IndependentCredentialAttestation, NodeCredential, NodeCredentialChain,
+    evaluate_reproduction, observation_commitment, Amount, AxiomProfile,
+    CaptureResistanceDashboard, ClaimManifest, ConstitutionalCommitment, CredentialRevocation,
+    EconomicComplianceCertificate, EconomicConstitution, EligibleNode, ForkExitPlan,
+    GovernanceProposal, IndependentCredentialAttestation, NodeCredential, NodeCredentialChain,
     NodeServiceAdvertisement, NodeWorkReceipt, ObjectiveMisconductRecord, ObservationReceipt,
-    OperatorCredential, PolicyId, ProofManifest, ReproductionObservation,
+    OperatorCredential, PolicyId, ProofManifest, ProofTrustEvidence, ReproductionObservation,
     ResearchComputeCooperative, ResearchVerificationCertificate, ResearcherPortabilityManifest,
-    ResearcherResidualRight, ResearcherSovereigntyBundle, TheoryId, UserCredential,
-    VerificationJob, VerificationProfile,
+    ResearcherResidualRight, ResearcherSovereigntyBundle, TheoryId, TrustPolicy,
+    TrustPolicyRegistry, TrustPolicyRegistrySnapshot, UserCredential, VerificationJob,
+    VerificationProfile,
 };
 use xlemma_economics::{
     compute_impact_pool_allocation, ComputeSavingsEvidence, ComputeSavingsPolicy, FundingReceipt,
     ImpactPoolAuthorization,
 };
-use xlemma_storage::{build_bundle_manifest, BundleInput};
+use xlemma_storage::{build_bundle_manifest_at, BundleInput};
 use xlemma_xlmp::XlmpEnvelope;
 
 #[derive(Parser)]
@@ -60,8 +61,19 @@ enum Command {
         constitution: PathBuf,
         certificate: PathBuf,
     },
+    /// Evaluate exact proof/checker evidence against a content-derived trust registry.
+    VerifyTrust {
+        registry: PathBuf,
+        theory: PathBuf,
+        proof: PathBuf,
+        evidence: PathBuf,
+    },
+    /// Derive the canonical root of a sorted trust-policy registry snapshot.
+    TrustRegistryRoot { registry: PathBuf },
     /// Derive an observation root, commit-reveal binding, and ReceiptID for a draft receipt.
     PrepareReproductionObservation { observation: PathBuf },
+    /// Prepare content-derived roots, commitments, and ReceiptIDs for formal observation drafts.
+    PrepareFormalObservations { observations: PathBuf },
     /// Commit a public randomness reveal for a future sortition request.
     CommitteeRandomness {
         #[arg(long)]
@@ -83,6 +95,9 @@ enum Command {
         trusted_estimator: String,
         #[arg(long)]
         deadline: DateTime<Utc>,
+        /// Explicit quote time for deterministic simulation and conformance vectors.
+        #[arg(long)]
+        quoted_at: Option<DateTime<Utc>>,
         #[arg(long, default_value_t = 500)]
         risk_premium_bps: u16,
     },
@@ -108,6 +123,9 @@ enum Command {
         source_commit: Option<String>,
         #[arg(long)]
         build_image_digest: Option<String>,
+        /// Explicit RFC 3339 timestamp for byte-for-byte reproducible output.
+        #[arg(long)]
+        created_at: Option<DateTime<Utc>>,
     },
 }
 
@@ -137,6 +155,8 @@ enum IdKind {
     ReproductionObservation,
     ResearchCertificate,
     EconomicComplianceCertificate,
+    AxiomProfile,
+    TrustPolicy,
 }
 
 fn main() -> Result<()> {
@@ -152,7 +172,9 @@ fn main() -> Result<()> {
                 IdKind::Proof => serde_json::from_value::<ProofManifest>(value)?
                     .derive_proof_id()?
                     .to_string(),
-                IdKind::Artifact => ArtifactId::derive(&value)?.to_string(),
+                IdKind::Artifact => serde_json::from_value::<xlemma_core::ArtifactManifest>(value)?
+                    .derive_artifact_id()?
+                    .to_string(),
                 IdKind::Advertisement => serde_json::from_value::<NodeServiceAdvertisement>(value)?
                     .derive_advertisement_id()?
                     .to_string(),
@@ -235,6 +257,12 @@ fn main() -> Result<()> {
                         .derive_certificate_id()?
                         .to_string()
                 }
+                IdKind::AxiomProfile => serde_json::from_value::<AxiomProfile>(value)?
+                    .derive_profile_id()?
+                    .to_string(),
+                IdKind::TrustPolicy => serde_json::from_value::<TrustPolicy>(value)?
+                    .derive_policy_id()?
+                    .to_string(),
             };
             println!("{id}");
         }
@@ -270,6 +298,27 @@ fn main() -> Result<()> {
             certificate.validate_against(&constitution)?;
             println!("{}", certificate.certificate_id);
         }
+        Command::VerifyTrust {
+            registry,
+            theory,
+            proof,
+            evidence,
+        } => {
+            let snapshot: TrustPolicyRegistrySnapshot = read_json(registry)?;
+            let registry = TrustPolicyRegistry::from_snapshot(snapshot)?;
+            let theory: xlemma_core::TheoryManifest = read_json(theory)?;
+            let proof: ProofManifest = read_json(proof)?;
+            let evidence: ProofTrustEvidence = read_json(evidence)?;
+            let evaluation = registry.evaluate(&theory, &proof, &evidence)?;
+            print_json(&evaluation)?;
+            if !evaluation.accepted {
+                anyhow::bail!("proof evidence does not satisfy the selected trust policy");
+            }
+        }
+        Command::TrustRegistryRoot { registry } => {
+            let snapshot: TrustPolicyRegistrySnapshot = read_json(registry)?;
+            println!("{}", snapshot.expected_registry_root()?);
+        }
         Command::PrepareReproductionObservation { observation } => {
             let mut observation: ReproductionObservation = read_json(observation)?;
             observation.observation_root = observation.expected_observation_root()?;
@@ -281,6 +330,20 @@ fn main() -> Result<()> {
             );
             observation.receipt_id = observation.derive_receipt_id()?;
             print_json(&observation)?;
+        }
+        Command::PrepareFormalObservations { observations } => {
+            let mut observations: Vec<ObservationReceipt> = read_json(observations)?;
+            for observation in &mut observations {
+                observation.observation_root = observation.expected_observation_root()?;
+                observation.commitment = observation_commitment(
+                    &observation.job_id,
+                    observation.verdict,
+                    &observation.observation_root,
+                    observation.reveal_salt.as_bytes(),
+                );
+                observation.receipt_id = observation.expected_receipt_id()?;
+            }
+            print_json(&observations)?;
         }
         Command::CommitteeRandomness { revealed_seed } => {
             println!("{}", randomness_commitment(revealed_seed.as_bytes()));
@@ -303,13 +366,14 @@ fn main() -> Result<()> {
             success_estimates,
             trusted_estimator,
             deadline,
+            quoted_at,
             risk_premium_bps,
         } => {
             let offers: Vec<ServiceOffer> = read_json(offers)?;
             let work: ExpectedWork = read_json(work)?;
             let estimates: ProtocolSuccessEstimates = read_json(success_estimates)?;
             let quote = quote_quality_adjusted_certification_cost(
-                Utc::now(),
+                quoted_at.unwrap_or_else(Utc::now),
                 deadline,
                 &work,
                 &offers,
@@ -345,15 +409,17 @@ fn main() -> Result<()> {
             dependency_lock_hash,
             source_commit,
             build_image_digest,
+            created_at,
         } => {
             let inputs: Vec<BundleInput> = read_json(inputs)?;
-            let bundle = build_bundle_manifest(
+            let bundle = build_bundle_manifest_at(
                 &root,
                 &inputs,
                 lean_toolchain,
                 dependency_lock_hash,
                 source_commit,
                 build_image_digest,
+                created_at.unwrap_or_else(Utc::now),
             )?;
             print_json(&bundle)?;
         }

@@ -11,6 +11,20 @@
 7. Replay using official Lean checking and at least one independent checker family.
 8. Bind all outputs into signed receipts.
 
+The reference trust gate can be reproduced with:
+
+```bash
+cargo run -p xlemma-cli -- verify-trust \
+  examples/no-arbitrage/trust-policy-registry.json \
+  examples/no-arbitrage/theory.json \
+  examples/no-arbitrage/proof.json \
+  examples/no-arbitrage/proof-trust-evidence.json
+```
+
+This checks content integrity and policy satisfaction. Production acceptance
+also requires authenticated publication of the selected registry root and
+cryptographically verified checker receipts.
+
 ## Identity warning
 
 Do not hash source text as a claim identity. Notation, whitespace, implicit arguments, binder names, and imported syntax can differ while elaborating to the same expression. The production exporter must canonicalize the elaborated expression under `TheoryID`.

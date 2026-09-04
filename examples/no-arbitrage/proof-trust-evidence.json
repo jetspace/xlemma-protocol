@@ -1,0 +1,13 @@
+{
+  "observed_axioms": [],
+  "used_sorry": false,
+  "used_unsafe_declarations": false,
+  "used_native_decide": false,
+  "checker_families": [
+    "lean_kernel",
+    "nanoda"
+  ],
+  "exact_challenge_matched": true,
+  "toolchain_pinned": true,
+  "dependency_lock_verified": true
+}

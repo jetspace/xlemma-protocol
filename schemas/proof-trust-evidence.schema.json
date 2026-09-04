@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/proof-trust-evidence.schema.json",
+  "title": "ProofTrustEvidence",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "observed_axioms": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 512 },
+      "uniqueItems": true
+    },
+    "used_sorry": { "type": "boolean" },
+    "used_unsafe_declarations": { "type": "boolean" },
+    "used_native_decide": { "type": "boolean" },
+    "checker_families": {
+      "type": "array",
+      "items": { "enum": ["lean_kernel", "nanoda", "other_independent"] },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "exact_challenge_matched": { "type": "boolean" },
+    "toolchain_pinned": { "type": "boolean" },
+    "dependency_lock_verified": { "type": "boolean" }
+  },
+  "required": [
+    "observed_axioms",
+    "used_sorry",
+    "used_unsafe_declarations",
+    "used_native_decide",
+    "checker_families",
+    "exact_challenge_matched",
+    "toolchain_pinned",
+    "dependency_lock_verified"
+  ]
+}

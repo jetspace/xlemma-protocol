@@ -118,4 +118,18 @@ mod tests {
         )
         .is_ok());
     }
+
+    #[test]
+    fn supersession_is_append_only_and_cannot_restore_old_publication_state() {
+        assert!(ensure_lifecycle_transition(
+            ResearchLifecycleState::Publish,
+            ResearchLifecycleState::Superseded
+        )
+        .is_ok());
+        assert!(ensure_lifecycle_transition(
+            ResearchLifecycleState::Superseded,
+            ResearchLifecycleState::Publish
+        )
+        .is_err());
+    }
 }

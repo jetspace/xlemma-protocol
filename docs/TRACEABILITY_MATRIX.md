@@ -27,10 +27,12 @@ Every major concept requested or developed in the design is mapped to its primar
 | Bond-to-certificate exposure cap | same | `NodeExposureLimit::is_covered` |
 | Objective misconduct only | same | `ObjectiveMisconductKind`, `ObjectiveMisconductRecord`; no divergence offense |
 | Protocol lifecycle | `spec/018-xlmp-wire-protocol.md`, `spec/014-api-protocol.md` | `ResearchLifecycleState`, `ensure_lifecycle_transition` |
+| Durable API protocol history | `spec/014-api-protocol.md`, `docs/THREAT_MODEL.md` | `xlemma-api::event_store`; hash-chained fsync-before-ack journal and restart replay tests |
 | Research prover neutrality | `spec/007-astra-lean.md` | `ResearchProver`; ASTRA reference adapter |
 | Formal-system neutrality | same | `VerifierAdapter`; Lean default adapter |
 | Payment neutrality | `spec/008-x402-transport.md` | `PaymentAdapter`; x402 optional adapter |
 | Transport neutrality | `spec/018-xlmp-wire-protocol.md` | `TransportAdapter`; HTTP XLMP ingress |
+| Canonical non-HTTP binary framing | same | `encode_xlmp_frame`, `decode_xlmp_frame`; exact HTTP-vector MessageID round trip |
 | Sovereignty and anti-capture wire interoperability | `spec/018-xlmp-wire-protocol.md`, `spec/022-researcher-sovereignty.md` | fifteen native XLMP message variants with integrity validation and schemas |
 | Chain/finality neutrality | `spec/017-deployment-operations.md` | `FinalityAdapter` and chain reference contracts |
 | Storage neutrality | `spec/015-storage-availability.md` | `StorageAdapter`, `xlemma-storage` |
@@ -143,6 +145,8 @@ Every major concept requested or developed in the design is mapped to its primar
 | Transferable license editions | same | token kind design |
 | Separate public profit-linked wrapper | `docs/LEGAL_BOUNDARIES.md` | intentionally not implemented |
 | Content-addressed storage | `spec/015-storage-availability.md` | `xlemma-storage` |
+| Byte-reproducible artifact bundle | `spec/001-identifiers.md`, `spec/015-storage-availability.md` | `build_bundle_manifest_at`, `examples/deterministic-bundle/expected-bundle.json` |
+| Trust-policy registry and axiom profiles | `spec/023-trust-policy-registry.md` | `xlemma-core::TrustPolicyRegistry`, four schemas, example registry and `xlemma verify-trust` |
 | Encrypted artifact delivery | `spec/016-privacy.md` | delivery-mode schema/design |
 | Signature replay protection | `docs/THREAT_MODEL.md` | `xlemma-crypto` domains/nonces, x402 identifiers, contract nonces/IDs |
 | Domain-separated signed envelopes | `docs/THREAT_MODEL.md` | `xlemma-crypto::{SignatureDomain, SignedEnvelope}` |
@@ -154,6 +158,7 @@ Every major concept requested or developed in the design is mapped to its primar
 | Future BFT / succinct verification | `ROADMAP.md` | planned, not falsely implemented |
 | Architecture and trust diagrams | `docs/ARCHITECTURE_DIAGRAMS.md` | Mermaid system, sequence, state, graph and deployment views |
 | Researcher/supporter/node workflows | `docs/RESEARCHER_USER_JOURNEYS.md` | End-to-end operational journeys |
+| All documented journey simulations | `docs/USE_CASE_SIMULATION_REPORT.md` | `scripts/simulate_use_cases.py`, schema-validated ordered traces, `reports/use-case-simulation.json`, 12 executable gates |
 | Governance limits and emergency powers | `docs/GOVERNANCE_CONSTITUTION.md` | Constitutional protocol constraints |
 | Multi-constituency constitutional activation | `docs/GOVERNANCE_CONSTITUTION.md` | `GovernanceProposal::validate_for_activation`, all-chamber approvals, seven-day timelock, public simulation |
 | Fork/exit with identity, artifacts, history, and funds | same, `spec/022-researcher-sovereignty.md` | `ForkExitPlan::validate_integrity`, proposal activation binding |

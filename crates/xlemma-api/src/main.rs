@@ -1,3 +1,5 @@
+mod event_store;
+
 use anyhow::Context;
 use axum::{
     body::Body,
@@ -35,6 +37,8 @@ use xlemma_xlmp::{
     XlmpEnvelope, XlmpMessage, XLMP_VERSION,
 };
 
+use event_store::{ApiJournalEvent, EventJournal};
+
 #[derive(Clone)]
 struct AppState {
     jobs: Arc<RwLock<BTreeMap<String, VerificationJobRecord>>>,
@@ -43,6 +47,7 @@ struct AppState {
     auth_token: Arc<str>,
     trusted_signers: Arc<BTreeSet<String>>,
     node_signers: Arc<BTreeMap<xlemma_core::NodeId, String>>,
+    event_journal: Option<Arc<EventJournal>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -56,7 +61,7 @@ struct VerificationJobRecord {
     policy_id: PolicyId,
     policy: FormalConsensusPolicy,
     committee_members: Vec<SortitionMember>,
-    maximum_budget_minor_units: u128,
+    maximum_budget_minor_units: u64,
     settlement_asset: String,
     state: VerificationState,
     observations: Vec<ObservationReceipt>,
@@ -74,7 +79,7 @@ struct CreateVerificationJob {
     artifact_root: String,
     policy: FormalConsensusPolicy,
     committee_members: Vec<SortitionMember>,
-    maximum_budget_minor_units: u128,
+    maximum_budget_minor_units: u64,
     settlement_asset: String,
 }
 
@@ -121,6 +126,7 @@ enum ApiError {
     Conflict(String),
     Invalid(String),
     Unauthorized,
+    Unavailable,
 }
 
 impl IntoResponse for ApiError {
@@ -132,6 +138,10 @@ impl IntoResponse for ApiError {
             Self::Unauthorized => (
                 StatusCode::UNAUTHORIZED,
                 "authentication required".to_owned(),
+            ),
+            Self::Unavailable => (
+                StatusCode::SERVICE_UNAVAILABLE,
+                "durable protocol state is unavailable".to_owned(),
             ),
         };
         (status, Json(serde_json::json!({"error": message}))).into_response()
@@ -182,13 +192,24 @@ impl AppState {
         if node_signers.values().collect::<BTreeSet<_>>().len() != node_signers.len() {
             anyhow::bail!("each trusted NodeID must have a distinct Ed25519 signer");
         }
+        let event_log_path =
+            std::env::var("XLEMMA_EVENT_LOG_PATH").context("XLEMMA_EVENT_LOG_PATH is required")?;
+        let (event_journal, recovered) = EventJournal::open(event_log_path)
+            .context("failed to open or authenticate XLEMMA_EVENT_LOG_PATH")?;
+        tracing::info!(
+            path = %event_journal.path().display(),
+            recovered_jobs = recovered.jobs.len(),
+            recovered_messages = recovered.messages.len(),
+            "recovered durable XLMP protocol state"
+        );
         Ok(Self {
-            jobs: Arc::default(),
-            messages: Arc::default(),
-            observation_commits: Arc::default(),
+            jobs: Arc::new(RwLock::new(recovered.jobs)),
+            messages: Arc::new(RwLock::new(recovered.messages)),
+            observation_commits: Arc::new(RwLock::new(recovered.observation_commits)),
             auth_token: auth_token.into(),
             trusted_signers: Arc::new(trusted_signers),
             node_signers: Arc::new(node_signers),
+            event_journal: Some(Arc::new(event_journal)),
         })
     }
 
@@ -201,7 +222,18 @@ impl AppState {
             auth_token: "test-auth-token-that-is-at-least-32-bytes".into(),
             trusted_signers: Arc::new(BTreeSet::from([trusted_signer])),
             node_signers: Arc::default(),
+            event_journal: None,
         }
+    }
+
+    fn persist(&self, event: ApiJournalEvent) -> Result<(), ApiError> {
+        if let Some(journal) = &self.event_journal {
+            journal.append(event).map_err(|error| {
+                tracing::error!(error = %error, "durable XLMP state append failed");
+                ApiError::Unavailable
+            })?;
+        }
+        Ok(())
     }
 }
 
@@ -407,16 +439,16 @@ async fn accept_xlmp_message(
         _ => {}
     }
     let mut messages = state.messages.write().await;
-    match messages.entry(envelope.message_id.to_string()) {
-        std::collections::btree_map::Entry::Vacant(entry) => {
-            entry.insert(envelope.clone());
-        }
-        std::collections::btree_map::Entry::Occupied(_) => {
-            return Err(ApiError::Conflict(
-                "XLMP message identifier already exists".to_owned(),
-            ));
-        }
+    let message_id = envelope.message_id.to_string();
+    if messages.contains_key(&message_id) {
+        return Err(ApiError::Conflict(
+            "XLMP message identifier already exists".to_owned(),
+        ));
     }
+    state.persist(ApiJournalEvent::MessageAccepted {
+        envelope: envelope.clone(),
+    })?;
+    messages.insert(message_id, envelope.clone());
     if let XlmpMessage::ObservationCommit(commit) = &envelope.message {
         commits.insert(commit.receipt_id.to_string(), commit.clone());
     }
@@ -441,9 +473,11 @@ async fn create_job(
     State(state): State<AppState>,
     Json(request): Json<CreateVerificationJob>,
 ) -> Result<(StatusCode, Json<VerificationJobRecord>), ApiError> {
-    if request.maximum_budget_minor_units == 0 {
+    if request.maximum_budget_minor_units == 0
+        || request.maximum_budget_minor_units > 9_007_199_254_740_991
+    {
         return Err(ApiError::Invalid(
-            "maximum budget must be greater than zero".to_owned(),
+            "maximum budget must be greater than zero and JCS-safe".to_owned(),
         ));
     }
     if request.artifact_root.trim().is_empty() || request.settlement_asset.trim().is_empty() {
@@ -562,16 +596,16 @@ async fn create_job(
         updated_at: now,
     };
     let mut jobs = state.jobs.write().await;
-    match jobs.entry(job_id.to_string()) {
-        std::collections::btree_map::Entry::Vacant(entry) => {
-            entry.insert(record.clone());
-        }
-        std::collections::btree_map::Entry::Occupied(_) => {
-            return Err(ApiError::Conflict(
-                "generated verification job identifier already exists".to_owned(),
-            ));
-        }
+    let job_key = job_id.to_string();
+    if jobs.contains_key(&job_key) {
+        return Err(ApiError::Conflict(
+            "generated verification job identifier already exists".to_owned(),
+        ));
     }
+    state.persist(ApiJournalEvent::VerificationJobCreated {
+        job: record.clone(),
+    })?;
+    jobs.insert(job_key, record.clone());
     Ok((StatusCode::CREATED, Json(record)))
 }
 
@@ -632,6 +666,14 @@ async fn add_observation(
     }
     let mut jobs = state.jobs.write().await;
     let job = jobs.get_mut(&job_id).ok_or(ApiError::NotFound)?;
+    if !matches!(
+        job.state,
+        VerificationState::ClaimCommitted | VerificationState::CheckersRevealed
+    ) {
+        return Err(ApiError::Conflict(
+            "verification job no longer accepts observations".to_owned(),
+        ));
+    }
     let authorized_member = job
         .committee_members
         .iter()
@@ -667,10 +709,17 @@ async fn add_observation(
             "node already submitted an observation".to_owned(),
         ));
     }
-    job.observations.push(observation);
-    job.state = VerificationState::CheckersRevealed;
-    job.updated_at = Utc::now();
-    Ok(Json(job.clone()))
+    let previous_updated_at = job.updated_at;
+    let mut updated = job.clone();
+    updated.observations.push(observation);
+    updated.state = VerificationState::CheckersRevealed;
+    updated.updated_at = Utc::now();
+    state.persist(ApiJournalEvent::VerificationJobUpdated {
+        job: updated.clone(),
+        expected_previous_updated_at: previous_updated_at,
+    })?;
+    *job = updated.clone();
+    Ok(Json(updated))
 }
 
 async fn evaluate_job(
@@ -679,21 +728,33 @@ async fn evaluate_job(
 ) -> Result<Json<EvaluateResponse>, ApiError> {
     let mut jobs = state.jobs.write().await;
     let job = jobs.get_mut(&job_id).ok_or(ApiError::NotFound)?;
+    if job.state != VerificationState::CheckersRevealed {
+        return Err(ApiError::Conflict(
+            "verification job is not ready for consensus evaluation".to_owned(),
+        ));
+    }
     let outcome = evaluate_formal_consensus(&job.policy, &job.observations)
         .map_err(|error| ApiError::Invalid(error.to_string()))?;
 
-    job.state = match outcome.status {
+    let previous_updated_at = job.updated_at;
+    let mut updated = job.clone();
+    updated.state = match outcome.status {
         xlemma_core::FormalStatus::Reproduced => VerificationState::Passed,
         xlemma_core::FormalStatus::Rejected => VerificationState::Failed,
         xlemma_core::FormalStatus::Divergent => VerificationState::Divergent,
         xlemma_core::FormalStatus::Quarantined => VerificationState::Quarantined,
         _ => VerificationState::CheckersRevealed,
     };
-    job.updated_at = Utc::now();
+    updated.updated_at = Utc::now();
+    state.persist(ApiJournalEvent::VerificationJobUpdated {
+        job: updated.clone(),
+        expected_previous_updated_at: previous_updated_at,
+    })?;
+    *job = updated.clone();
 
     Ok(Json(EvaluateResponse {
         outcome,
-        state: job.state,
+        state: updated.state,
     }))
 }
 
@@ -784,6 +845,20 @@ mod tests {
             auth_token: "test-auth-token-that-is-at-least-32-bytes".into(),
             trusted_signers: Arc::new(BTreeSet::from([signer.clone()])),
             node_signers: Arc::new(BTreeMap::from([(node_id, signer)])),
+            event_journal: None,
+        }
+    }
+
+    fn journal_state(path: &std::path::Path, trusted_signer: String) -> AppState {
+        let (journal, recovered) = EventJournal::open(path).unwrap();
+        AppState {
+            jobs: Arc::new(RwLock::new(recovered.jobs)),
+            messages: Arc::new(RwLock::new(recovered.messages)),
+            observation_commits: Arc::new(RwLock::new(recovered.observation_commits)),
+            auth_token: "test-auth-token-that-is-at-least-32-bytes".into(),
+            trusted_signers: Arc::new(BTreeSet::from([trusted_signer])),
+            node_signers: Arc::default(),
+            event_journal: Some(Arc::new(journal)),
         }
     }
 
@@ -808,6 +883,33 @@ mod tests {
 
         let duplicate = accept_xlmp_message(State(state), Json(StrictXlmpEnvelope(envelope))).await;
         assert!(matches!(duplicate, Err(ApiError::Conflict(_))));
+    }
+
+    #[tokio::test]
+    async fn accepted_xlmp_message_survives_api_restart() {
+        let (envelope, sender) = claim_envelope();
+        let message_id = envelope.message_id.to_string();
+        let path = std::env::temp_dir().join(format!(
+            "xlemma-api-restart-{}-{}.jsonl",
+            std::process::id(),
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let state = journal_state(&path, sender.clone());
+        let _accepted = accept_xlmp_message(
+            State(state.clone()),
+            Json(StrictXlmpEnvelope(envelope.clone())),
+        )
+        .await
+        .unwrap();
+        drop(state);
+
+        let restarted = journal_state(&path, sender);
+        let recovered = get_xlmp_message(State(restarted.clone()), Path(message_id))
+            .await
+            .unwrap();
+        assert_eq!(recovered.0, envelope);
+        drop(restarted);
+        std::fs::remove_file(path).unwrap();
     }
 
     #[tokio::test]
@@ -850,6 +952,7 @@ mod tests {
             auth_token: "test-auth-token-that-is-at-least-32-bytes".into(),
             trusted_signers: Arc::new(BTreeSet::from([node_signer.clone(), wrong_signer.clone()])),
             node_signers: Arc::new(BTreeMap::from([(node_id.clone(), node_signer)])),
+            event_journal: None,
         };
         let mut envelope = XlmpEnvelope::new(
             None,

@@ -14,7 +14,11 @@ constrained discovery and order matching, multidimensional reputation,
 committee eligibility and exact sortition reproduction, commit-reveal, formal
 quorum, novelty aggregation, protocol-calibrated quote construction, backing
 conservation, revenue allocation, impact-pool caps, payment-adapter encoding,
-and storage path safety.
+storage path safety, byte-reproducible bundle vectors, content-derived trust
+registries, and fail-closed axiom-policy evaluation.
+API storage tests additionally cover fsync-before-visibility ordering,
+hash-chain tamper rejection, predecessor-checked job updates, and recovery of a
+signed XLMP message after process restart.
 
 ### Property tests
 
@@ -38,10 +42,15 @@ Required properties include:
 - state transitions outside the transition table always fail;
 - artifact repacking with identical content/environment yields the same identity;
 - unsafe or symlink-escaping bundle paths always fail.
+- explicit bundle inputs and timestamps reproduce the complete published manifest byte-for-byte;
+- mutating an axiom profile, trust policy, or registry entry changes its content-derived ID or root;
+- an unknown/unlisted axiom, prohibited trust path, evidence mismatch, or insufficient checker family never passes trust evaluation;
 - any mutation of signed XLMP identity material invalidates its MessageID;
 - unknown, aliased, or dropped XLMP fields fail strict typed ingress;
 - one trusted signing key cannot impersonate two committee NodeIDs;
 - every supported transport decodes to the same canonical XLMP envelope;
+- binary XLMP frames reject non-canonical JSON, trailing/truncated bytes,
+  oversized declarations, and mutated MessageIDs;
 - no payment, finality, prover, verifier, or storage adapter can advance an XLMP state without the required protocol evidence.
 - formal certification cannot manufacture or mutate a statement-alignment verdict;
 - changing the informal claim, presentation, assumptions, definitions, or reviewer set changes the alignment ReceiptID;
@@ -54,6 +63,14 @@ Required properties include:
 - generalized reproduction cannot reveal before commit, substitute a credential/control domain, or enter a certificate without authenticated ingress;
 
 ### Integration tests
+
+`scripts/simulate_use_cases.py` is the repository-level end-to-end journey
+harness. It maps all eleven documented participant journeys to ordered traces,
+the complete Rust suite, durable API restart recovery, and
+to semantic CLI gates for trust policy, formal and generalized reproduction,
+portable exit, economic compliance, credit/revenue conservation, calibrated
+quotes, bounded impact, and deterministic bundles. Its JSON report is schema
+validated and must not contain a failed gate, failed trace step, or unsupported journey.
 
 - `ResearchProver` candidate to default Lean adapter to independent check to PoIR certificate;
 - XLMP envelope conformance over HTTP plus at least one non-HTTP transport;
@@ -69,7 +86,7 @@ Required properties include:
 
 ### Conformance tests
 
-Publish language-neutral JSON test vectors for every XLMP message, canonical ID, receipt, signature domain, lifecycle transition, committee seed, commitment, certificate, revenue allocation, and bundle root. Independent implementations must produce byte-identical outputs.
+Publish language-neutral JSON test vectors for every XLMP message, canonical ID, receipt, signature domain, lifecycle transition, committee seed, commitment, certificate, revenue allocation, trust-policy registry, and bundle root. Independent implementations must produce byte-identical outputs. `examples/deterministic-bundle/` is the first complete bundle vector; clean-room reproduction remains a release gate.
 
 ## 2. Lean corpus
 

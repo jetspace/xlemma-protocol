@@ -17,6 +17,9 @@ ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS = ROOT / "schemas"
 EXAMPLE = ROOT / "examples" / "no-arbitrage"
 NODE_EXAMPLE = ROOT / "examples" / "node-network"
+SKIP_SIMULATION_REPORT = "--skip-simulation-report" in sys.argv[1:]
+if any(argument != "--skip-simulation-report" for argument in sys.argv[1:]):
+    raise SystemExit("usage: validate_repo.py [--skip-simulation-report]")
 
 REQUIRED_FILES = [
     "README.md",
@@ -40,6 +43,7 @@ REQUIRED_FILES = [
     "docs/PRODUCTION_CHECKLIST.md",
     "docs/PRIOR_ART_AND_DIFFERENTIATION.md",
     "docs/VALIDATION_REPORT.md",
+    "docs/USE_CASE_SIMULATION_REPORT.md",
     "spec/000-overview.md",
     "spec/001-identifiers.md",
     "spec/002-proof-rights-capsule.md",
@@ -63,6 +67,7 @@ REQUIRED_FILES = [
     "spec/020-identity-credentials.md",
     "spec/021-alignment-rights-and-impact.md",
     "spec/022-researcher-sovereignty.md",
+    "spec/023-trust-policy-registry.md",
     "openapi/openapi.yaml",
     "contracts/src/ResearchVault.sol",
     "contracts/src/ResearcherCredit.sol",
@@ -84,6 +89,7 @@ REQUIRED_FILES = [
     "crates/xlemma-core/src/governance.rs",
     "crates/xlemma-core/src/network.rs",
     "crates/xlemma-core/src/sovereignty.rs",
+    "crates/xlemma-core/src/trust.rs",
     "crates/xlemma-xlmp/src/lib.rs",
     "schemas/node-network-common.schema.json",
     "schemas/node-service-advertisement.schema.json",
@@ -131,6 +137,11 @@ REQUIRED_FILES = [
     "schemas/reproduction-observation.schema.json",
     "schemas/research-verification-certificate.schema.json",
     "schemas/economic-compliance-certificate.schema.json",
+    "schemas/axiom-profile.schema.json",
+    "schemas/trust-policy.schema.json",
+    "schemas/trust-policy-registry.schema.json",
+    "schemas/proof-trust-evidence.schema.json",
+    "schemas/use-case-simulation-report.schema.json",
     "examples/node-network/advertisement.json",
     "examples/node-network/reputation.json",
     "examples/node-network/bond.json",
@@ -171,6 +182,17 @@ REQUIRED_FILES = [
     "examples/no-arbitrage/computational-observations.json",
     "examples/no-arbitrage/computational-research-certificate.json",
     "examples/no-arbitrage/economic-compliance-certificate.json",
+    "examples/no-arbitrage/axiom-profile.json",
+    "examples/no-arbitrage/trust-policy.json",
+    "examples/no-arbitrage/trust-policy-registry.json",
+    "examples/no-arbitrage/proof-trust-evidence.json",
+    "examples/deterministic-bundle/README.md",
+    "examples/deterministic-bundle/inputs.json",
+    "examples/deterministic-bundle/proof.lean",
+    "examples/deterministic-bundle/statement.txt",
+    "examples/deterministic-bundle/expected-bundle.json",
+    "reports/use-case-simulation.json",
+    "scripts/simulate_use_cases.py",
 ]
 
 EXAMPLE_SCHEMA_MAP = {
@@ -206,6 +228,10 @@ EXAMPLE_SCHEMA_MAP = {
     "computational-observation-b.json": "reproduction-observation.schema.json",
     "computational-research-certificate.json": "research-verification-certificate.schema.json",
     "economic-compliance-certificate.json": "economic-compliance-certificate.schema.json",
+    "axiom-profile.json": "axiom-profile.schema.json",
+    "trust-policy.json": "trust-policy.schema.json",
+    "trust-policy-registry.json": "trust-policy-registry.schema.json",
+    "proof-trust-evidence.json": "proof-trust-evidence.schema.json",
 }
 
 NODE_EXAMPLE_SCHEMA_MAP = {
@@ -339,6 +365,18 @@ def validate_json_syntax_and_schemas() -> None:
         errors = list(offer_validator.iter_errors(offer))
         if errors:
             fail(f"compute-offers.json[{index}] invalid: {errors[0].message}")
+
+    if not SKIP_SIMULATION_REPORT:
+        simulation = load_json(ROOT / "reports/use-case-simulation.json")
+        simulation_validator = schema_validator(
+            schema_objects["use-case-simulation-report.schema.json"]
+        )
+        errors = sorted(
+            simulation_validator.iter_errors(simulation), key=lambda err: list(err.path)
+        )
+        if errors:
+            joined = "\n".join(f"  {list(e.path)}: {e.message}" for e in errors)
+            fail(f"use-case-simulation.json failed its schema:\n{joined}")
 
 
 def validate_toml() -> None:
@@ -601,6 +639,97 @@ def validate_example_invariants() -> None:
     impact_authorization = load_json(EXAMPLE / "impact-pool-authorization.json")
     if impact_authorization["compute_savings_evidence_id"] != impact_evidence["evidence_id"]:
         fail("impact authorization does not bind the published evidence")
+
+    axiom_profile = load_json(EXAMPLE / "axiom-profile.json")
+    trust_policy = load_json(EXAMPLE / "trust-policy.json")
+    trust_registry = load_json(EXAMPLE / "trust-policy-registry.json")
+    trust_evidence = load_json(EXAMPLE / "proof-trust-evidence.json")
+    theory = load_json(EXAMPLE / "theory.json")
+    proof = load_json(EXAMPLE / "proof.json")
+    if set(axiom_profile["permitted_axioms"]) & set(
+        axiom_profile["explicitly_forbidden_axioms"]
+    ):
+        fail("axiom profile permits and forbids the same axiom")
+    if any(
+        axiom_profile[flag]
+        for flag in [
+            "allow_unlisted_axioms",
+            "allow_sorry",
+            "allow_unsafe_declarations",
+            "allow_native_decide",
+        ]
+    ):
+        fail("reference axiom profile must fail closed")
+    if trust_policy["axiom_profile_id"] != axiom_profile["profile_id"]:
+        fail("trust policy does not bind the published axiom profile")
+    if theory["trust_policy_id"] != trust_policy["policy_id"]:
+        fail("theory does not bind the published trust policy")
+    if trust_registry["axiom_profiles"] != [axiom_profile] or trust_registry[
+        "trust_policies"
+    ] != [trust_policy]:
+        fail("trust registry does not exactly contain the published policy objects")
+    if set(proof["observed_axioms"]) != set(trust_evidence["observed_axioms"]):
+        fail("proof and trust-evidence axiom inventories differ")
+    if not set(trust_evidence["observed_axioms"]).issubset(
+        set(axiom_profile["permitted_axioms"])
+    ):
+        fail("proof trust evidence contains an unapproved axiom")
+
+    deterministic = ROOT / "examples" / "deterministic-bundle"
+    bundle_inputs = load_json(deterministic / "inputs.json")
+    expected_bundle = load_json(deterministic / "expected-bundle.json")
+    expected_entries = expected_bundle["manifest"]["entries"]
+    if [entry["path"] for entry in expected_entries] != sorted(
+        entry["path"] for entry in expected_entries
+    ):
+        fail("deterministic bundle entries are not canonically sorted")
+    if {entry["relative_path"] for entry in bundle_inputs} != {
+        entry["path"] for entry in expected_entries
+    }:
+        fail("deterministic bundle inputs and expected entries differ")
+    for entry in expected_entries:
+        if (deterministic / entry["path"]).stat().st_size != entry["byte_length"]:
+            fail(f"deterministic bundle byte length changed: {entry['path']}")
+
+    if SKIP_SIMULATION_REPORT:
+        return
+
+    simulation = load_json(ROOT / "reports/use-case-simulation.json")
+    summary = simulation["summary"]
+    expected_scenarios = {f"UC-{index:02d}" for index in range(1, 12)}
+    scenarios = simulation["scenarios"]
+    gates = simulation["gates"]
+    if {scenario["id"] for scenario in scenarios} != expected_scenarios:
+        fail("simulation report does not cover all eleven documented journeys")
+    if len({gate["id"] for gate in gates}) != len(gates):
+        fail("simulation report contains duplicate gate identifiers")
+    if any(gate["status"] != "pass" or gate["error"] is not None for gate in gates):
+        fail("simulation report contains a failed executable gate")
+    if any(
+        scenario["status"] != "pass" or scenario["missing_tests"]
+        for scenario in scenarios
+    ):
+        fail("simulation report contains a failed or unsupported journey")
+    if any(
+        [step["sequence"] for step in scenario["trace"]]
+        != list(range(1, len(scenario["trace"]) + 1))
+        or any(step["status"] != "pass" for step in scenario["trace"])
+        for scenario in scenarios
+    ):
+        fail("simulation report contains an incomplete end-to-end journey trace")
+    if (
+        summary["scenario_count"] != len(scenarios)
+        or summary["passed_scenarios"] != len(scenarios)
+        or summary["failed_scenarios"] != 0
+        or summary["gate_count"] != len(gates)
+        or summary["passed_gates"] != len(gates)
+        or summary["failed_gates"] != 0
+    ):
+        fail("simulation report summary is inconsistent with its evidence")
+    if "11/11 documented journeys passed" not in (
+        ROOT / "docs/USE_CASE_SIMULATION_REPORT.md"
+    ).read_text():
+        fail("human-readable simulation report is missing its successful summary")
 
 
 def validate_documented_invariants() -> None:

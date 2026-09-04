@@ -10,8 +10,6 @@ base64.workspace = true
 chrono.workspace = true
 ed25519-dalek.workspace = true
 serde.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true
 xlemma-core = { path = "../xlemma-core" }
-
-[dev-dependencies]
-serde_json.workspace = true

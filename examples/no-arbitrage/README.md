@@ -30,9 +30,13 @@ cargo run -p xlemma-cli -- evaluate-reproduction \
   computational-verification-job.json \
   computational-observations.json
 
+cargo run -p xlemma-cli -- verify-trust \
+  trust-policy-registry.json theory.json proof.json proof-trust-evidence.json
+
 cargo run -p xlemma-cli -- pack . bundle-inputs.json \
   --lean-toolchain leanprover/lean4:v4.33.1 \
-  --dependency-lock-hash blake3:example
+  --dependency-lock-hash blake3:example \
+  --created-at 2026-09-04T12:00:00Z
 ```
 
 Legacy illustrative IDs demonstrate wire format and are not all claimed to be

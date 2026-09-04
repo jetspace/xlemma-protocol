@@ -262,11 +262,10 @@ pub fn validate_formal_consensus_policy(
         || policy.minimum_operator_clusters == 0
         || policy.minimum_infrastructure_providers == 0
         || policy.minimum_regions == 0
-        || policy.required_family_counts.is_empty()
-        || policy
+        || !policy
             .required_family_counts
             .values()
-            .any(|count| *count == 0)
+            .any(|count| *count > 0)
         || policy.challenge_period_seconds < 3_600
     {
         return Err(FormalConsensusError::InvalidPolicy(
@@ -364,6 +363,15 @@ mod tests {
             require_identical_axiom_set_root: true,
             challenge_period_seconds: 86_400,
         }
+    }
+
+    #[test]
+    fn optional_checker_family_may_have_a_zero_requirement() {
+        let mut policy = policy();
+        policy
+            .required_family_counts
+            .insert(CheckerFamily::OtherIndependent, 0);
+        assert!(validate_formal_consensus_policy(&policy).is_ok());
     }
 
     fn rebind_receipt(receipt: &mut ObservationReceipt) {

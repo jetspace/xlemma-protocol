@@ -26,6 +26,8 @@ deterministic source manifest. It checked:
   all six verification profiles, generalized reproduction, capture dashboards,
   constitutional governance, funding rails, statement alignment, signed
   protocol success calibration, capsule modes, and impact-pool authorization;
+- the content-derived trust-policy registry, axiom profile, exact proof-trust
+  evidence, canonical registry root, and deterministic artifact-bundle vector;
 - TOML and YAML syntax, OpenAPI 3.1 operations, routes, response maps, external
   references, fragments, and local reference resolution;
 - revenue and contributor-share conservation, checker-root agreement, and
@@ -45,7 +47,7 @@ cargo clippy --locked --workspace --all-targets -- -D warnings
 cargo test --locked --workspace
 ```
 
-The Rust suite contains 147 unit/async-test declarations. It exercises RFC 8785
+The Rust suite contains 162 unit/async-test declarations. It exercises RFC 8785
 canonicalization and safe-integer rejection, strict XLMP typed ingress,
 content-bound receipt identity, Ed25519 signature and signer/NodeID binding,
 statement-alignment identity and signature-verifier boundaries, signed
@@ -56,7 +58,9 @@ content-derived impact evidence, checked fixed-point quote/allocation math and
 deterministic equal-cost routing,
 Commons and Reciprocal economic constraints, message and advertisement
 identity/mutation rejection, append-only HTTP and
-node-market records, asset-compatible capacity matching, eight-dimensional
+node-market records, canonical non-HTTP binary framing with exact MessageID
+preservation, durable hash-chained API restart recovery and tamper rejection,
+asset-compatible capacity matching, eight-dimensional
 reputation gates, pseudonymous credential integrity, append-only revocation,
 reproducible future-randomness committee sortition, duplicate node, operator,
 and verified-participant exclusion, lifecycle gates and revalidation, PoIR divergence,
@@ -67,7 +71,9 @@ multi-chamber governance, compute cooperatives and capture-resistance scoring,
 work-backed node revenue and bond exposure,
 backed credits, revenue conservation, impact-pool caps, provider
 adapters, bounded and symlink-safe storage, hardened Lean/ASTRA adapter
-boundaries, and x402-to-XLMP binding.
+boundaries, fail-closed trust-policy and axiom-profile evaluation, mutation
+rejection for registry roots, byte-for-byte deterministic bundle reproduction,
+and x402-to-XLMP binding.
 
 `cargo audit` completed against a current local RustSec advisory database with
 `--deny warnings`: 237 locked dependencies were scanned against 1,239
@@ -77,6 +83,17 @@ advisories with no vulnerable packages reported.
 authorization, settlement, refund, solvency, revenue allocation, compounding,
 and conservative compute-impact allocations. Python bytecode compilation also
 completed successfully for the repository scripts.
+
+`scripts/simulate_use_cases.py` completed all eleven documented researcher and
+participant journeys across thirteen executable gates and schema-validated
+ordered end-to-end traces. The run exercised the full Rust suite, durable API
+restart recovery, canonical binary transport identity, structural/schema
+validation, content-derived trust policy,
+formal PoIR, generalized computational reproduction, portability, economic
+compliance and conservation, calibrated compute routing, bounded impact, and
+deterministic artifact packing. It produced the schema-validated structured
+report at `reports/use-case-simulation.json` and the human-readable report at
+`docs/USE_CASE_SIMULATION_REPORT.md`.
 
 Foundry 1.4.0 formatting, build-size, unit, fuzz, and invariant checks completed
 successfully against the immutable OpenZeppelin and forge-std revisions listed
@@ -92,7 +109,7 @@ secrets. The committed runtime and service image references use immutable
 digests, the API binds only to loopback by default, and the container profile is
 read-only, non-root, capability-free, and protected by `no-new-privileges`.
 
-The snapshot contains 13 Rust crates, 78 JSON schemas, 23 numbered
+The snapshot contains 13 Rust crates, 83 JSON schemas, 24 numbered
 specifications, 10 Solidity contracts, and 9 Solidity test suites. These source
 counts establish repository coverage; they do not substitute for an audit.
 
@@ -110,7 +127,8 @@ The following production activities were also outside this validation scope:
 - production beacon/VRF proof authentication and decentralized eligible-set publication;
 - production credential issuer, delegation-signature/key-resolution, private uniqueness, and revocation-accumulator integrations;
 - live x402, stablecoin, grant, escrow, invoice, IPFS, or chain integration;
-- a second independent XLMP implementation and cross-implementation vectors;
+- an independent clean-room execution of the published bundle and trust-policy
+  vectors, plus a second XLMP implementation for the remaining vectors;
 - independent security, cryptographic, economic, smart-contract, or legal audit;
 - static analysis, symbolic execution, chain-fork testing, or a public security contest.
 

@@ -16,6 +16,18 @@ ProofID MUST bind ClaimID and a canonical checker-consumable proof object.
 
 ArtifactID MUST bind a sorted file manifest, byte hashes, toolchain, dependency lock, and relevant build metadata. Symlinks and path traversal MUST be rejected by bundle builders.
 
+`created_at` and source-control labels are preserved as provenance but excluded
+from ArtifactID. The canonical bundle builder accepts an explicit timestamp so
+the complete manifest can also be reproduced byte-for-byte. The published
+vector is in `examples/deterministic-bundle/`.
+
+## PolicyID and registry roots
+
+Trust policies and axiom profiles use the typed `PolicyID` domain and exclude
+only their identifier field from identity. Trust-registry roots use the
+`trust-policy-registry-v1` domain over a strictly ID-sorted snapshot. See
+XLIP-023.
+
 ## ReceiptID
 
 ReceiptID MUST be domain-separated by receipt kind and bind all consensus-critical fields.

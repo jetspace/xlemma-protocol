@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/trust-policy-registry.schema.json",
+  "title": "TrustPolicyRegistrySnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "protocol_version": { "const": "XLMP/1" },
+    "registry_root": { "type": "string", "pattern": "^blake3:[0-9a-f]{64}$" },
+    "axiom_profiles": {
+      "type": "array",
+      "items": { "$ref": "axiom-profile.schema.json" },
+      "minItems": 1
+    },
+    "trust_policies": {
+      "type": "array",
+      "items": { "$ref": "trust-policy.schema.json" },
+      "minItems": 1
+    }
+  },
+  "required": ["protocol_version", "registry_root", "axiom_profiles", "trust_policies"]
+}

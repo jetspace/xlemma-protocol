@@ -1,0 +1,28 @@
+{
+  "artifact_id": "xla:blake3:0bde96854e9e8135ef5a1d6d71fa897df0b5423400f4f2b6bfffa1adbd8c1a30",
+  "manifest": {
+    "protocol_version": "XLMP/1",
+    "entries": [
+      {
+        "path": "proof.lean",
+        "media_type": "text/x-lean",
+        "content_hash": "blake3:8acd5b89ec3f7c622dec627100afa05ff030410880901979e39bb570fd69c681",
+        "byte_length": 45,
+        "encrypted": false
+      },
+      {
+        "path": "statement.txt",
+        "media_type": "text/plain",
+        "content_hash": "blake3:6dae12c02ff1b62f983c75e7dfcb59f4cc99612d04a4c8a7a4fb0d4070b2eaf7",
+        "byte_length": 64,
+        "encrypted": false
+      }
+    ],
+    "root": "blake3:46151afea0acb7e2d2f79b605b40cd37405d327784b1e781544c4d900683a6ea",
+    "source_commit": "vector-1",
+    "lean_toolchain": "leanprover/lean4:v4.33.1",
+    "dependency_lock_hash": "blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "build_image_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "created_at": "2026-09-04T12:00:00Z"
+  }
+}
