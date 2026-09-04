@@ -1,0 +1,5 @@
+{
+  "savings_share_bps": 2000,
+  "downstream_revenue_cap_bps": 1000,
+  "minimum_sample_size": 20
+}

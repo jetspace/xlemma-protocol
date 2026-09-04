@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FormalConsensusPolicy",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "required_family_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lean_kernel": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nanoda": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "other_independent": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "minimum_operator_clusters": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "minimum_infrastructure_providers": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "minimum_regions": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "require_identical_artifact_root": {
+      "const": true
+    },
+    "require_identical_environment_root": {
+      "const": true
+    },
+    "require_identical_dependency_root": {
+      "const": true
+    },
+    "require_identical_axiom_set_root": {
+      "const": true
+    },
+    "challenge_period_seconds": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "required_family_counts",
+    "minimum_operator_clusters",
+    "minimum_infrastructure_providers",
+    "minimum_regions",
+    "require_identical_artifact_root",
+    "require_identical_environment_root",
+    "require_identical_dependency_root",
+    "require_identical_axiom_set_root",
+    "challenge_period_seconds"
+  ],
+  "$id": "https://xlemma.example/schemas/formal-consensus-policy.schema.json"
+}

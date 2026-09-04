@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PaymentReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^xljob:blake3:[0-9a-f]{64}$"
+    },
+    "payment_identifier": {
+      "type": "string"
+    },
+    "scheme": {
+      "type": "string",
+      "enum": [
+        "exact",
+        "upto",
+        "batch-settlement"
+      ]
+    },
+    "network": {
+      "type": "string"
+    },
+    "payer": {
+      "type": "string"
+    },
+    "payee": {
+      "type": "string"
+    },
+    "authorized": {
+      "$ref": "common.schema.json#/$defs/amount"
+    },
+    "settled": {
+      "$ref": "common.schema.json#/$defs/amount"
+    },
+    "settlement_reference": {
+      "type": "string"
+    },
+    "settled_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "facilitator_signature": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "receipt_id",
+    "job_id",
+    "payment_identifier",
+    "scheme",
+    "network",
+    "payer",
+    "payee",
+    "authorized",
+    "settled",
+    "settlement_reference",
+    "settled_at",
+    "facilitator_signature"
+  ],
+  "$id": "https://xlemma.example/schemas/payment-receipt.schema.json"
+}

@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ArtifactManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "protocol_version": {
+      "const": "xlemma/0.2"
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "ArtifactEntry",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*\\.\\./).+$"
+          },
+          "media_type": {
+            "type": "string"
+          },
+          "content_hash": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 512
+          },
+          "byte_length": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "encrypted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "path",
+          "media_type",
+          "content_hash",
+          "byte_length",
+          "encrypted"
+        ]
+      }
+    },
+    "root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "source_commit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lean_toolchain": {
+      "type": "string"
+    },
+    "dependency_lock_hash": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "build_image_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "protocol_version",
+    "entries",
+    "root",
+    "lean_toolchain",
+    "dependency_lock_hash",
+    "created_at"
+  ],
+  "$id": "https://xlemma.example/schemas/artifact.schema.json"
+}

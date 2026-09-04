@@ -1,0 +1,51 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/xlemma-core",
+  "crates/xlemma-crypto",
+  "crates/xlemma-consensus",
+  "crates/xlemma-node",
+  "crates/xlemma-economics",
+  "crates/xlemma-compute-curve",
+  "crates/xlemma-astra",
+  "crates/xlemma-lean",
+  "crates/xlemma-x402",
+  "crates/xlemma-storage",
+  "crates/xlemma-api",
+  "crates/xlemma-cli",
+]
+
+[workspace.package]
+version = "0.2.0"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["xLemma contributors"]
+rust-version = "1.82"
+
+[workspace.dependencies]
+anyhow = "1.0"
+async-trait = "0.1"
+axum = { version = "0.8", features = ["macros", "json"] }
+base64 = "0.22"
+blake3 = "1.5"
+chrono = { version = "0.4", features = ["serde", "clock"] }
+clap = { version = "4.5", features = ["derive", "env"] }
+hex = "0.4"
+http = "1.2"
+rand = "0.9"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_with = "3.12"
+thiserror = "2.0"
+tokio = { version = "1.43", features = ["full"] }
+tower-http = { version = "0.6", features = ["trace", "request-id", "cors"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+uuid = { version = "1.12", features = ["v4", "serde"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"

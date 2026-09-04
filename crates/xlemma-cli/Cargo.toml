@@ -1,0 +1,17 @@
+[package]
+name = "xlemma-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+clap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+xlemma-compute-curve = { path = "../xlemma-compute-curve" }
+xlemma-consensus = { path = "../xlemma-consensus" }
+xlemma-core = { path = "../xlemma-core" }
+xlemma-economics = { path = "../xlemma-economics" }
+xlemma-storage = { path = "../xlemma-storage" }

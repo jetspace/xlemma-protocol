@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TheoryManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "protocol_version": {
+      "const": "xlemma/0.2"
+    },
+    "lean_toolchain": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dependency_merkle_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "trust_policy_id": {
+      "type": "string",
+      "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+    },
+    "checker_policy_id": {
+      "type": "string",
+      "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+    },
+    "permitted_axioms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "canonical_encoding": {
+      "type": "string",
+      "enum": [
+        "rfc8785+jcs",
+        "xlemma-lean-expr-v1"
+      ]
+    }
+  },
+  "required": [
+    "protocol_version",
+    "lean_toolchain",
+    "dependency_merkle_root",
+    "trust_policy_id",
+    "checker_policy_id",
+    "permitted_axioms",
+    "canonical_encoding"
+  ],
+  "$id": "https://xlemma.example/schemas/theory.schema.json"
+}

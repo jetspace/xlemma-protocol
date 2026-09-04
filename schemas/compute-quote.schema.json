@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ComputeQuoteReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "quote_id": {
+      "type": "string",
+      "pattern": "^xlquote:blake3:[0-9a-f]{64}$"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^xljob:blake3:[0-9a-f]{64}$"
+    },
+    "policy_id": {
+      "type": "string",
+      "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+    },
+    "delivery_deadline": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expected_astra_units": {
+      "type": "number",
+      "minimum": 0
+    },
+    "expected_lean_units": {
+      "type": "number",
+      "minimum": 0
+    },
+    "expected_review_units": {
+      "type": "number",
+      "minimum": 0
+    },
+    "expected_storage_units": {
+      "type": "number",
+      "minimum": 0
+    },
+    "quoted_amount": {
+      "$ref": "common.schema.json#/$defs/amount"
+    },
+    "maximum_authorization": {
+      "$ref": "common.schema.json#/$defs/amount"
+    },
+    "success_probability": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "novelty_clearance_probability": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "risk_premium_bps": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "valid_until": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provider_offer_roots": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 16,
+        "maxLength": 512
+      }
+    },
+    "signature": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "quote_id",
+    "job_id",
+    "policy_id",
+    "delivery_deadline",
+    "expected_astra_units",
+    "expected_lean_units",
+    "expected_review_units",
+    "expected_storage_units",
+    "quoted_amount",
+    "maximum_authorization",
+    "success_probability",
+    "novelty_clearance_probability",
+    "risk_premium_bps",
+    "valid_until",
+    "provider_offer_roots",
+    "signature"
+  ],
+  "$id": "https://xlemma.example/schemas/compute-quote.schema.json"
+}

@@ -1,0 +1,9 @@
+node_role = "official_kernel_checker"
+checker_family = "lean_kernel"
+operator_cluster_id = "CONFIGURE"
+infrastructure_provider = "CONFIGURE"
+region = "CONFIGURE"
+neutral_bond_asset = "USDC"
+accept_researcher_token_as_bond = false
+pay_for_pass_only = false
+commit_reveal = true

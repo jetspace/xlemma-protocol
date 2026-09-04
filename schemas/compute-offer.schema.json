@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ServiceOffer",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "offer_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "service": {
+      "type": "string",
+      "enum": [
+        "astra_generation",
+        "lean_build",
+        "official_kernel_check",
+        "independent_check",
+        "novelty_review",
+        "human_expert_review",
+        "storage",
+        "challenge_reserve"
+      ]
+    },
+    "model_or_checker": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hardware_class": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "domain": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "delivery_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "delivery_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "price_minor_units": {
+      "type": [
+        "string",
+        "integer"
+      ],
+      "minimum": 0
+    },
+    "quantity_scale": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "capacity_units": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "completion_probability": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1
+    },
+    "p95_latency_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "collateral_reference": {
+      "type": "string"
+    },
+    "quote_asset": {
+      "type": "string"
+    },
+    "quote_decimals": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 38
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "offer_id",
+    "provider_id",
+    "service",
+    "delivery_start",
+    "delivery_end",
+    "price_minor_units",
+    "quantity_scale",
+    "capacity_units",
+    "completion_probability",
+    "p95_latency_ms",
+    "collateral_reference",
+    "quote_asset",
+    "quote_decimals",
+    "expires_at"
+  ],
+  "$id": "https://xlemma.example/schemas/compute-offer.schema.json"
+}

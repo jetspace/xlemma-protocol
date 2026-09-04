@@ -1,0 +1,406 @@
+openapi: 3.1.0
+info:
+  title: xLemma Protocol API
+  version: 0.2.0
+  description: >-
+    Reference API for decentralized researcher identities, proof-production jobs,
+    independent Lean verification, PoIR observations, compute quotes, x402
+    payment-protected resources, novelty review, and lemma capsules.
+servers:
+  - url: http://localhost:8080
+paths:
+  /health:
+    get:
+      operationId: health
+      responses:
+        "200":
+          description: Service health
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, protocol, time]
+                properties:
+                  status: { type: string }
+                  protocol: { type: string }
+                  time: { type: string, format: date-time }
+  /v1/researchers:
+    post:
+      operationId: registerResearcher
+      summary: Register a decentralized researcher manifest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/researcher-node.schema.json
+      responses:
+        "201": { description: Researcher registered }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /v1/researchers/{researcherId}:
+    get:
+      operationId: getResearcher
+      parameters:
+        - $ref: "#/components/parameters/ResearcherId"
+      responses:
+        "200":
+          description: Researcher manifest
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/researcher-node.schema.json
+        "404": { $ref: "#/components/responses/NotFound" }
+  /v1/claims:
+    post:
+      operationId: commitClaim
+      summary: Commit a formal claim manifest and priority evidence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [claim, origin_certificate, contribution_manifest, rights_manifest]
+              properties:
+                claim: { $ref: ../schemas/claim.schema.json }
+                origin_certificate: { type: object, additionalProperties: true }
+                contribution_manifest: { $ref: ../schemas/contribution.schema.json }
+                rights_manifest: { $ref: ../schemas/rights.schema.json }
+      responses:
+        "201": { description: Claim committed }
+        "400": { $ref: "#/components/responses/BadRequest" }
+  /v1/claims/{claimId}:
+    get:
+      operationId: getClaim
+      parameters:
+        - $ref: "#/components/parameters/ClaimId"
+      responses:
+        "200": { description: Claim and graph links }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /v1/claims/{claimId}/formalize:
+    post:
+      operationId: formalizeClaim
+      summary: Start a metered ASTRA formalization job
+      parameters:
+        - $ref: "#/components/parameters/ClaimId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FormalizationRequest"
+      responses:
+        "200": { description: Candidate formal claim and ASTRA receipt }
+        "402": { $ref: "#/components/responses/PaymentRequired" }
+  /v1/claims/{claimId}/prove:
+    post:
+      operationId: proveClaim
+      summary: Start a variable-cost ASTRA proof-search job
+      parameters:
+        - $ref: "#/components/parameters/ClaimId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProofSearchRequest"
+      responses:
+        "200": { description: Proof candidate and generation receipt }
+        "402": { $ref: "#/components/responses/PaymentRequired" }
+  /v1/claims/{claimId}/review-novelty:
+    post:
+      operationId: reviewNovelty
+      parameters:
+        - $ref: "#/components/parameters/ClaimId"
+      responses:
+        "202": { description: Novelty committee job accepted }
+        "402": { $ref: "#/components/responses/PaymentRequired" }
+  /v1/proofs/{proofId}/verify:
+    post:
+      operationId: verifyProof
+      summary: Start a PoIR formal-verification job
+      parameters:
+        - $ref: "#/components/parameters/ProofId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyProofRequest"
+      responses:
+        "202": { description: Verification job accepted }
+        "402": { $ref: "#/components/responses/PaymentRequired" }
+  /v1/proofs/{proofId}/explain:
+    post:
+      operationId: explainProof
+      parameters:
+        - $ref: "#/components/parameters/ProofId"
+      responses:
+        "200": { description: LaTeX explanation and ASTRA receipt }
+        "402": { $ref: "#/components/responses/PaymentRequired" }
+  /v1/proofs/{proofId}/bundle:
+    get:
+      operationId: getCertifiedBundle
+      parameters:
+        - $ref: "#/components/parameters/ProofId"
+      responses:
+        "200":
+          description: Public or encrypted content-addressed bundle
+          content:
+            application/vnd.xlemma.bundle+json:
+              schema:
+                $ref: ../schemas/artifact.schema.json
+        "402": { $ref: "#/components/responses/PaymentRequired" }
+  /v1/verification-jobs:
+    post:
+      operationId: createVerificationJob
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVerificationJob"
+      responses:
+        "201":
+          description: Job created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/VerificationJob" }
+  /v1/verification-jobs/{jobId}:
+    get:
+      operationId: getVerificationJob
+      parameters:
+        - $ref: "#/components/parameters/JobId"
+      responses:
+        "200":
+          description: Current job state
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/VerificationJob" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /v1/verification-jobs/{jobId}/observations:
+    post:
+      operationId: submitObservation
+      parameters:
+        - $ref: "#/components/parameters/JobId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: ../schemas/observation.schema.json }
+      responses:
+        "200": { description: Observation appended }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /v1/verification-jobs/{jobId}/payment-required:
+    post:
+      operationId: createVerificationPaymentOffer
+      summary: Construct an x402 V2 payment-required offer for a verification job
+      parameters:
+        - $ref: "#/components/parameters/JobId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PaymentOfferRequest" }
+      responses:
+        "402": { $ref: "#/components/responses/PaymentRequired" }
+        "404": { description: Verification job not found }
+  /v1/verification-jobs/{jobId}/evaluate:
+    post:
+      operationId: evaluateVerificationJob
+      parameters:
+        - $ref: "#/components/parameters/JobId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [policy]
+              properties:
+                policy: { $ref: ../schemas/formal-consensus-policy.schema.json }
+      responses:
+        "200": { description: Formal consensus outcome }
+  /v1/compute/offers:
+    get:
+      operationId: listComputeOffers
+      parameters:
+        - in: query
+          name: service
+          schema: { type: string }
+        - in: query
+          name: deliveryBefore
+          schema: { type: string, format: date-time }
+      responses:
+        "200":
+          description: Signed service offers
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: ../schemas/compute-offer.schema.json }
+    post:
+      operationId: publishComputeOffer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: ../schemas/compute-offer.schema.json }
+      responses:
+        "201": { description: Offer published }
+  /v1/compute/quote:
+    post:
+      operationId: quoteResearchJob
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [expected_work, deadline, gold_probability, novelty_probability]
+              properties:
+                expected_work:
+                  type: object
+                  additionalProperties: { type: number, minimum: 0 }
+                deadline: { type: string, format: date-time }
+                gold_probability: { type: number, exclusiveMinimum: 0, maximum: 1 }
+                novelty_probability: { type: number, exclusiveMinimum: 0, maximum: 1 }
+                risk_premium_bps: { type: integer, minimum: 0, maximum: 10000 }
+      responses:
+        "200": { description: Compute quote }
+  /v1/lemmas/{lemmaId}:
+    get:
+      operationId: getLemmaCapsule
+      parameters:
+        - in: path
+          name: lemmaId
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Lemma capsule
+          content:
+            application/json:
+              schema: { $ref: ../schemas/lemma-capsule.schema.json }
+  /v1/lemmas/{lemmaId}/license:
+    post:
+      operationId: acquireLicense
+      parameters:
+        - in: path
+          name: lemmaId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: License manifest and settlement receipt }
+        "402": { $ref: "#/components/responses/PaymentRequired" }
+components:
+  parameters:
+    ResearcherId:
+      in: path
+      name: researcherId
+      required: true
+      schema: { type: string }
+    ClaimId:
+      in: path
+      name: claimId
+      required: true
+      schema: { type: string }
+    ProofId:
+      in: path
+      name: proofId
+      required: true
+      schema: { type: string }
+    JobId:
+      in: path
+      name: jobId
+      required: true
+      schema: { type: string }
+  schemas:
+    FormalizationRequest:
+      type: object
+      required: [researcher_id, natural_language_claim, artifact_context_root]
+      properties:
+        researcher_id: { type: string }
+        natural_language_claim: { type: string }
+        latex_context: { type: [string, "null"] }
+        lean_imports: { type: array, items: { type: string } }
+        namespace: { type: string }
+        theory_constraints: { type: array, items: { type: string } }
+        artifact_context_root: { type: string }
+        maximum_budget: { $ref: ../schemas/common.schema.json#/$defs/amount }
+    ProofSearchRequest:
+      type: object
+      required: [researcher_id, lean_statement, current_lean_file, artifact_context_root]
+      properties:
+        researcher_id: { type: string }
+        lean_statement: { type: string }
+        current_lean_file: { type: string }
+        compiler_diagnostics: { type: array, items: { type: string } }
+        allowed_imports: { type: array, items: { type: string } }
+        forbidden_axioms: { type: array, items: { type: string } }
+        maximum_iterations: { type: integer, minimum: 1 }
+        artifact_context_root: { type: string }
+        maximum_budget: { $ref: ../schemas/common.schema.json#/$defs/amount }
+    VerifyProofRequest:
+      type: object
+      required: [researcher_id, claim_id, theory_id, artifact_id, policy_id, maximum_budget]
+      properties:
+        researcher_id: { type: string }
+        claim_id: { type: string }
+        theory_id: { type: string }
+        artifact_id: { type: string }
+        policy_id: { type: string }
+        maximum_budget: { $ref: ../schemas/common.schema.json#/$defs/amount }
+        deadline: { type: string, format: date-time }
+    CreateVerificationJob:
+      type: object
+      required: [researcher_id, claim_id, theory_id, artifact_id, policy_id, maximum_budget_minor_units, settlement_asset]
+      properties:
+        researcher_id: { type: string }
+        claim_id: { type: string }
+        theory_id: { type: string }
+        artifact_id: { type: string }
+        policy_id: { type: string }
+        maximum_budget_minor_units: { type: integer, minimum: 1 }
+        settlement_asset: { type: string }
+    VerificationJob:
+      type: object
+      additionalProperties: true
+      required: [job_id, state, created_at, updated_at]
+      properties:
+        job_id: { type: string }
+        state:
+          type: string
+          enum: [draft, claim_committed, quoted, funded, assigned, formalizing, candidate_ready, building, checkers_committed, checkers_revealed, passed, failed, divergent, challenged, finalized, rejected, quarantined, published, revalidated, superseded]
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    PaymentOfferRequest:
+      type: object
+      additionalProperties: false
+      required: [compute_quote_id, amount, asset, network, pay_to, max_timeout_seconds, artifact_commitment, model_policy, rights_manifest_hash, revenue_route_hash, delivery_mode, valid_until]
+      properties:
+        compute_quote_id: { type: string, pattern: "^xlquote:blake3:[0-9a-f]{64}$" }
+        amount: { type: string, pattern: "^[1-9][0-9]*$" }
+        asset: { type: string, minLength: 1 }
+        network: { type: string, minLength: 1 }
+        pay_to: { type: string, minLength: 1 }
+        max_timeout_seconds: { type: integer, minimum: 1 }
+        artifact_commitment: { type: string, minLength: 16 }
+        model_policy: { type: string, minLength: 1 }
+        rights_manifest_hash: { type: string, minLength: 16 }
+        revenue_route_hash: { type: string, minLength: 16 }
+        delivery_mode: { type: string, minLength: 1 }
+        valid_until: { type: string, format: date-time }
+  responses:
+    PaymentRequired:
+      description: x402 payment authorization required
+      headers:
+        PAYMENT-REQUIRED:
+          schema: { type: string }
+          description: Base64-encoded x402 V2 JSON with the xlemma extension
+    BadRequest:
+      description: Invalid request
+    NotFound:
+      description: Resource not found
+    Conflict:
+      description: State or identity conflict

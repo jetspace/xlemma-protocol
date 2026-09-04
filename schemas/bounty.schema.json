@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BountyManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bounty_id": {
+      "type": "string"
+    },
+    "sponsor": {
+      "type": "string"
+    },
+    "theory_id": {
+      "type": "string",
+      "pattern": "^xlt:blake3:[0-9a-f]{64}$"
+    },
+    "claim_id": {
+      "type": "string",
+      "pattern": "^xlc:blake3:[0-9a-f]{64}$"
+    },
+    "exact_trusted_challenge_hash": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "allowed_dependency_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "axiom_policy_id": {
+      "type": "string",
+      "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+    },
+    "required_verification_policy_id": {
+      "type": "string",
+      "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+    },
+    "reward": {
+      "$ref": "common.schema.json#/$defs/amount"
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "commit_reveal_required": {
+      "type": "boolean"
+    },
+    "challenge_period_seconds": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "bounty_id",
+    "sponsor",
+    "theory_id",
+    "claim_id",
+    "exact_trusted_challenge_hash",
+    "allowed_dependency_root",
+    "axiom_policy_id",
+    "required_verification_policy_id",
+    "reward",
+    "deadline",
+    "commit_reveal_required",
+    "challenge_period_seconds"
+  ],
+  "$id": "https://xlemma.example/schemas/bounty.schema.json"
+}

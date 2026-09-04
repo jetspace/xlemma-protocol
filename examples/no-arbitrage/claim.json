@@ -1,0 +1,8 @@
+{
+  "protocol_version": "xlemma/0.2",
+  "theory_id": "xlt:blake3:1111111111111111111111111111111111111111111111111111111111111111",
+  "canonical_elaborated_type": "forall (market : Market), Market.noFreeLunch market -> Not market.hasArbitrage",
+  "declaration_name": "XLemma.NoArbitrage.noArbitrage",
+  "source_artifact": "xla:blake3:4444444444444444444444444444444444444444444444444444444444444444",
+  "created_at": "2026-09-03T20:00:00Z"
+}

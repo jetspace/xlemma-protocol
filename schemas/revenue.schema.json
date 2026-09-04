@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RevenueAllocationReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+    },
+    "revenue_event_id": {
+      "type": "string"
+    },
+    "claim_id": {
+      "type": "string",
+      "pattern": "^xlc:blake3:[0-9a-f]{64}$"
+    },
+    "gross_collected": {
+      "$ref": "common.schema.json#/$defs/amount"
+    },
+    "service_cost": {
+      "$ref": "common.schema.json#/$defs/amount"
+    },
+    "compute_cost": {
+      "$ref": "common.schema.json#/$defs/amount"
+    },
+    "refunds": {
+      "$ref": "common.schema.json#/$defs/amount"
+    },
+    "reserves": {
+      "$ref": "common.schema.json#/$defs/amount"
+    },
+    "net_distributable": {
+      "$ref": "common.schema.json#/$defs/amount"
+    },
+    "allocations": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "common.schema.json#/$defs/amount"
+      }
+    },
+    "credits_minted": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "common.schema.json#/$defs/amount"
+      }
+    },
+    "cash_payouts": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "common.schema.json#/$defs/amount"
+      }
+    },
+    "finalized_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "signature": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "receipt_id",
+    "revenue_event_id",
+    "claim_id",
+    "gross_collected",
+    "service_cost",
+    "compute_cost",
+    "refunds",
+    "reserves",
+    "net_distributable",
+    "allocations",
+    "credits_minted",
+    "cash_payouts",
+    "finalized_at",
+    "signature"
+  ],
+  "$id": "https://xlemma.example/schemas/revenue.schema.json"
+}

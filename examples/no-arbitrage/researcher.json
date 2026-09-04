@@ -1,0 +1,17 @@
+{
+  "researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+  "display_name": "Example Decentralized Researcher",
+  "identity_keys": [
+    "did:key:example"
+  ],
+  "research_credit_asset": "R-EXAMPLE",
+  "research_vault": "0x1111111111111111111111111111111111111111",
+  "governance_policy_id": "xlpolicy:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+  "contribution_identity_root": "blake3:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "reputation_root": "blake3:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "supported_domains": [
+    "formal-mathematics",
+    "finance"
+  ],
+  "created_at": "2026-09-03T19:00:00Z"
+}

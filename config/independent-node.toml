@@ -1,0 +1,9 @@
+node_role = "independent_checker"
+checker_family = "nanoda"
+operator_cluster_id = "CONFIGURE_DIFFERENT_OPERATOR"
+infrastructure_provider = "CONFIGURE_DIFFERENT_PROVIDER"
+region = "CONFIGURE_DIFFERENT_REGION"
+neutral_bond_asset = "USDC"
+accept_researcher_token_as_bond = false
+pay_for_pass_only = false
+commit_reveal = true

@@ -1,0 +1,11 @@
+/target
+.env
+.DS_Store
+*.log
+*.tmp
+*.swp
+contracts/cache/
+contracts/out/
+lean/.lake/
+examples/**/.lake/
+artifacts/

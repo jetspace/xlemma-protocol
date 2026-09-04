@@ -1,0 +1,12 @@
+[package]
+name = "xlemma-consensus"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+blake3.workspace = true
+chrono.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+xlemma-core = { path = "../xlemma-core" }

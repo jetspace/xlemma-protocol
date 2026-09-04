@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ResearcherNodeManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "researcher_id": {
+      "type": "string",
+      "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$"
+    },
+    "display_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "identity_keys": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "research_credit_asset": {
+      "type": "string"
+    },
+    "research_vault": {
+      "type": "string"
+    },
+    "governance_policy_id": {
+      "type": "string",
+      "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+    },
+    "contribution_identity_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "reputation_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "supported_domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "researcher_id",
+    "identity_keys",
+    "research_credit_asset",
+    "research_vault",
+    "governance_policy_id",
+    "contribution_identity_root",
+    "reputation_root",
+    "supported_domains",
+    "created_at"
+  ],
+  "$id": "https://xlemma.example/schemas/researcher-node.schema.json"
+}

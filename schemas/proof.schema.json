@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProofManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "protocol_version": {
+      "const": "xlemma/0.2"
+    },
+    "claim_id": {
+      "type": "string",
+      "pattern": "^xlc:blake3:[0-9a-f]{64}$"
+    },
+    "canonical_proof_object": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^xla:blake3:[0-9a-f]{64}$"
+    },
+    "direct_dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^xlc:blake3:[0-9a-f]{64}$"
+      },
+      "uniqueItems": true
+    },
+    "dependency_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "observed_axioms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "protocol_version",
+    "claim_id",
+    "canonical_proof_object",
+    "artifact_id",
+    "direct_dependencies",
+    "dependency_root",
+    "observed_axioms"
+  ],
+  "$id": "https://xlemma.example/schemas/proof.schema.json"
+}

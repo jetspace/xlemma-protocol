@@ -1,0 +1,9 @@
+{
+  "counterfactual_without_mean_units": 10000000.0,
+  "counterfactual_without_std_error_units": 1000000.0,
+  "observed_with_units": 5000000,
+  "lower_confidence_multiplier": 1.645,
+  "evidence_sample_size": 50,
+  "upstream_is_in_final_dependency_graph": true,
+  "equivalent_cluster_id": "cluster-example"
+}

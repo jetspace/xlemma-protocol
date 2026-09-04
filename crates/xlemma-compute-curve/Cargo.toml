@@ -1,0 +1,11 @@
+[package]
+name = "xlemma-compute-curve"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+chrono.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+xlemma-core = { path = "../xlemma-core" }

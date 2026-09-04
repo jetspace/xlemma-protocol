@@ -1,0 +1,10 @@
+{
+  "units": {
+    "astra_generation": 500000.0,
+    "lean_build": 1.0,
+    "official_kernel_check": 2.0,
+    "independent_check": 1.0,
+    "novelty_review": 3.0,
+    "storage": 1000.0
+  }
+}

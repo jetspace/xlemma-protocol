@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LeanVerificationReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^xljob:blake3:[0-9a-f]{64}$"
+    },
+    "claim_id": {
+      "type": "string",
+      "pattern": "^xlc:blake3:[0-9a-f]{64}$"
+    },
+    "proof_id": {
+      "type": "string",
+      "pattern": "^xlp:blake3:[0-9a-f]{64}$"
+    },
+    "theory_id": {
+      "type": "string",
+      "pattern": "^xlt:blake3:[0-9a-f]{64}$"
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^xla:blake3:[0-9a-f]{64}$"
+    },
+    "exact_challenge_matched": {
+      "type": "boolean"
+    },
+    "lean_toolchain": {
+      "type": "string"
+    },
+    "dependency_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "axiom_policy_id": {
+      "type": "string",
+      "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+    },
+    "observed_axioms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "sandbox_image_digest": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "checker_executions": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "CheckerExecution",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "checker_family": {
+            "type": "string",
+            "enum": [
+              "lean_kernel",
+              "nanoda",
+              "other_independent"
+            ]
+          },
+          "checker_name": {
+            "type": "string"
+          },
+          "checker_version": {
+            "type": "string"
+          },
+          "binary_digest": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 512
+          },
+          "node_id": {
+            "type": "string",
+            "pattern": "^xlnode:blake3:[0-9a-f]{64}$"
+          },
+          "operator_cluster_id": {
+            "type": "string",
+            "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+          },
+          "infrastructure_provider": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "region": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail",
+              "error",
+              "abstain"
+            ]
+          },
+          "execution_trace_root": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 512
+          }
+        },
+        "required": [
+          "checker_family",
+          "checker_name",
+          "checker_version",
+          "binary_digest",
+          "node_id",
+          "operator_cluster_id",
+          "verdict",
+          "execution_trace_root"
+        ]
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "error",
+        "abstain"
+      ]
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "aggregate_signature": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "receipt_id",
+    "job_id",
+    "claim_id",
+    "proof_id",
+    "theory_id",
+    "artifact_id",
+    "exact_challenge_matched",
+    "lean_toolchain",
+    "dependency_root",
+    "axiom_policy_id",
+    "observed_axioms",
+    "sandbox_image_digest",
+    "checker_executions",
+    "verdict",
+    "verified_at",
+    "aggregate_signature"
+  ],
+  "$id": "https://xlemma.example/schemas/verification-receipt.schema.json"
+}

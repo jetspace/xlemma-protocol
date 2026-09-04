@@ -1,0 +1,35 @@
+{
+  "claim_id": "xlc:blake3:2222222222222222222222222222222222222222222222222222222222222222",
+  "originator_attribution_nontransferable": true,
+  "claims": [
+    {
+      "kind": "attribution",
+      "controller": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+      "jurisdiction": null,
+      "source_agreement_hash": null,
+      "transferable": false,
+      "sublicensable": false,
+      "limitations": [
+        "Does not claim ownership of the mathematical truth."
+      ]
+    },
+    {
+      "kind": "source_code_copyright",
+      "controller": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+      "jurisdiction": "US",
+      "source_agreement_hash": null,
+      "transferable": true,
+      "sublicensable": true,
+      "limitations": [
+        "Subject to third-party Lean and library licenses."
+      ]
+    }
+  ],
+  "employer_university_grant_clearance": "researcher-attests-no-conflicting-obligation-for-example",
+  "clearance_evidence_root": "blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "legal_wrapper": null,
+  "signed_by": [
+    "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777"
+  ],
+  "signed_at": "2026-09-03T20:00:00Z"
+}

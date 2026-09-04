@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClaimManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "protocol_version": {
+      "const": "xlemma/0.2"
+    },
+    "theory_id": {
+      "type": "string",
+      "pattern": "^xlt:blake3:[0-9a-f]{64}$"
+    },
+    "canonical_elaborated_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "declaration_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_artifact": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^xla:blake3:[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "protocol_version",
+    "theory_id",
+    "canonical_elaborated_type",
+    "declaration_name",
+    "created_at"
+  ],
+  "$id": "https://xlemma.example/schemas/claim.schema.json"
+}

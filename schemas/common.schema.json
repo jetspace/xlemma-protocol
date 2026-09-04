@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/common.schema.json",
+  "title": "xLemma common definitions",
+  "$defs": {
+    "amount": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "Amount",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "units": {
+          "type": [
+            "string",
+            "integer"
+          ],
+          "pattern": "^[0-9]+$",
+          "minimum": 0
+        },
+        "asset": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "decimals": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 38
+        }
+      },
+      "required": [
+        "units",
+        "asset",
+        "decimals"
+      ]
+    },
+    "hash": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "signature": {
+      "type": "string",
+      "minLength": 1
+    },
+    "uri": {
+      "type": "string",
+      "format": "uri"
+    }
+  }
+}

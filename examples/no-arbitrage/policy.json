@@ -1,0 +1,15 @@
+{
+  "required_family_counts": {
+    "lean_kernel": 2,
+    "nanoda": 1,
+    "other_independent": 0
+  },
+  "minimum_operator_clusters": 3,
+  "minimum_infrastructure_providers": 2,
+  "minimum_regions": 2,
+  "require_identical_artifact_root": true,
+  "require_identical_environment_root": true,
+  "require_identical_dependency_root": true,
+  "require_identical_axiom_set_root": true,
+  "challenge_period_seconds": 86400
+}

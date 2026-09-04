@@ -1,0 +1,9 @@
+{
+  "protocol_version": "xlemma/0.2",
+  "claim_id": "xlc:blake3:2222222222222222222222222222222222222222222222222222222222222222",
+  "canonical_proof_object": "fun market h => h",
+  "artifact_id": "xla:blake3:4444444444444444444444444444444444444444444444444444444444444444",
+  "direct_dependencies": [],
+  "dependency_root": "blake3:2222222222222222222222222222222222222222222222222222222222222222",
+  "observed_axioms": []
+}

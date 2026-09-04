@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RightsManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "claim_id": {
+      "type": "string",
+      "pattern": "^xlc:blake3:[0-9a-f]{64}$"
+    },
+    "originator_attribution_nontransferable": {
+      "const": true
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "RightsClaim",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "attribution",
+              "manuscript_copyright",
+              "source_code_copyright",
+              "dataset_rights",
+              "patent_or_application",
+              "trade_secret",
+              "contractual_license",
+              "commercial_implementation",
+              "access_right",
+              "no_exclusive_right_claimed"
+            ]
+          },
+          "controller": {
+            "type": "string"
+          },
+          "jurisdiction": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_agreement_hash": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 16,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "transferable": {
+            "type": "boolean"
+          },
+          "sublicensable": {
+            "type": "boolean"
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "kind",
+          "controller",
+          "transferable",
+          "sublicensable",
+          "limitations"
+        ]
+      }
+    },
+    "employer_university_grant_clearance": {
+      "type": "string"
+    },
+    "clearance_evidence_root": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 512
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "legal_wrapper": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "signed_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "signed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "claim_id",
+    "originator_attribution_nontransferable",
+    "claims",
+    "employer_university_grant_clearance",
+    "signed_by",
+    "signed_at"
+  ],
+  "$id": "https://xlemma.example/schemas/rights.schema.json"
+}

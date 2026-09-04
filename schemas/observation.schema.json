@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ObservationReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^xljob:blake3:[0-9a-f]{64}$"
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^xlnode:blake3:[0-9a-f]{64}$"
+    },
+    "operator_cluster_id": {
+      "type": "string",
+      "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+    },
+    "checker_family": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "lean_kernel",
+        "nanoda",
+        "other_independent",
+        null
+      ]
+    },
+    "checker_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "checker_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "checker_binary_digest": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "infrastructure_provider": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "region": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "artifact_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "environment_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "dependency_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "axiom_set_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "execution_trace_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "observation_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "error",
+        "abstain"
+      ]
+    },
+    "commitment": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "reveal_salt": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 512
+    },
+    "committed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revealed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "signature": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "receipt_id",
+    "job_id",
+    "node_id",
+    "operator_cluster_id",
+    "checker_name",
+    "checker_version",
+    "checker_binary_digest",
+    "infrastructure_provider",
+    "region",
+    "artifact_root",
+    "environment_root",
+    "dependency_root",
+    "axiom_set_root",
+    "execution_trace_root",
+    "observation_root",
+    "verdict",
+    "commitment",
+    "reveal_salt",
+    "committed_at",
+    "revealed_at",
+    "signature"
+  ],
+  "$id": "https://xlemma.example/schemas/observation.schema.json"
+}

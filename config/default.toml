@@ -1,0 +1,90 @@
+protocol_version = "xlemma/0.2"
+canonical_json = "rfc8785+jcs"
+canonical_lean_expression = "xlemma-lean-expr-v1"
+settlement_asset = "USDC"
+settlement_decimals = 6
+
+[research_credit]
+fully_backed = true
+minimum_reserve_ratio_bps = 10000
+peer_to_peer_transfer_enabled = false
+allow_researcher_redemption = true
+unbacked_minting_enabled = false
+
+[revenue]
+creator_pool_bps = 6500
+upstream_dependency_pool_bps = 1000
+reverification_security_pool_bps = 800
+open_research_pool_bps = 700
+dispute_insurance_pool_bps = 500
+protocol_operations_bps = 500
+dependency_reward_cap_bps = 1000
+
+[consensus.gold]
+lean_kernel_count = 2
+nanoda_count = 1
+other_independent_count = 0
+minimum_operator_clusters = 3
+minimum_infrastructure_providers = 2
+minimum_regions = 2
+require_identical_artifact_root = true
+require_identical_environment_root = true
+require_identical_dependency_root = true
+require_identical_axiom_set_root = true
+challenge_period_seconds = 86400
+
+[committee]
+minimum_collateral_minor_units = 1000000000
+minimum_reliability_bps = 9500
+minimum_qualification_bps = 9000
+stake_weighted_voting = false
+randomness_source = "vrf-required-in-production"
+operator_cluster_enforcement = true
+
+[novelty]
+prior_probability = 0.20
+material_novelty_threshold = 0.80
+known_equivalent_threshold = 0.80
+minimum_prior_art_coverage = 0.75
+maximum_reviewer_weight = 0.25
+minimum_independent_operators = 3
+
+[compute_dividend]
+savings_share_bps = 2000
+downstream_revenue_cap_bps = 1000
+minimum_counterfactual_sample_size = 20
+lower_confidence_multiplier = 1.645
+final_dependency_required = true
+
+[astra]
+provider = "openai"
+model_env = "OPENAI_MODEL"
+default_model = "gpt-6-astra"
+reasoning_effort = "high"
+max_output_tokens = 32000
+self_certification_allowed = false
+
+[x402]
+version = 2
+fixed_verification_scheme = "exact"
+variable_model_scheme = "upto"
+continuous_session_scheme = "batch-settlement"
+payment_identifier_required = true
+facilitator_participates_in_research_consensus = false
+
+[sandbox]
+network_disabled = true
+read_only_root = true
+cpu_limit_millis = 120000
+memory_limit_bytes = 8589934592
+process_limit = 128
+timeout_seconds = 900
+image_digest = "CONFIGURE_IMMUTABLE_IMAGE_DIGEST"
+
+[availability]
+required_replicas = 3
+required_operator_clusters = 3
+required_providers = 2
+required_regions = 2
+retention_days = 3650
+custody_challenge_interval_seconds = 86400

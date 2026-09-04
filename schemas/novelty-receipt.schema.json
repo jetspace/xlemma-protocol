@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NoveltyReviewReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+    },
+    "claim_id": {
+      "type": "string",
+      "pattern": "^xlc:blake3:[0-9a-f]{64}$"
+    },
+    "reviewer_node_id": {
+      "type": "string",
+      "pattern": "^xlnode:blake3:[0-9a-f]{64}$"
+    },
+    "operator_cluster_id": {
+      "type": "string",
+      "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+    },
+    "corpus_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "corpus_cutoff": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "known_equivalent_probability": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "material_novelty_probability": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "useful_simplification_probability": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "prior_art_coverage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "evidence_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "conflicts_disclosed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "signature": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "receipt_id",
+    "claim_id",
+    "reviewer_node_id",
+    "operator_cluster_id",
+    "corpus_root",
+    "corpus_cutoff",
+    "known_equivalent_probability",
+    "material_novelty_probability",
+    "useful_simplification_probability",
+    "prior_art_coverage",
+    "confidence",
+    "evidence_root",
+    "conflicts_disclosed",
+    "reviewed_at",
+    "signature"
+  ],
+  "$id": "https://xlemma.example/schemas/novelty-receipt.schema.json"
+}

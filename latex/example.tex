@@ -1,0 +1,29 @@
+\documentclass{article}
+\usepackage{xlemma}
+\usepackage{amsmath,amsthm}
+
+\newtheorem{lemma}{Lemma}
+
+\begin{document}
+
+\begin{lemma}[Protocol demonstration only]
+  \label{lem:no-arbitrage}
+  \lean{XLemma.NoArbitrage.noArbitrage}
+  \leanok
+  \xtheoryid{xlt:blake3:1111111111111111111111111111111111111111111111111111111111111111}
+  \xclaimid{xlc:blake3:2222222222222222222222222222222222222222222222222222222222222222}
+  \xproofid{xlp:blake3:3333333333333333333333333333333333333333333333333333333333333333}
+  \xartifactid{xla:blake3:4444444444444444444444444444444444444444444444444444444444444444}
+  \xverification{xlemma-gold-v1}
+  \xverificationreceipt{xlr:blake3:5555555555555555555555555555555555555555555555555555555555555555}
+  \xlicense{Apache-2.0}
+  \xrightsmanifest{blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd}
+  \xcontributionmanifest{blake3:8888888888888888888888888888888888888888888888888888888888888888}
+  \xrevenue{researcher-vault-route-v1}
+
+  Under the example definition, a market satisfying no-free-lunch has no arbitrage.
+\end{lemma}
+
+\xformalwarning
+
+\end{document}

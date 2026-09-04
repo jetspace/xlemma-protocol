@@ -1,0 +1,6 @@
+name = "xlemma"
+version = "0.2.0"
+defaultTargets = ["XLemma"]
+
+[[lean_lib]]
+name = "XLemma"

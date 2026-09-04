@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ContributionManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "claim_id": {
+      "type": "string",
+      "pattern": "^xlc:blake3:[0-9a-f]{64}$"
+    },
+    "contributors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "ContributionShare",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contributor": {
+            "type": "string",
+            "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$"
+          },
+          "roles": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "formula_originator",
+                "conjecture_author",
+                "proof_discoverer",
+                "lean_formalizer",
+                "tactic_author",
+                "library_author",
+                "dataset_creator",
+                "experimental_contributor",
+                "reviewer",
+                "exposition_author",
+                "sponsor",
+                "compute_provider",
+                "other"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "share_bps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "evidence_root": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 512
+          },
+          "signed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "signature": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "contributor",
+          "roles",
+          "share_bps",
+          "evidence_root",
+          "signed_at",
+          "signature"
+        ]
+      }
+    },
+    "machine_contributions": {
+      "type": "array",
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "MachineContributionRecord",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "model_snapshot": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "request_hash": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 512
+          },
+          "context_root": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 512
+          },
+          "output_artifact_roots": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 512
+            }
+          },
+          "human_selection_and_edits_root": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 16,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "disclosure": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "model",
+          "request_hash",
+          "context_root",
+          "output_artifact_roots",
+          "disclosure"
+        ]
+      }
+    },
+    "amendment_parent": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dispute_status": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "claim_id",
+    "contributors",
+    "machine_contributions",
+    "dispute_status"
+  ],
+  "$comment": "Contributor share_bps MUST sum to 10,000; enforce in protocol logic.",
+  "$id": "https://xlemma.example/schemas/contribution.schema.json"
+}

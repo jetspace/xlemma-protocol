@@ -1,0 +1,44 @@
+{
+  "lemma_id": "xll:blake3:6666666666666666666666666666666666666666666666666666666666666666",
+  "theory_id": "xlt:blake3:1111111111111111111111111111111111111111111111111111111111111111",
+  "claim_id": "xlc:blake3:2222222222222222222222222222222222222222222222222222222222222222",
+  "proof_id": "xlp:blake3:3333333333333333333333333333333333333333333333333333333333333333",
+  "artifact_id": "xla:blake3:4444444444444444444444444444444444444444444444444444444444444444",
+  "presentation_ids": [
+    "xlpresentation:example"
+  ],
+  "origin_certificate_id": "xlr:blake3:5555555555555555555555555555555555555555555555555555555555555555",
+  "contribution_manifest_hash": "blake3:8888888888888888888888888888888888888888888888888888888888888888",
+  "rights_manifest_hash": "blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "dependency_root": "blake3:2222222222222222222222222222222222222222222222222222222222222222",
+  "verification_receipt_ids": [
+    "xlr:blake3:5555555555555555555555555555555555555555555555555555555555555555"
+  ],
+  "novelty_receipt_ids": [],
+  "revenue_route": {
+    "settlement_asset": "USDC",
+    "researcher_vault": "0x1111111111111111111111111111111111111111",
+    "waterfall": {
+      "creator_pool_bps": 6500,
+      "upstream_dependency_pool_bps": 1000,
+      "reverification_security_pool_bps": 800,
+      "open_research_pool_bps": 700,
+      "dispute_insurance_pool_bps": 500,
+      "protocol_operations_bps": 500
+    },
+    "contributor_manifest_hash": "blake3:8888888888888888888888888888888888888888888888888888888888888888",
+    "dependency_reward_cap_bps": 1000,
+    "auto_compound_bps_by_researcher": {
+      "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777": 6000
+    }
+  },
+  "formal_status": "certified",
+  "novelty_status": "incremental",
+  "parent_capsule": null,
+  "supersedes": null,
+  "created_at": "2026-09-03T21:00:00Z",
+  "metadata": {
+    "title": "No-arbitrage definition example",
+    "warning": "The example is intentionally tautological and not a financial theorem."
+  }
+}

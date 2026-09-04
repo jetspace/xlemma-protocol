@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "XLemmaPaymentExtension",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "protocol": {
+      "const": "xlemma/0.2"
+    },
+    "jobId": {
+      "type": "string",
+      "pattern": "^xljob:blake3:[0-9a-f]{64}$"
+    },
+    "researcherId": {
+      "type": "string",
+      "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$"
+    },
+    "claimId": {
+      "type": "string",
+      "pattern": "^xlc:blake3:[0-9a-f]{64}$"
+    },
+    "proofId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^xlp:blake3:[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "artifactCommitment": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "computeQuoteId": {
+      "type": "string",
+      "pattern": "^xlquote:blake3:[0-9a-f]{64}$"
+    },
+    "requiredVerificationPolicy": {
+      "type": "string",
+      "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+    },
+    "modelPolicy": {
+      "type": "string"
+    },
+    "rightsManifestHash": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "revenueRouteHash": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "deliveryMode": {
+      "type": "string",
+      "enum": [
+        "public_bundle",
+        "encrypted_content_addressed_bundle",
+        "service_only"
+      ]
+    },
+    "validUntil": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "protocol",
+    "jobId",
+    "researcherId",
+    "claimId",
+    "artifactCommitment",
+    "computeQuoteId",
+    "requiredVerificationPolicy",
+    "modelPolicy",
+    "rightsManifestHash",
+    "revenueRouteHash",
+    "deliveryMode",
+    "validUntil"
+  ],
+  "$id": "https://xlemma.example/schemas/x402-extension.schema.json"
+}

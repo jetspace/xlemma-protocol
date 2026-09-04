@@ -1,0 +1,35 @@
+%% xLemma LaTeX integration
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{xlemma}[2026/09/03 v0.2 xLemma proof metadata]
+
+\RequirePackage{xcolor}
+\RequirePackage{hyperref}
+\RequirePackage{ifthen}
+
+\newcommand{\xlemmafield}[2]{%
+  \par\noindent\textcolor{gray}{\footnotesize\textbf{#1:} \texttt{#2}}%
+}
+
+\newcommand{\xclaimid}[1]{\xlemmafield{ClaimID}{#1}}
+\newcommand{\xproofid}[1]{\xlemmafield{ProofID}{#1}}
+\newcommand{\xtheoryid}[1]{\xlemmafield{TheoryID}{#1}}
+\newcommand{\xartifactid}[1]{\xlemmafield{Artifact}{#1}}
+\newcommand{\xverification}[1]{\xlemmafield{Verification}{#1}}
+\newcommand{\xverificationreceipt}[1]{\xlemmafield{Verification receipt}{#1}}
+\newcommand{\xlicense}[1]{\xlemmafield{License}{#1}}
+\newcommand{\xrightsmanifest}[1]{\xlemmafield{Rights manifest}{#1}}
+\newcommand{\xcontributionmanifest}[1]{\xlemmafield{Contribution manifest}{#1}}
+\newcommand{\xrevenue}[1]{\xlemmafield{Revenue route}{#1}}
+\newcommand{\xformalwarning}{%
+  \par\noindent\fcolorbox{black}{white}{%
+    \parbox{0.94\linewidth}{\footnotesize
+      The formal Lean declaration is authoritative. This prose is a human
+      presentation and may not substitute for inspection of the exact type,
+      definitions, assumptions, dependencies, and axiom policy.}}%
+}
+
+%% Compatibility shims for leanblueprint-style documents. If leanblueprint is
+%% loaded, its own definitions may be used instead.
+\providecommand{\lean}[1]{\xlemmafield{Lean declaration}{#1}}
+\providecommand{\leanok}{\xlemmafield{Lean mapping}{declared}}
+\providecommand{\uses}[1]{\xlemmafield{Uses}{#1}}

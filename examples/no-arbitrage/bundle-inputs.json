@@ -1,0 +1,12 @@
+[
+  {
+    "relative_path": "NoArbitrage.lean",
+    "media_type": "text/x-lean",
+    "encrypted": false
+  },
+  {
+    "relative_path": "paper.tex",
+    "media_type": "application/x-tex",
+    "encrypted": false
+  }
+]

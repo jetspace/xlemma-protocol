@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LemmaCapsule",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lemma_id": {
+      "type": "string",
+      "pattern": "^xll:blake3:[0-9a-f]{64}$"
+    },
+    "theory_id": {
+      "type": "string",
+      "pattern": "^xlt:blake3:[0-9a-f]{64}$"
+    },
+    "claim_id": {
+      "type": "string",
+      "pattern": "^xlc:blake3:[0-9a-f]{64}$"
+    },
+    "proof_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^xlp:blake3:[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^xla:blake3:[0-9a-f]{64}$"
+    },
+    "presentation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "origin_certificate_id": {
+      "type": "string",
+      "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+    },
+    "contribution_manifest_hash": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "rights_manifest_hash": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "dependency_root": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 512
+    },
+    "verification_receipt_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+      }
+    },
+    "novelty_receipt_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+      }
+    },
+    "revenue_route": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "RevenueRoute",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "settlement_asset": {
+          "type": "string"
+        },
+        "researcher_vault": {
+          "type": "string"
+        },
+        "waterfall": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "title": "RevenueWaterfall",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "creator_pool_bps": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "upstream_dependency_pool_bps": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "reverification_security_pool_bps": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "open_research_pool_bps": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "dispute_insurance_pool_bps": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "protocol_operations_bps": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            }
+          },
+          "required": [
+            "creator_pool_bps",
+            "upstream_dependency_pool_bps",
+            "reverification_security_pool_bps",
+            "open_research_pool_bps",
+            "dispute_insurance_pool_bps",
+            "protocol_operations_bps"
+          ]
+        },
+        "contributor_manifest_hash": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 512
+        },
+        "dependency_reward_cap_bps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "auto_compound_bps_by_researcher": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          }
+        }
+      },
+      "required": [
+        "settlement_asset",
+        "researcher_vault",
+        "waterfall",
+        "contributor_manifest_hash",
+        "dependency_reward_cap_bps",
+        "auto_compound_bps_by_researcher"
+      ]
+    },
+    "formal_status": {
+      "type": "string",
+      "enum": [
+        "unchecked",
+        "reproduced",
+        "certified",
+        "rejected",
+        "divergent",
+        "quarantined",
+        "revoked"
+      ]
+    },
+    "novelty_status": {
+      "type": "string",
+      "enum": [
+        "unreviewed",
+        "known_equivalent",
+        "incremental",
+        "materially_novel",
+        "inconclusive",
+        "disputed"
+      ]
+    },
+    "parent_capsule": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^xll:blake3:[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "supersedes": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^xll:blake3:[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "lemma_id",
+    "theory_id",
+    "claim_id",
+    "artifact_id",
+    "presentation_ids",
+    "origin_certificate_id",
+    "contribution_manifest_hash",
+    "rights_manifest_hash",
+    "dependency_root",
+    "verification_receipt_ids",
+    "novelty_receipt_ids",
+    "revenue_route",
+    "formal_status",
+    "novelty_status",
+    "created_at",
+    "metadata"
+  ],
+  "$id": "https://xlemma.example/schemas/lemma-capsule.schema.json"
+}
