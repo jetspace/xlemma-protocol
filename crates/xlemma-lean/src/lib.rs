@@ -14,8 +14,9 @@ use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, path::PathBuf};
 use thiserror::Error;
 use xlemma_core::{
-    ArtifactId, CheckerExecution, CheckerFamily, ClaimId, JobId, LeanVerificationReceipt, NodeId,
-    ObservationVerdict, OperatorClusterId, PolicyId, ProofId, ReceiptId, TheoryId,
+    ArtifactId, CheckerExecution, CheckerFamily, ClaimId, JobId, LeanEnvironmentExport,
+    LeanExportError, LeanVerificationReceipt, NodeId, ObservationVerdict, OperatorClusterId,
+    PolicyId, ProofId, ReceiptId, TheoryId, TheoryManifest,
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -37,6 +38,7 @@ pub struct LeanVerificationRequest {
     pub claim_id: ClaimId,
     pub proof_id: ProofId,
     pub theory_id: TheoryId,
+    pub theory_manifest: TheoryManifest,
     pub artifact_id: ArtifactId,
     pub workspace: PathBuf,
     pub trusted_challenge_path: PathBuf,
@@ -83,6 +85,18 @@ pub enum LeanVerificationError {
     OutputTooLarge,
     #[error("build failed: {0}")]
     BuildFailed(String),
+    #[error("Lean build emitted no environment export")]
+    MissingEnvironmentExport,
+    #[error("Lean build emitted multiple environment exports for one verification request")]
+    MultipleEnvironmentExports,
+    #[error("Lean build emitted malformed environment-export JSON")]
+    MalformedEnvironmentExport,
+    #[error("Lean export identity does not match the requested TheoryID, ClaimID, or ProofID")]
+    ExportIdentityMismatch,
+    #[error("Lean export environment does not match the requested theory or dependency root")]
+    ExportEnvironmentMismatch,
+    #[error(transparent)]
+    InvalidEnvironmentExport(#[from] LeanExportError),
     #[error("trusted challenge did not match")]
     ChallengeMismatch,
     #[error("observed an unpermitted axiom: {0}")]
@@ -189,6 +203,8 @@ impl<R: SandboxRunner, S: VerificationReceiptSigner> LeanVerifier<R, S> {
                 build.stderr.chars().take(4_096).collect(),
             ));
         }
+        let export = extract_environment_export(&format!("{}\n{}", build.stdout, build.stderr))?;
+        let observed_axioms = validate_export_for_request(request, &export)?;
 
         let kernel = self
             .runner
@@ -246,18 +262,6 @@ impl<R: SandboxRunner, S: VerificationReceiptSigner> LeanVerifier<R, S> {
             || comparator.stdout.contains("SUCCESS");
         if independent_verdict == ObservationVerdict::Pass && !exact_challenge_matched {
             return Err(LeanVerificationError::ChallengeMismatch);
-        }
-
-        // The production exporter supplies a machine-readable axiom report.
-        // This reference implementation recognizes `AXIOM:` lines.
-        let observed_axioms = extract_axioms(&format!(
-            "{}\n{}\n{}",
-            build.stdout, kernel.stdout, comparator.stdout
-        ));
-        for axiom in &observed_axioms {
-            if !request.permitted_axioms.contains(axiom) {
-                return Err(LeanVerificationError::UnpermittedAxiom(axiom.clone()));
-            }
         }
 
         let checker_executions = vec![
@@ -358,32 +362,160 @@ fn verdict_from_exit(code: Option<i32>) -> ObservationVerdict {
     }
 }
 
-fn extract_axioms(output: &str) -> Vec<String> {
-    let mut axioms: Vec<_> = output
+const LEAN_EXPORT_MARKER: &str = "XLMP_LEAN_EXPORT ";
+
+fn extract_environment_export(
+    output: &str,
+) -> Result<LeanEnvironmentExport, LeanVerificationError> {
+    let records: Vec<_> = output
         .lines()
-        .filter_map(|line| line.trim().strip_prefix("AXIOM:"))
-        .map(str::trim)
-        .filter(|value| !value.is_empty())
-        .map(str::to_owned)
+        .filter_map(|line| {
+            line.split_once(LEAN_EXPORT_MARKER)
+                .map(|(_, record)| record)
+        })
         .collect();
-    axioms.sort();
-    axioms.dedup();
-    axioms
+    match records.as_slice() {
+        [] => Err(LeanVerificationError::MissingEnvironmentExport),
+        [record] => serde_json::from_str(record.trim())
+            .map_err(|_| LeanVerificationError::MalformedEnvironmentExport),
+        _ => Err(LeanVerificationError::MultipleEnvironmentExports),
+    }
+}
+
+fn validate_export_for_request(
+    request: &LeanVerificationRequest,
+    export: &LeanEnvironmentExport,
+) -> Result<Vec<String>, LeanVerificationError> {
+    let ids = export.derive_ids(&request.theory_manifest)?;
+    if ids.theory_id != request.theory_id
+        || ids.claim_id != request.claim_id
+        || ids.proof_id != request.proof_id
+    {
+        return Err(LeanVerificationError::ExportIdentityMismatch);
+    }
+    if request.lean_toolchain != request.theory_manifest.lean_toolchain
+        || request.dependency_root != request.theory_manifest.dependency_merkle_root
+    {
+        return Err(LeanVerificationError::ExportEnvironmentMismatch);
+    }
+    for axiom in &export.axioms {
+        if !request.permitted_axioms.contains(axiom) {
+            return Err(LeanVerificationError::UnpermittedAxiom(axiom.clone()));
+        }
+    }
+    Ok(export.axioms.clone())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    fn export_and_request() -> (LeanEnvironmentExport, LeanVerificationRequest) {
+        let export: LeanEnvironmentExport = serde_json::from_str(include_str!(
+            "../../../examples/lean-export/expected-add-zero.json"
+        ))
+        .unwrap();
+        let theory_manifest: TheoryManifest =
+            serde_json::from_str(include_str!("../../../examples/no-arbitrage/theory.json"))
+                .unwrap();
+        let ids = export.derive_ids(&theory_manifest).unwrap();
+        let request = LeanVerificationRequest {
+            job_id: JobId::derive(&"lean-export-job").unwrap(),
+            claim_id: ids.claim_id,
+            proof_id: ids.proof_id,
+            theory_id: ids.theory_id,
+            artifact_id: ArtifactId::derive(&"lean-export-artifact").unwrap(),
+            workspace: PathBuf::from("/workspace"),
+            trusted_challenge_path: PathBuf::from("/workspace/Challenge.lean"),
+            proof_project_path: PathBuf::from("/workspace/proof"),
+            lean_toolchain: theory_manifest.lean_toolchain.clone(),
+            dependency_root: theory_manifest.dependency_merkle_root.clone(),
+            axiom_policy_id: PolicyId::derive(&"lean-export-axiom-policy").unwrap(),
+            permitted_axioms: theory_manifest.permitted_axioms.clone(),
+            official_checker_binary_digest: format!("sha256:{}", "1".repeat(64)),
+            independent_checker_binary_digest: format!("sha256:{}", "2".repeat(64)),
+            sandbox_policy: SandboxPolicy {
+                image_digest: format!("sha256:{}", "3".repeat(64)),
+                network_disabled: true,
+                read_only_root: true,
+                cpu_limit_millis: 1000,
+                memory_limit_bytes: 1024 * 1024,
+                process_limit: 4,
+                timeout_seconds: 30,
+                writable_paths: vec!["/tmp/xlemma-test".to_owned()],
+                seccomp_profile_hash: Some(format!("sha256:{}", "4".repeat(64))),
+            },
+            theory_manifest,
+        };
+        (export, request)
+    }
+
     #[test]
-    fn axiom_inventory_is_sorted_and_deduplicated() {
-        let axioms = extract_axioms(
-            "noise\nAXIOM: Classical.choice\nAXIOM: propext\nAXIOM: Classical.choice\n",
+    fn machine_export_is_extracted_from_lean_diagnostics() {
+        let value: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../examples/lean-export/expected-add-zero.json"
+        ))
+        .unwrap();
+        let output = format!(
+            "build noise\ninfo: file.lean:1:0: {LEAN_EXPORT_MARKER}{}\nmore noise",
+            serde_json::to_string(&value).unwrap()
         );
+        let export = extract_environment_export(&output).unwrap();
+        assert_eq!(export.declaration_name, "XLemma.Example.add_zero_verified");
+        assert!(export.axioms.is_empty());
+    }
+
+    #[test]
+    fn missing_multiple_and_malformed_exports_fail_closed() {
+        assert!(matches!(
+            extract_environment_export("no export"),
+            Err(LeanVerificationError::MissingEnvironmentExport)
+        ));
+        assert!(matches!(
+            extract_environment_export("XLMP_LEAN_EXPORT {}\nXLMP_LEAN_EXPORT {}"),
+            Err(LeanVerificationError::MultipleEnvironmentExports)
+        ));
+        assert!(matches!(
+            extract_environment_export("XLMP_LEAN_EXPORT not-json"),
+            Err(LeanVerificationError::MalformedEnvironmentExport)
+        ));
+    }
+
+    #[test]
+    fn export_must_match_request_identity_environment_and_axiom_policy() {
+        let (export, request) = export_and_request();
         assert_eq!(
-            axioms,
-            vec!["Classical.choice".to_owned(), "propext".to_owned()]
+            validate_export_for_request(&request, &export).unwrap(),
+            Vec::<String>::new()
         );
+
+        let mut wrong_identity = request.clone();
+        wrong_identity.claim_id = ClaimId::from_canonical_elaborated_type(
+            &wrong_identity.theory_id,
+            "[\"sort\",[\"zero\"]]",
+        )
+        .unwrap();
+        assert!(matches!(
+            validate_export_for_request(&wrong_identity, &export),
+            Err(LeanVerificationError::ExportIdentityMismatch)
+        ));
+
+        let mut wrong_environment = request.clone();
+        wrong_environment.dependency_root = "blake3:wrong-environment".to_owned();
+        assert!(matches!(
+            validate_export_for_request(&wrong_environment, &export),
+            Err(LeanVerificationError::ExportEnvironmentMismatch)
+        ));
+
+        let mut export_with_axiom = export;
+        export_with_axiom.axioms = vec!["Classical.choice".to_owned()];
+        let mut narrower_request = request;
+        narrower_request.permitted_axioms.clear();
+        assert!(matches!(
+            validate_export_for_request(&narrower_request, &export_with_axiom),
+            Err(LeanVerificationError::UnpermittedAxiom(axiom))
+                if axiom == "Classical.choice"
+        ));
     }
 
     #[test]

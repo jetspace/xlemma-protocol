@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/lean-environment-export.schema.json",
+  "title": "xLemma Lean environment export",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "xlemma-lean-environment-export/v1" },
+    "protocol_version": { "const": "XLMP/1" },
+    "canonical_encoding": { "const": "xlemma-lean-expr-v1" },
+    "lean_version": { "type": "string", "minLength": 1 },
+    "lean_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "declaration_name": { "type": "string", "minLength": 1 },
+    "canonical_declaration_name": { "type": "string", "minLength": 1 },
+    "declaration_kind": {
+      "enum": ["axiom", "definition", "theorem", "opaque", "quotient", "inductive", "constructor", "recursor"]
+    },
+    "level_parameters": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/name" }
+    },
+    "canonical_elaborated_type": { "type": "string", "minLength": 1 },
+    "canonical_proof_object": { "type": "string", "minLength": 1 },
+    "direct_dependencies": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "axioms": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "is_unsafe": { "const": false },
+    "is_partial": { "const": false }
+  },
+  "required": [
+    "schema",
+    "protocol_version",
+    "canonical_encoding",
+    "lean_version",
+    "lean_commit",
+    "declaration_name",
+    "canonical_declaration_name",
+    "declaration_kind",
+    "level_parameters",
+    "canonical_elaborated_type",
+    "canonical_proof_object",
+    "direct_dependencies",
+    "axioms",
+    "is_unsafe",
+    "is_partial"
+  ],
+  "$defs": {
+    "name": {
+      "oneOf": [
+        {
+          "type": "array",
+          "prefixItems": [{ "const": "anonymous" }],
+          "items": false,
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "str" },
+            { "$ref": "#/$defs/name" },
+            { "type": "string" }
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            { "const": "num" },
+            { "$ref": "#/$defs/name" },
+            { "type": "string", "pattern": "^(0|[1-9][0-9]*)$" }
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    }
+  }
+}

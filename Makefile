@@ -9,7 +9,7 @@ rust-test:
 	cargo test --locked --workspace
 
 lean-test:
-	cd lean && lake build
+	cd lean && ./self-test.sh
 
 contracts-test:
 	cd contracts && forge test -vvv

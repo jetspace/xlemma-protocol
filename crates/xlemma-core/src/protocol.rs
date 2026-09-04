@@ -579,6 +579,67 @@ pub struct Challenge {
     pub signature: String,
 }
 
+#[derive(Serialize)]
+struct ChallengeIdentity<'a> {
+    certificate_id: &'a CertificateId,
+    challenger: &'a str,
+    kind: ChallengeKind,
+    evidence_root: &'a str,
+    bond: &'a Amount,
+    status: ChallengeStatus,
+    opened_at: &'a DateTime<Utc>,
+    resolved_at: &'a Option<DateTime<Utc>>,
+    resolution_evidence_root: &'a Option<String>,
+    supersedes: &'a Option<ChallengeId>,
+}
+
+impl Challenge {
+    pub fn derive_challenge_id(&self) -> Result<ChallengeId, crate::IdError> {
+        ChallengeId::derive(&ChallengeIdentity {
+            certificate_id: &self.certificate_id,
+            challenger: &self.challenger,
+            kind: self.kind,
+            evidence_root: &self.evidence_root,
+            bond: &self.bond,
+            status: self.status,
+            opened_at: &self.opened_at,
+            resolved_at: &self.resolved_at,
+            resolution_evidence_root: &self.resolution_evidence_root,
+            supersedes: &self.supersedes,
+        })
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), ProtocolObjectError> {
+        self.challenge_id.validate()?;
+        self.certificate_id.validate()?;
+        if let Some(parent) = &self.supersedes {
+            parent.validate()?;
+        }
+        let resolved = matches!(
+            self.status,
+            ChallengeStatus::Upheld | ChallengeStatus::Dismissed | ChallengeStatus::Superseded
+        );
+        if self.challenge_id != self.derive_challenge_id()?
+            || self.challenger.trim().is_empty()
+            || self.evidence_root.trim().is_empty()
+            || self.bond.units == 0
+            || self.bond.asset.trim().is_empty()
+            || self.signature.trim().is_empty()
+            || self.supersedes.as_ref() == Some(&self.challenge_id)
+            || resolved != self.resolved_at.is_some()
+            || resolved
+                != self
+                    .resolution_evidence_root
+                    .as_ref()
+                    .is_some_and(|root| !root.trim().is_empty())
+            || self.resolved_at.is_some_and(|time| time < self.opened_at)
+        {
+            return Err(ProtocolObjectError::InvalidChallenge);
+        }
+        Ok(())
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct QuarantineRecord {
     pub quarantine_id: QuarantineId,
@@ -590,6 +651,58 @@ pub struct QuarantineRecord {
     pub quarantined_at: DateTime<Utc>,
     pub supersedes: Option<QuarantineId>,
     pub authority_signature: String,
+}
+
+#[derive(Serialize)]
+struct QuarantineIdentity<'a> {
+    certificate_id: &'a CertificateId,
+    challenge_id: &'a Option<ChallengeId>,
+    affected_claim_id: &'a ClaimId,
+    reason: &'a str,
+    evidence_roots: &'a [String],
+    quarantined_at: &'a DateTime<Utc>,
+    supersedes: &'a Option<QuarantineId>,
+}
+
+impl QuarantineRecord {
+    pub fn derive_quarantine_id(&self) -> Result<QuarantineId, crate::IdError> {
+        QuarantineId::derive(&QuarantineIdentity {
+            certificate_id: &self.certificate_id,
+            challenge_id: &self.challenge_id,
+            affected_claim_id: &self.affected_claim_id,
+            reason: &self.reason,
+            evidence_roots: &self.evidence_roots,
+            quarantined_at: &self.quarantined_at,
+            supersedes: &self.supersedes,
+        })
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), ProtocolObjectError> {
+        self.quarantine_id.validate()?;
+        self.certificate_id.validate()?;
+        self.affected_claim_id.validate()?;
+        if let Some(challenge_id) = &self.challenge_id {
+            challenge_id.validate()?;
+        }
+        if let Some(parent) = &self.supersedes {
+            parent.validate()?;
+        }
+        let unique_evidence = self.evidence_roots.iter().collect::<BTreeSet<_>>();
+        if self.quarantine_id != self.derive_quarantine_id()?
+            || self.reason.trim().is_empty()
+            || self.evidence_roots.is_empty()
+            || unique_evidence.len() != self.evidence_roots.len()
+            || self
+                .evidence_roots
+                .iter()
+                .any(|root| root.trim().is_empty())
+            || self.supersedes.as_ref() == Some(&self.quarantine_id)
+            || self.authority_signature.trim().is_empty()
+        {
+            return Err(ProtocolObjectError::InvalidQuarantine);
+        }
+        Ok(())
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -625,6 +738,67 @@ pub struct ComputeReceipt {
     pub signature: String,
 }
 
+#[derive(Serialize)]
+struct ComputeReceiptIdentity<'a> {
+    job_id: &'a JobId,
+    quote_id: &'a Option<ComputeQuoteId>,
+    service: ComputeService,
+    provider: &'a str,
+    implementation_id: &'a str,
+    implementation_snapshot: &'a Option<String>,
+    execution_parameters: &'a BTreeMap<String, String>,
+    request_hash: &'a str,
+    context_root: &'a str,
+    metering: &'a BTreeMap<String, u64>,
+    charged_amount: &'a Amount,
+    output_artifact_roots: &'a [String],
+    completed_at: &'a DateTime<Utc>,
+}
+
+impl ComputeReceipt {
+    pub fn derive_receipt_id(&self) -> Result<ReceiptId, crate::IdError> {
+        ReceiptId::derive(&ComputeReceiptIdentity {
+            job_id: &self.job_id,
+            quote_id: &self.quote_id,
+            service: self.service,
+            provider: &self.provider,
+            implementation_id: &self.implementation_id,
+            implementation_snapshot: &self.implementation_snapshot,
+            execution_parameters: &self.execution_parameters,
+            request_hash: &self.request_hash,
+            context_root: &self.context_root,
+            metering: &self.metering,
+            charged_amount: &self.charged_amount,
+            output_artifact_roots: &self.output_artifact_roots,
+            completed_at: &self.completed_at,
+        })
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), ProtocolObjectError> {
+        self.receipt_id.validate()?;
+        self.job_id.validate()?;
+        if let Some(quote_id) = &self.quote_id {
+            quote_id.validate()?;
+        }
+        if self.receipt_id != self.derive_receipt_id()?
+            || self.provider.trim().is_empty()
+            || self.implementation_id.trim().is_empty()
+            || self.request_hash.trim().is_empty()
+            || self.context_root.trim().is_empty()
+            || self.charged_amount.asset.trim().is_empty()
+            || self.output_artifact_roots.is_empty()
+            || self
+                .output_artifact_roots
+                .iter()
+                .any(|root| root.trim().is_empty())
+            || self.signature.trim().is_empty()
+        {
+            return Err(ProtocolObjectError::InvalidComputeReceipt);
+        }
+        Ok(())
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ResearchCredit {
     pub credit_id: CreditId,
@@ -640,11 +814,50 @@ pub struct ResearchCredit {
 }
 
 impl ResearchCredit {
+    pub fn derive_credit_id(&self) -> Result<CreditId, crate::IdError> {
+        CreditId::derive(&ResearchCreditIdentity {
+            researcher_id: &self.researcher_id,
+            credit_amount: &self.credit_amount,
+            backing_asset_amount: &self.backing_asset_amount,
+            backing_value_in_credit_units: self.backing_value_in_credit_units,
+            valuation_policy_id: &self.valuation_policy_id,
+            backing_reference: &self.backing_reference,
+            issued_at: &self.issued_at,
+        })
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), ProtocolObjectError> {
+        self.credit_id.validate()?;
+        self.researcher_id.validate()?;
+        self.valuation_policy_id.validate()?;
+        if self.credit_id != self.derive_credit_id()?
+            || !self.is_fully_backed()
+            || self.credit_amount.asset.trim().is_empty()
+            || self.backing_asset_amount.asset.trim().is_empty()
+            || self.backing_reference.trim().is_empty()
+            || self.signature.trim().is_empty()
+        {
+            return Err(ProtocolObjectError::InvalidResearchCredit);
+        }
+        Ok(())
+    }
+
     pub fn is_fully_backed(&self) -> bool {
         self.backing_value_in_credit_units >= self.credit_amount.units
             && self.credit_amount.units > 0
             && self.backing_asset_amount.units > 0
     }
+}
+
+#[derive(Serialize)]
+struct ResearchCreditIdentity<'a> {
+    researcher_id: &'a ResearcherId,
+    credit_amount: &'a Amount,
+    backing_asset_amount: &'a Amount,
+    backing_value_in_credit_units: u128,
+    valuation_policy_id: &'a PolicyId,
+    backing_reference: &'a str,
+    issued_at: &'a DateTime<Utc>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -662,9 +875,44 @@ pub struct ResearchVault {
 }
 
 impl ResearchVault {
+    pub fn derive_vault_id(&self) -> Result<VaultId, crate::IdError> {
+        VaultId::derive(&ResearchVaultIdentity {
+            researcher_id: &self.researcher_id,
+            credit_asset: &self.credit_asset,
+        })
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), ProtocolObjectError> {
+        self.vault_id.validate()?;
+        self.researcher_id.validate()?;
+        self.valuation_policy_id.validate()?;
+        if self.vault_id != self.derive_vault_id()?
+            || self.credit_asset.trim().is_empty()
+            || self.backing_assets.is_empty()
+            || self.backing_assets.iter().any(|(asset, amount)| {
+                asset.trim().is_empty()
+                    || amount.asset != *asset
+                    || amount.units == 0
+                    || amount.decimals > 38
+            })
+            || self.state_root.trim().is_empty()
+            || self.signature.trim().is_empty()
+            || !self.is_solvent()
+        {
+            return Err(ProtocolObjectError::InvalidResearchVault);
+        }
+        Ok(())
+    }
+
     pub fn is_solvent(&self) -> bool {
         self.backing_value_in_credit_units >= self.outstanding_credit_units
     }
+}
+
+#[derive(Serialize)]
+struct ResearchVaultIdentity<'a> {
+    researcher_id: &'a ResearcherId,
+    credit_asset: &'a str,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -783,6 +1031,44 @@ pub struct DependencyDividend {
 }
 
 impl DependencyDividend {
+    pub fn derive_dividend_id(&self) -> Result<DividendId, crate::IdError> {
+        DividendId::derive(&DependencyDividendIdentity {
+            revenue_event_id: &self.revenue_event_id,
+            downstream_claim_id: &self.downstream_claim_id,
+            upstream_claim_id: &self.upstream_claim_id,
+            used_in_final_proof: self.used_in_final_proof,
+            final_dependency_root: &self.final_dependency_root,
+            eligible_economic_edge_root: &self.eligible_economic_edge_root,
+            economic_policy_root: &self.economic_policy_root,
+            settlement_receipt_id: &self.settlement_receipt_id,
+            compute_savings_evidence_root: &self.compute_savings_evidence_root,
+            downstream_net_revenue: &self.downstream_net_revenue,
+            upstream_pool: &self.upstream_pool,
+            payout: &self.payout,
+            cap_bps: self.cap_bps,
+            non_recursive: self.non_recursive,
+            finalized_at: &self.finalized_at,
+        })
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), ProtocolObjectError> {
+        self.dividend_id.validate()?;
+        self.revenue_event_id.validate()?;
+        self.downstream_claim_id.validate()?;
+        self.upstream_claim_id.validate()?;
+        self.settlement_receipt_id.validate()?;
+        if self.dividend_id != self.derive_dividend_id()?
+            || self.downstream_claim_id == self.upstream_claim_id
+            || self.final_dependency_root.trim().is_empty()
+            || self.compute_savings_evidence_root.trim().is_empty()
+            || self.signature.trim().is_empty()
+            || !self.respects_protocol_cap()
+        {
+            return Err(ProtocolObjectError::InvalidDividend);
+        }
+        Ok(())
+    }
+
     pub fn respects_protocol_cap(&self) -> bool {
         if !self.used_in_final_proof
             || !self.non_recursive
@@ -806,6 +1092,25 @@ impl DependencyDividend {
         };
         self.payout.units <= revenue_cap.units && self.payout.units <= self.upstream_pool.units
     }
+}
+
+#[derive(Serialize)]
+struct DependencyDividendIdentity<'a> {
+    revenue_event_id: &'a RevenueEventId,
+    downstream_claim_id: &'a ClaimId,
+    upstream_claim_id: &'a ClaimId,
+    used_in_final_proof: bool,
+    final_dependency_root: &'a str,
+    eligible_economic_edge_root: &'a str,
+    economic_policy_root: &'a str,
+    settlement_receipt_id: &'a ReceiptId,
+    compute_savings_evidence_root: &'a str,
+    downstream_net_revenue: &'a Amount,
+    upstream_pool: &'a Amount,
+    payout: &'a Amount,
+    cap_bps: u16,
+    non_recursive: bool,
+    finalized_at: &'a DateTime<Utc>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -840,6 +1145,44 @@ pub struct License {
 }
 
 impl License {
+    pub fn derive_license_id(&self) -> Result<LicenseId, crate::IdError> {
+        LicenseId::derive(&LicenseIdentity {
+            rights_manifest_hash: &self.rights_manifest_hash,
+            licensor: &self.licensor,
+            licensee: &self.licensee,
+            mode: self.mode,
+            scope: &self.scope,
+            economic_terms: &self.economic_terms,
+            consideration_receipt_id: &self.consideration_receipt_id,
+            effective_at: &self.effective_at,
+            expires_at: &self.expires_at,
+            supersedes: &self.supersedes,
+        })
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), ProtocolObjectError> {
+        self.license_id.validate()?;
+        if let Some(receipt_id) = &self.consideration_receipt_id {
+            receipt_id.validate()?;
+        }
+        if let Some(parent) = &self.supersedes {
+            parent.validate()?;
+        }
+        let unique_scopes = self.scope.iter().collect::<BTreeSet<_>>();
+        let unique_signatures = self.signatures.iter().collect::<BTreeSet<_>>();
+        if self.license_id != self.derive_license_id()?
+            || self.rights_manifest_hash.trim().is_empty()
+            || self.scope.iter().any(|scope| scope.trim().is_empty())
+            || unique_scopes.len() != self.scope.len()
+            || unique_signatures.len() != self.signatures.len()
+            || self.supersedes.as_ref() == Some(&self.license_id)
+            || !self.has_bounded_economic_scope()
+        {
+            return Err(ProtocolObjectError::InvalidLicense);
+        }
+        Ok(())
+    }
+
     pub fn has_bounded_economic_scope(&self) -> bool {
         if self.licensor.trim().is_empty()
             || self.licensee.trim().is_empty()
@@ -871,6 +1214,20 @@ impl License {
     }
 }
 
+#[derive(Serialize)]
+struct LicenseIdentity<'a> {
+    rights_manifest_hash: &'a str,
+    licensor: &'a str,
+    licensee: &'a str,
+    mode: CapsuleEconomicMode,
+    scope: &'a [String],
+    economic_terms: &'a Option<EconomicParticipationTerms>,
+    consideration_receipt_id: &'a Option<ReceiptId>,
+    effective_at: &'a DateTime<Utc>,
+    expires_at: &'a Option<DateTime<Utc>>,
+    supersedes: &'a Option<LicenseId>,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PublicationRecord {
     pub publication_id: PublicationId,
@@ -886,6 +1243,90 @@ pub struct PublicationRecord {
     pub signature: String,
 }
 
+#[derive(Serialize)]
+struct PublicationIdentity<'a> {
+    claim_id: &'a ClaimId,
+    proof_id: &'a ProofId,
+    certificate_id: &'a CertificateId,
+    artifact_id: &'a ArtifactId,
+    rights_manifest_hash: &'a str,
+    license_ids: &'a [LicenseId],
+    locations: &'a [String],
+    published_at: &'a DateTime<Utc>,
+    supersedes: &'a Option<PublicationId>,
+}
+
+impl PublicationRecord {
+    pub fn derive_publication_id(&self) -> Result<PublicationId, crate::IdError> {
+        PublicationId::derive(&PublicationIdentity {
+            claim_id: &self.claim_id,
+            proof_id: &self.proof_id,
+            certificate_id: &self.certificate_id,
+            artifact_id: &self.artifact_id,
+            rights_manifest_hash: &self.rights_manifest_hash,
+            license_ids: &self.license_ids,
+            locations: &self.locations,
+            published_at: &self.published_at,
+            supersedes: &self.supersedes,
+        })
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), ProtocolObjectError> {
+        self.publication_id.validate()?;
+        self.claim_id.validate()?;
+        self.proof_id.validate()?;
+        self.certificate_id.validate()?;
+        self.artifact_id.validate()?;
+        for license_id in &self.license_ids {
+            license_id.validate()?;
+        }
+        if let Some(parent) = &self.supersedes {
+            parent.validate()?;
+        }
+        let unique_licenses = self.license_ids.iter().collect::<BTreeSet<_>>();
+        let unique_locations = self.locations.iter().collect::<BTreeSet<_>>();
+        if self.publication_id != self.derive_publication_id()?
+            || self.rights_manifest_hash.trim().is_empty()
+            || self.locations.is_empty()
+            || self
+                .locations
+                .iter()
+                .any(|location| location.trim().is_empty())
+            || unique_licenses.len() != self.license_ids.len()
+            || unique_locations.len() != self.locations.len()
+            || self.supersedes.as_ref() == Some(&self.publication_id)
+            || self.signature.trim().is_empty()
+        {
+            return Err(ProtocolObjectError::InvalidPublication);
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum ProtocolObjectError {
+    #[error(transparent)]
+    Id(#[from] crate::IdError),
+    #[error("challenge content, status, timing, or evidence is invalid")]
+    InvalidChallenge,
+    #[error("quarantine content, lineage, or evidence is invalid")]
+    InvalidQuarantine,
+    #[error("dependency dividend is unbound, recursive, incompatible, or exceeds its cap")]
+    InvalidDividend,
+    #[error("license identity, scope, signatures, or economic terms are invalid")]
+    InvalidLicense,
+    #[error("publication identity, locations, references, or supersession is invalid")]
+    InvalidPublication,
+    #[error("compute receipt identity, metering, outputs, or signature is invalid")]
+    InvalidComputeReceipt,
+    #[error("research credit is unbacked or its issuance identity is invalid")]
+    InvalidResearchCredit,
+    #[error("research vault is insolvent or its state evidence is invalid")]
+    InvalidResearchVault,
+    #[error("transport receipt identity, destination, reference, or signature is invalid")]
+    InvalidTransportReceipt,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TransportReceipt {
     pub receipt_id: ReceiptId,
@@ -895,6 +1336,65 @@ pub struct TransportReceipt {
     pub delivered_at: DateTime<Utc>,
     pub transport_reference: String,
     pub signature: String,
+}
+
+#[derive(Serialize)]
+struct TransportReceiptIdentity<'a> {
+    message_id: &'a MessageId,
+    transport: &'a str,
+    destination: &'a str,
+    delivered_at: &'a DateTime<Utc>,
+    transport_reference: &'a str,
+}
+
+#[derive(Serialize)]
+struct TransportReceiptSigningPayload<'a> {
+    domain: &'static str,
+    receipt_id: &'a ReceiptId,
+    receipt: TransportReceiptIdentity<'a>,
+}
+
+impl TransportReceipt {
+    pub fn derive_receipt_id(&self) -> Result<ReceiptId, crate::IdError> {
+        ReceiptId::derive(&TransportReceiptIdentity {
+            message_id: &self.message_id,
+            transport: &self.transport,
+            destination: &self.destination,
+            delivered_at: &self.delivered_at,
+            transport_reference: &self.transport_reference,
+        })
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), ProtocolObjectError> {
+        self.receipt_id.validate()?;
+        self.message_id.validate()?;
+        if self.receipt_id != self.derive_receipt_id()?
+            || self.transport.trim().is_empty()
+            || self.destination.trim().is_empty()
+            || self.transport_reference.trim().is_empty()
+            || self.signature.trim().is_empty()
+        {
+            return Err(ProtocolObjectError::InvalidTransportReceipt);
+        }
+        Ok(())
+    }
+
+    /// Canonical, domain-separated bytes signed by the transport operator.
+    /// The signature itself is deliberately excluded to avoid a recursive
+    /// representation and to keep verification provider-neutral.
+    pub fn signing_bytes(&self) -> Result<Vec<u8>, crate::CanonicalizationError> {
+        crate::canonical_json_bytes(&TransportReceiptSigningPayload {
+            domain: "xlemma-transport-receipt-signing-v1",
+            receipt_id: &self.receipt_id,
+            receipt: TransportReceiptIdentity {
+                message_id: &self.message_id,
+                transport: &self.transport,
+                destination: &self.destination,
+                delivered_at: &self.delivered_at,
+                transport_reference: &self.transport_reference,
+            },
+        })
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

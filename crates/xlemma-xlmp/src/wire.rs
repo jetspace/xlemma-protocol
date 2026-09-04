@@ -4,28 +4,39 @@ use ed25519_dalek::{Signature, VerifyingKey};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use xlemma_core::{
-    canonical_json_bytes, derive_eligible_set_root, validate_independent_credential_set,
-    ArtifactId, CanonicalizationError, CaptureResistanceDashboard, CertificateId, Challenge,
-    ClaimId, ClaimManifest, CommitteeSelection, CommitteeSortitionRequest, ComputeQuoteReceipt,
-    ConstitutionalCommitment, CredentialIssuerPolicy, CredentialRevocation,
-    EconomicComplianceCertificate, EconomicConstitution, EligibleNode, ForkExitPlan,
-    GovernanceProposal, IdError, IndependentCredentialAttestation, JobId, MessageId, NodeBond,
-    NodeCredential, NodeDiscoveryRequest, NodeDiscoveryResult, NodeExposureLimit, NodeId,
-    NodeReputationSnapshot, NodeServiceAdvertisement, NodeWorkReceipt, ObjectiveMisconductRecord,
-    ObservationReceipt, OperatorClusterId, OperatorCredential, OperatorId, PoIRCertificate,
-    PolicyId, ProofId, ProofManifest, ReceiptId, ReproductionObservation,
-    ResearchComputeCooperative, ResearchVerificationCertificate, ResearcherId,
-    ResearcherPortabilityManifest, ResearcherResidualRight, ResearcherSovereigntyBundle,
-    RevenueEvent, ServiceMatch, ServiceOrder, UserCredential, VerificationJob, VerificationProfile,
-    VerifiedUserId, XLMP_MAJOR_VERSION, XLMP_PROTOCOL,
+    canonical_json_bytes, canonical_json_hash, derive_eligible_set_root,
+    validate_independent_credential_set, ArtifactId, AvailabilityReceipt, CanonicalizationError,
+    CaptureResistanceDashboard, CertificateId, Challenge, ClaimId, ClaimManifest,
+    CommitteeSelection, CommitteeSortitionRequest, ComputeQuoteReceipt, ComputeReceipt,
+    ConstitutionalCommitment, ContributionManifest, CredentialIssuerPolicy, CredentialRevocation,
+    DependencyDividend, EconomicComplianceCertificate, EconomicConstitution, EligibleNode,
+    ForkExitPlan, GovernanceProposal, IdError, IndependentCredentialAttestation, JobId,
+    LemmaCapsule, License, MessageId, NodeBond, NodeCredential, NodeDiscoveryRequest,
+    NodeDiscoveryResult, NodeExposureLimit, NodeId, NodeReputationSnapshot,
+    NodeServiceAdvertisement, NodeWorkReceipt, ObjectiveMisconductRecord, ObservationReceipt,
+    OperatorClusterId, OperatorCredential, OperatorId, PoIRCertificate, PolicyId, ProofId,
+    ProofManifest, PublicationRecord, QuarantineRecord, ReceiptId, ReproductionObservation,
+    ResearchComputeCooperative, ResearchCredit, ResearchVault, ResearchVerificationCertificate,
+    ResearcherId, ResearcherNodeManifest, ResearcherPortabilityManifest, ResearcherResidualRight,
+    ResearcherSovereigntyBundle, RevenueEvent, RightsManifest, ServiceMatch, ServiceOrder,
+    TheoryId, TheoryManifest, UserCredential, VerificationJob, VerificationProfile, VerifiedUserId,
+    XLMP_MAJOR_VERSION, XLMP_PROTOCOL,
 };
 
 use crate::XLMP_SIGNATURE_DOMAIN;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum MessageKind {
+    #[serde(rename = "XLMP_RESEARCHER")]
+    Researcher,
+    #[serde(rename = "XLMP_THEORY")]
+    Theory,
     #[serde(rename = "XLMP_CLAIM")]
     Claim,
+    #[serde(rename = "XLMP_CONTRIBUTION")]
+    Contribution,
+    #[serde(rename = "XLMP_RIGHTS")]
+    Rights,
     #[serde(rename = "XLMP_COMMIT")]
     Commit,
     #[serde(rename = "XLMP_COMPUTE_QUOTE")]
@@ -42,10 +53,28 @@ pub enum MessageKind {
     Certificate,
     #[serde(rename = "XLMP_CHALLENGE")]
     Challenge,
+    #[serde(rename = "XLMP_QUARANTINE")]
+    Quarantine,
     #[serde(rename = "XLMP_FINALIZE")]
     Finalize,
     #[serde(rename = "XLMP_REVENUE")]
     Revenue,
+    #[serde(rename = "XLMP_COMPUTE_RECEIPT")]
+    ComputeReceipt,
+    #[serde(rename = "XLMP_RESEARCH_CREDIT")]
+    ResearchCredit,
+    #[serde(rename = "XLMP_RESEARCH_VAULT")]
+    ResearchVault,
+    #[serde(rename = "XLMP_DEPENDENCY_DIVIDEND")]
+    DependencyDividend,
+    #[serde(rename = "XLMP_LICENSE")]
+    License,
+    #[serde(rename = "XLMP_CAPSULE")]
+    Capsule,
+    #[serde(rename = "XLMP_PUBLISH")]
+    Publish,
+    #[serde(rename = "XLMP_AVAILABILITY")]
+    Availability,
     #[serde(rename = "XLMP_REVALIDATE")]
     Revalidate,
     #[serde(rename = "XLMP_NODE_ADVERTISE")]
@@ -107,11 +136,34 @@ pub enum MessageKind {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ResearcherMessage {
+    pub researcher: ResearcherNodeManifest,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TheoryMessage {
+    pub theory_id: TheoryId,
+    pub theory: TheoryManifest,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClaimMessage {
     pub claim_id: ClaimId,
     pub claim: ClaimManifest,
     pub contribution_manifest_hash: String,
     pub rights_manifest_hash: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ContributionMessage {
+    pub manifest_hash: String,
+    pub manifest: ContributionManifest,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RightsMessage {
+    pub manifest_hash: String,
+    pub manifest: RightsManifest,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -178,6 +230,11 @@ pub struct ChallengeMessage {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct QuarantineMessage {
+    pub record: QuarantineRecord,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FinalizeMessage {
     pub certificate_id: CertificateId,
     pub claim_id: ClaimId,
@@ -189,6 +246,46 @@ pub struct FinalizeMessage {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RevenueMessage {
     pub event: RevenueEvent,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ComputeReceiptMessage {
+    pub receipt: ComputeReceipt,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ResearchCreditMessage {
+    pub credit: ResearchCredit,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ResearchVaultMessage {
+    pub vault: ResearchVault,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DependencyDividendMessage {
+    pub dividend: DependencyDividend,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LicenseMessage {
+    pub license: License,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CapsuleMessage {
+    pub capsule: LemmaCapsule,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PublishMessage {
+    pub publication: PublicationRecord,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AvailabilityMessage {
+    pub receipt: AvailabilityReceipt,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -358,8 +455,16 @@ pub struct CredentialEvidenceMessage {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", content = "payload")]
 pub enum XlmpMessage {
+    #[serde(rename = "XLMP_RESEARCHER")]
+    Researcher(ResearcherMessage),
+    #[serde(rename = "XLMP_THEORY")]
+    Theory(TheoryMessage),
     #[serde(rename = "XLMP_CLAIM")]
     Claim(ClaimMessage),
+    #[serde(rename = "XLMP_CONTRIBUTION")]
+    Contribution(ContributionMessage),
+    #[serde(rename = "XLMP_RIGHTS")]
+    Rights(RightsMessage),
     #[serde(rename = "XLMP_COMMIT")]
     Commit(CommitMessage),
     #[serde(rename = "XLMP_COMPUTE_QUOTE")]
@@ -376,10 +481,28 @@ pub enum XlmpMessage {
     Certificate(CertificateMessage),
     #[serde(rename = "XLMP_CHALLENGE")]
     Challenge(ChallengeMessage),
+    #[serde(rename = "XLMP_QUARANTINE")]
+    Quarantine(QuarantineMessage),
     #[serde(rename = "XLMP_FINALIZE")]
     Finalize(FinalizeMessage),
     #[serde(rename = "XLMP_REVENUE")]
     Revenue(RevenueMessage),
+    #[serde(rename = "XLMP_COMPUTE_RECEIPT")]
+    ComputeReceipt(ComputeReceiptMessage),
+    #[serde(rename = "XLMP_RESEARCH_CREDIT")]
+    ResearchCredit(ResearchCreditMessage),
+    #[serde(rename = "XLMP_RESEARCH_VAULT")]
+    ResearchVault(ResearchVaultMessage),
+    #[serde(rename = "XLMP_DEPENDENCY_DIVIDEND")]
+    DependencyDividend(DependencyDividendMessage),
+    #[serde(rename = "XLMP_LICENSE")]
+    License(LicenseMessage),
+    #[serde(rename = "XLMP_CAPSULE")]
+    Capsule(CapsuleMessage),
+    #[serde(rename = "XLMP_PUBLISH")]
+    Publish(PublishMessage),
+    #[serde(rename = "XLMP_AVAILABILITY")]
+    Availability(AvailabilityMessage),
     #[serde(rename = "XLMP_REVALIDATE")]
     Revalidate(RevalidateMessage),
     #[serde(rename = "XLMP_NODE_ADVERTISE")]
@@ -443,7 +566,11 @@ pub enum XlmpMessage {
 impl XlmpMessage {
     pub fn kind(&self) -> MessageKind {
         match self {
+            Self::Researcher(_) => MessageKind::Researcher,
+            Self::Theory(_) => MessageKind::Theory,
             Self::Claim(_) => MessageKind::Claim,
+            Self::Contribution(_) => MessageKind::Contribution,
+            Self::Rights(_) => MessageKind::Rights,
             Self::Commit(_) => MessageKind::Commit,
             Self::ComputeQuote(_) => MessageKind::ComputeQuote,
             Self::ProofCandidate(_) => MessageKind::ProofCandidate,
@@ -452,8 +579,17 @@ impl XlmpMessage {
             Self::ObservationReveal(_) => MessageKind::ObservationReveal,
             Self::Certificate(_) => MessageKind::Certificate,
             Self::Challenge(_) => MessageKind::Challenge,
+            Self::Quarantine(_) => MessageKind::Quarantine,
             Self::Finalize(_) => MessageKind::Finalize,
             Self::Revenue(_) => MessageKind::Revenue,
+            Self::ComputeReceipt(_) => MessageKind::ComputeReceipt,
+            Self::ResearchCredit(_) => MessageKind::ResearchCredit,
+            Self::ResearchVault(_) => MessageKind::ResearchVault,
+            Self::DependencyDividend(_) => MessageKind::DependencyDividend,
+            Self::License(_) => MessageKind::License,
+            Self::Capsule(_) => MessageKind::Capsule,
+            Self::Publish(_) => MessageKind::Publish,
+            Self::Availability(_) => MessageKind::Availability,
             Self::Revalidate(_) => MessageKind::Revalidate,
             Self::NodeAdvertise(_) => MessageKind::NodeAdvertise,
             Self::DiscoveryRequest(_) => MessageKind::DiscoveryRequest,
@@ -488,10 +624,21 @@ impl XlmpMessage {
 
     fn validate_ids(&self) -> Result<(), IdError> {
         match self {
+            Self::Researcher(message) => {
+                message.researcher.researcher_id.validate()?;
+                message.researcher.governance_policy_id.validate()
+            }
+            Self::Theory(message) => {
+                message.theory_id.validate()?;
+                message.theory.trust_policy_id.validate()?;
+                message.theory.checker_policy_id.validate()
+            }
             Self::Claim(message) => {
                 message.claim_id.validate()?;
                 message.claim.theory_id.validate()
             }
+            Self::Contribution(message) => message.manifest.claim_id.validate(),
+            Self::Rights(message) => message.manifest.claim_id.validate(),
             Self::Commit(message) => {
                 message.job_id.validate()?;
                 message.researcher_id.validate()?;
@@ -548,6 +695,11 @@ impl XlmpMessage {
                 message.challenge.challenge_id.validate()?;
                 message.challenge.certificate_id.validate()
             }
+            Self::Quarantine(message) => {
+                message.record.quarantine_id.validate()?;
+                message.record.certificate_id.validate()?;
+                message.record.affected_claim_id.validate()
+            }
             Self::Finalize(message) => {
                 message.certificate_id.validate()?;
                 message.claim_id.validate()
@@ -555,6 +707,51 @@ impl XlmpMessage {
             Self::Revenue(message) => {
                 message.event.revenue_event_id.validate()?;
                 message.event.claim_id.validate()
+            }
+            Self::ComputeReceipt(message) => {
+                message.receipt.receipt_id.validate()?;
+                message.receipt.job_id.validate()?;
+                if let Some(quote_id) = &message.receipt.quote_id {
+                    quote_id.validate()?;
+                }
+                Ok(())
+            }
+            Self::ResearchCredit(message) => {
+                message.credit.credit_id.validate()?;
+                message.credit.researcher_id.validate()?;
+                message.credit.valuation_policy_id.validate()
+            }
+            Self::ResearchVault(message) => {
+                message.vault.vault_id.validate()?;
+                message.vault.researcher_id.validate()?;
+                message.vault.valuation_policy_id.validate()
+            }
+            Self::DependencyDividend(message) => {
+                message.dividend.dividend_id.validate()?;
+                message.dividend.revenue_event_id.validate()?;
+                message.dividend.downstream_claim_id.validate()?;
+                message.dividend.upstream_claim_id.validate()?;
+                message.dividend.settlement_receipt_id.validate()
+            }
+            Self::License(message) => message.license.license_id.validate(),
+            Self::Capsule(message) => {
+                message.capsule.lemma_id.validate()?;
+                message.capsule.theory_id.validate()?;
+                message.capsule.claim_id.validate()?;
+                message.capsule.artifact_id.validate()
+            }
+            Self::Publish(message) => {
+                message.publication.publication_id.validate()?;
+                message.publication.claim_id.validate()?;
+                message.publication.proof_id.validate()?;
+                message.publication.certificate_id.validate()?;
+                message.publication.artifact_id.validate()
+            }
+            Self::Availability(message) => {
+                message.receipt.receipt_id.validate()?;
+                message.receipt.artifact_id.validate()?;
+                message.receipt.storage_node_id.validate()?;
+                message.receipt.operator_cluster_id.validate()
             }
             Self::Revalidate(message) => {
                 message.certificate_id.validate()?;
@@ -810,6 +1007,14 @@ pub enum XlmpError {
     ResearchVerificationIntegrity,
     #[error("XLMP economic event lacks content-bound realized settlement evidence")]
     EconomicIntegrity,
+    #[error("XLMP native research object failed content or invariant validation")]
+    ResearchObjectIntegrity,
+    #[error("XLMP challenge or quarantine record failed content or lineage validation")]
+    ChallengeIntegrity,
+    #[error("XLMP rights, license, or publication record failed validation")]
+    RightsPublicationIntegrity,
+    #[error("XLMP availability receipt failed custody, timing, or identity validation")]
+    AvailabilityIntegrity,
     #[error("XLMP capture-resistance or node-economics object failed protocol validation")]
     CaptureIntegrity,
     #[error("XLMP governance proposal crossed a constitutional or exit-safety boundary")]
@@ -896,6 +1101,22 @@ impl XlmpEnvelope {
         }
         self.message.validate_ids()?;
         match &self.message {
+            XlmpMessage::Researcher(message) => message
+                .researcher
+                .validate_integrity()
+                .map_err(|_| XlmpError::ResearchObjectIntegrity)?,
+            XlmpMessage::Theory(message) => message
+                .theory
+                .validate_integrity()
+                .map_err(|_| XlmpError::ResearchObjectIntegrity)?,
+            XlmpMessage::Contribution(message) => message
+                .manifest
+                .validate_integrity()
+                .map_err(|_| XlmpError::ResearchObjectIntegrity)?,
+            XlmpMessage::Rights(message) => message
+                .manifest
+                .validate_integrity()
+                .map_err(|_| XlmpError::RightsPublicationIntegrity)?,
             XlmpMessage::UserCredential(message) => message
                 .credential
                 .validate_integrity()
@@ -994,6 +1215,46 @@ impl XlmpEnvelope {
                 .event
                 .validate_integrity()
                 .map_err(|_| XlmpError::EconomicIntegrity)?,
+            XlmpMessage::Challenge(message) => message
+                .challenge
+                .validate_integrity()
+                .map_err(|_| XlmpError::ChallengeIntegrity)?,
+            XlmpMessage::Quarantine(message) => message
+                .record
+                .validate_integrity()
+                .map_err(|_| XlmpError::ChallengeIntegrity)?,
+            XlmpMessage::ComputeReceipt(message) => message
+                .receipt
+                .validate_integrity()
+                .map_err(|_| XlmpError::EconomicIntegrity)?,
+            XlmpMessage::ResearchCredit(message) => message
+                .credit
+                .validate_integrity()
+                .map_err(|_| XlmpError::EconomicIntegrity)?,
+            XlmpMessage::ResearchVault(message) => message
+                .vault
+                .validate_integrity()
+                .map_err(|_| XlmpError::EconomicIntegrity)?,
+            XlmpMessage::DependencyDividend(message) => message
+                .dividend
+                .validate_integrity()
+                .map_err(|_| XlmpError::EconomicIntegrity)?,
+            XlmpMessage::License(message) => message
+                .license
+                .validate_integrity()
+                .map_err(|_| XlmpError::RightsPublicationIntegrity)?,
+            XlmpMessage::Capsule(message) => message
+                .capsule
+                .validate_integrity()
+                .map_err(|_| XlmpError::ResearchObjectIntegrity)?,
+            XlmpMessage::Publish(message) => message
+                .publication
+                .validate_integrity()
+                .map_err(|_| XlmpError::RightsPublicationIntegrity)?,
+            XlmpMessage::Availability(message) => message
+                .receipt
+                .validate_integrity()
+                .map_err(|_| XlmpError::AvailabilityIntegrity)?,
             XlmpMessage::ComputeCooperative(message) => message
                 .cooperative
                 .validate_integrity()
@@ -1031,6 +1292,23 @@ impl XlmpEnvelope {
             _ => {}
         }
         match &self.message {
+            XlmpMessage::Contribution(message)
+                if message.manifest_hash
+                    != manifest_root("contribution-manifest-v1", &message.manifest)? =>
+            {
+                return Err(XlmpError::ResearchObjectIntegrity);
+            }
+            XlmpMessage::Rights(message)
+                if message.manifest_hash
+                    != manifest_root("rights-manifest-v1", &message.manifest)? =>
+            {
+                return Err(XlmpError::RightsPublicationIntegrity);
+            }
+            XlmpMessage::Theory(message)
+                if message.theory_id != message.theory.derive_theory_id()? =>
+            {
+                return Err(XlmpError::ResearchObjectIntegrity);
+            }
             XlmpMessage::Claim(message)
                 if message.claim_id != message.claim.derive_claim_id()? =>
             {
@@ -1066,6 +1344,16 @@ impl XlmpEnvelope {
         }
         Ok(())
     }
+}
+
+pub fn manifest_root<T: Serialize>(
+    domain: &str,
+    manifest: &T,
+) -> Result<String, CanonicalizationError> {
+    Ok(format!(
+        "blake3:{}",
+        hex::encode(canonical_json_hash(domain, manifest)?)
+    ))
 }
 
 fn derive_message_id(
@@ -1480,7 +1768,11 @@ mod tests {
     #[test]
     fn required_message_discriminators_are_stable() {
         let kinds = [
+            MessageKind::Researcher,
+            MessageKind::Theory,
             MessageKind::Claim,
+            MessageKind::Contribution,
+            MessageKind::Rights,
             MessageKind::Commit,
             MessageKind::ComputeQuote,
             MessageKind::ProofCandidate,
@@ -1489,8 +1781,17 @@ mod tests {
             MessageKind::ObservationReveal,
             MessageKind::Certificate,
             MessageKind::Challenge,
+            MessageKind::Quarantine,
             MessageKind::Finalize,
             MessageKind::Revenue,
+            MessageKind::ComputeReceipt,
+            MessageKind::ResearchCredit,
+            MessageKind::ResearchVault,
+            MessageKind::DependencyDividend,
+            MessageKind::License,
+            MessageKind::Capsule,
+            MessageKind::Publish,
+            MessageKind::Availability,
             MessageKind::Revalidate,
             MessageKind::NodeAdvertise,
             MessageKind::DiscoveryRequest,
@@ -1522,7 +1823,11 @@ mod tests {
             MessageKind::CredentialEvidence,
         ];
         let expected = [
+            "XLMP_RESEARCHER",
+            "XLMP_THEORY",
             "XLMP_CLAIM",
+            "XLMP_CONTRIBUTION",
+            "XLMP_RIGHTS",
             "XLMP_COMMIT",
             "XLMP_COMPUTE_QUOTE",
             "XLMP_PROOF_CANDIDATE",
@@ -1531,8 +1836,17 @@ mod tests {
             "XLMP_OBSERVATION_REVEAL",
             "XLMP_CERTIFICATE",
             "XLMP_CHALLENGE",
+            "XLMP_QUARANTINE",
             "XLMP_FINALIZE",
             "XLMP_REVENUE",
+            "XLMP_COMPUTE_RECEIPT",
+            "XLMP_RESEARCH_CREDIT",
+            "XLMP_RESEARCH_VAULT",
+            "XLMP_DEPENDENCY_DIVIDEND",
+            "XLMP_LICENSE",
+            "XLMP_CAPSULE",
+            "XLMP_PUBLISH",
+            "XLMP_AVAILABILITY",
             "XLMP_REVALIDATE",
             "XLMP_NODE_ADVERTISE",
             "XLMP_DISCOVERY_REQUEST",

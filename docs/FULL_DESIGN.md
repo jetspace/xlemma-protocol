@@ -115,14 +115,14 @@ assumptions, reviewed definitions, conflicts, and limitations. This
 | Module | Responsibility | Does not do |
 |---|---|---|
 | `xlemma-core` | IDs, manifests, capsules, receipts, append-only graph | Run models or chains |
-| `xlemma-xlmp` | Canonical XLMP/1 messages, lifecycle, and provider-neutral adapter contracts | Execute a provider, checker, payment, chain, transport, or store |
+| `xlemma-xlmp` | 53 canonical XLMP/1 messages, append-only native projection, lifecycle, and provider-neutral adapter contracts | Execute a provider, checker, payment, chain, or store |
 | `xlemma-astra` | Reference `ResearchProver` adapter for formalization, proof search, repair, explanation | Define XLMP or certify its own output |
 | `xlemma-lean` | Default `VerifierAdapter` for pinned builds, proof export, axiom inventory, checker replay | Define XLMP, assess novelty, or determine rights |
 | `xlemma-consensus` | PoIR, generalized quorums, commit-reveal, divergence | Token-weighted truth voting |
-| `xlemma-x402` | Optional x402 payment and paid-HTTP adapter | Define research state or consensus |
+| `xlemma-x402` | Optional x402 payer/facilitator adapter with bound authorization, actual-use settlement, and local replay protection | Define research state or consensus |
 | `xlemma-economics` | Backed credits, revenue conservation, dividends | Create unbacked value |
 | `xlemma-compute-curve` | Spot/forward service offers and proof-cost estimates | Treat compute as storable inventory |
-| `xlemma-storage` | `StorageAdapter` implementation, content-addressed bundles, availability receipts | Decide truth or ownership |
+| `xlemma-storage` | Immutable multi-file `StorageAdapter`, content-addressed bundles, exact retrieval, availability receipts | Decide truth or ownership |
 | Registry contracts | `FinalityAdapter` anchors, escrow value, revenue routing, optional rights tokens | Interpret formal statements or define XLMP |
 | Presentation layer | LaTeX, web, citations, explanations | Override the formal claim |
 
@@ -471,7 +471,7 @@ theorem noArbitrage ... := by
 #print axioms noArbitrage
 ```
 
-The production exporter must extract:
+The checked-in reference exporter extracts:
 
 - elaborated theorem type;
 - serialized proof object;
@@ -479,8 +479,13 @@ The production exporter must extract:
 - direct formal dependencies;
 - transitive dependency root;
 - observed axiom inventory;
-- exact toolchain and lockfile;
-- source and build artifact roots.
+- exact Lean version and commit.
+
+The surrounding artifact/trust-evidence packer must additionally bind the
+toolchain declaration, dependency lockfile, source/build artifact roots,
+challenge, trust policy, and checker receipts. Export is evidence production,
+not self-certification. Clean-room reproduction and an independent checker
+remain production gates.
 
 ### 9.2 Trust-policy registry
 
@@ -857,6 +862,13 @@ Revenue activation occurs only after payment settlement, required formal evidenc
 
 XLMP messages may travel over HTTP, libp2p, WebSocket, chain event streams, or x402-protected HTTP. Payment may use x402, stablecoins, native-chain assets, backed research credits, grants, bounty escrow, or institutional invoices. These adapters do not replace the research protocol. x402 is the reference paid-HTTP option.
 
+The checked-in outbound HTTP adapter is deliberately narrow: an endpoint must
+be HTTPS and host-allowlisted, redirects are disabled, responses are bounded,
+and a delivery succeeds only when the receiver returns the same valid
+MessageID. The local storage adapter similarly validates and re-hashes an exact
+multi-file bundle and refuses overwrite. These are reference boundaries, not
+claims of distributed transport finality or multi-provider availability.
+
 ### 17.1 Scheme mapping
 
 | Endpoint type | Scheme |
@@ -902,7 +914,7 @@ expiration
 
 ### 17.4 Payment idempotency
 
-Every attempt has a stable payment identifier so retries do not create duplicate charges. Unused `upto` authorization is returned or remains unredeemed.
+Every attempt has a stable payment identifier so retries do not create duplicate charges. Unused `upto` authorization is returned or remains unredeemed. The reference x402 adapter binds the complete instruction and payer/facilitator evidence into its authorization identity and settles only actual compatible usage once. Its replay set is local; production uses durable transactional idempotency and external reconciliation.
 
 ### 17.5 Reverse-direction bounties
 

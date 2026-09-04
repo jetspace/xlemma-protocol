@@ -6,10 +6,10 @@
     "scenario_count": 11,
     "passed_scenarios": 11,
     "failed_scenarios": 0,
-    "gate_count": 13,
-    "passed_gates": 13,
+    "gate_count": 20,
+    "passed_gates": 20,
     "failed_gates": 0,
-    "rust_test_count": 162
+    "rust_test_count": 173
   },
   "gates": [
     {
@@ -45,11 +45,67 @@
       "error": null
     },
     {
+      "id": "native_protocol_projection",
+      "title": "Native XLMP lifecycle projection",
+      "status": "pass",
+      "command": "cargo test --locked -p xlemma-xlmp projection::tests::complete_native_research_lifecycle_replays_without_losing_lineage -- --exact",
+      "evidence": "native identity, research, proof, rights, economics, publication, challenge, and availability objects replayed into one deterministic state root",
+      "error": null
+    },
+    {
+      "id": "native_api_projection",
+      "title": "Authenticated native-object API projection",
+      "status": "pass",
+      "command": "cargo test --locked -p xlemma-api tests::xlmp_ingress_is_append_only_and_retrievable -- --exact",
+      "evidence": "a signed native Claim was accepted once and retrieved through both MessageID and ClaimID projections",
+      "error": null
+    },
+    {
+      "id": "https_transport_policy",
+      "title": "Allowlisted XLMP-over-HTTPS transport",
+      "status": "pass",
+      "command": "cargo test --locked -p xlemma-xlmp http_transport::tests::endpoint_policy_rejects_http_credentials_redirect_targets_and_unlisted_hosts -- --exact",
+      "evidence": "transport construction rejected plaintext, credential-bearing, and unlisted endpoints",
+      "error": null
+    },
+    {
+      "id": "filesystem_storage_adapter",
+      "title": "Immutable content-addressed storage adapter",
+      "status": "pass",
+      "command": "cargo test --locked -p xlemma-storage tests::filesystem_adapter_round_trips_exact_multifile_bundle_and_rejects_overwrite -- --exact",
+      "evidence": "a multi-file artifact round-tripped byte-for-byte, emitted a signed availability receipt, and rejected overwrite",
+      "error": null
+    },
+    {
+      "id": "x402_payment_adapter",
+      "title": "Concrete x402 payment adapter",
+      "status": "pass",
+      "command": "cargo test --locked -p xlemma-x402 tests::concrete_adapter_settles_actual_usage_once_and_preserves_payment_separation -- --exact",
+      "evidence": "maximum authorization settled only actual usage, preserved facilitator evidence, and rejected replay without affecting research validity",
+      "error": null
+    },
+    {
+      "id": "lean_pseudo_self_test",
+      "title": "Pinned Lean author-operated pseudo self-test",
+      "status": "pass",
+      "command": "lean/self-test.sh",
+      "evidence": "the pinned exporter, exact identity vector, negative fixtures, fresh bundled checker, and Rust adapter bindings passed locally",
+      "error": null
+    },
+    {
       "id": "trust_policy",
       "title": "Trust-policy and axiom gate",
       "status": "pass",
       "command": "cargo run --quiet -p xlemma-cli -- verify-trust examples/no-arbitrage/trust-policy-registry.json examples/no-arbitrage/theory.json examples/no-arbitrage/proof.json examples/no-arbitrage/proof-trust-evidence.json",
       "evidence": "content-derived policy and axiom profile accepted exact evidence",
+      "error": null
+    },
+    {
+      "id": "lean_export_identity",
+      "title": "Lean environment export identity",
+      "status": "pass",
+      "command": "cargo run --quiet -p xlemma-cli -- lean-export-ids examples/lean-export/expected-add-zero.json examples/no-arbitrage/theory.json",
+      "evidence": "checked environment vector produced its exact TheoryID-bound ClaimID and ProofID",
       "error": null
     },
     {
@@ -130,8 +186,11 @@
         "rust_workspace",
         "durable_protocol_history",
         "binary_transport_identity",
+        "native_protocol_projection",
+        "native_api_projection",
         "trust_policy",
-        "portable_exit"
+        "portable_exit",
+        "x402_payment_adapter"
       ],
       "required_tests": [
         "sovereignty::tests::sovereignty_bundle_requires_every_durable_right",
@@ -173,8 +232,13 @@
         "rust_workspace",
         "durable_protocol_history",
         "binary_transport_identity",
+        "native_protocol_projection",
+        "native_api_projection",
         "trust_policy",
+        "lean_export_identity",
+        "lean_pseudo_self_test",
         "deterministic_bundle",
+        "filesystem_storage_adapter",
         "formal_poir"
       ],
       "required_tests": [
@@ -227,7 +291,10 @@
         "rust_workspace",
         "durable_protocol_history",
         "binary_transport_identity",
-        "economic_conservation"
+        "native_protocol_projection",
+        "native_api_projection",
+        "economic_conservation",
+        "x402_payment_adapter"
       ],
       "required_tests": [
         "credit::tests::credits_remain_fully_backed_through_usage_settlement",
@@ -274,9 +341,12 @@
         "rust_workspace",
         "durable_protocol_history",
         "binary_transport_identity",
+        "native_protocol_projection",
+        "native_api_projection",
         "economic_conservation",
         "economic_compliance",
-        "compute_impact"
+        "compute_impact",
+        "x402_payment_adapter"
       ],
       "required_tests": [
         "revenue::tests::revenue_is_conserved_across_waterfall_and_creator_rounding",
@@ -318,6 +388,8 @@
         "rust_workspace",
         "durable_protocol_history",
         "binary_transport_identity",
+        "native_protocol_projection",
+        "native_api_projection",
         "economic_compliance"
       ],
       "required_tests": [
@@ -350,7 +422,10 @@
         "rust_workspace",
         "durable_protocol_history",
         "binary_transport_identity",
-        "compute_quote"
+        "native_protocol_projection",
+        "native_api_projection",
+        "compute_quote",
+        "https_transport_policy"
       ],
       "required_tests": [
         "protocol::tests::producer_cannot_count_as_an_independent_reproducer",
@@ -392,7 +467,11 @@
         "rust_workspace",
         "durable_protocol_history",
         "binary_transport_identity",
-        "formal_poir"
+        "native_protocol_projection",
+        "native_api_projection",
+        "formal_poir",
+        "lean_pseudo_self_test",
+        "https_transport_policy"
       ],
       "required_tests": [
         "committee::tests::selection_is_reproducible_and_operator_independent",
@@ -443,7 +522,10 @@
         "repository_structure",
         "rust_workspace",
         "durable_protocol_history",
-        "binary_transport_identity"
+        "binary_transport_identity",
+        "native_protocol_projection",
+        "native_api_projection",
+        "https_transport_policy"
       ],
       "required_tests": [
         "formal::tests::checker_disagreement_is_divergent_not_majority_vote",
@@ -486,7 +568,10 @@
         "rust_workspace",
         "durable_protocol_history",
         "binary_transport_identity",
-        "compute_impact"
+        "native_protocol_projection",
+        "native_api_projection",
+        "compute_impact",
+        "x402_payment_adapter"
       ],
       "required_tests": [
         "upstream::tests::one_pool_is_bounded_clustered_and_conserved",
@@ -528,7 +613,10 @@
         "rust_workspace",
         "durable_protocol_history",
         "binary_transport_identity",
-        "generalized_verification"
+        "native_protocol_projection",
+        "native_api_projection",
+        "generalized_verification",
+        "filesystem_storage_adapter"
       ],
       "required_tests": [
         "funding::tests::negative_results_are_commons_not_market_funding"
@@ -564,7 +652,10 @@
         "rust_workspace",
         "durable_protocol_history",
         "binary_transport_identity",
-        "portable_exit"
+        "native_protocol_projection",
+        "native_api_projection",
+        "portable_exit",
+        "filesystem_storage_adapter"
       ],
       "required_tests": [
         "state::tests::supersession_is_append_only_and_cannot_restore_old_publication_state",
@@ -591,9 +682,10 @@
     }
   ],
   "limitations": [
-    "Lean/Lake, official kernel replay, nanoda replay, and the hostile proof corpus were not executed by this harness.",
+    "The Lean gate is an author-operated pseudo self-test using the checker bundled with the same pinned Lean distribution; independent checker replay, nanoda replay, and a hostile clean-room corpus are not claimed.",
     "Formal consensus simulation consumes structurally valid content-derived observations; production ingress must additionally authenticate node signatures, credentials, committee assignments, and non-revocation proofs.",
-    "ASTRA/model calls, x402 or stablecoin settlement, chains, storage providers, credential issuers, and randomness beacons are represented by deterministic adapters and fixtures rather than live external services.",
+    "ASTRA/model calls, live x402/stablecoin settlement, chains, remote storage providers, credential issuers, and randomness beacons remain deterministic reference adapters or fixtures rather than production external services.",
+    "The x402 replay guard and artifact store are local single-process reference implementations; production deployments require durable distributed idempotency, reconciliation, replication, credentialed signers, and monitored recovery.",
     "No independent implementation, clean-room bundle reproduction, cryptographic audit, smart-contract audit, sandbox audit, economic audit, or legal review is claimed.",
     "Passing scenarios demonstrate internal consistency of the checked snapshot, not theorem novelty, informal-statement alignment, commercial value, or production safety."
   ]

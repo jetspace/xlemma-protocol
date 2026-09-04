@@ -131,13 +131,24 @@ pub trait PaymentAdapter: Send + Sync {
 
 #[async_trait]
 pub trait StorageAdapter: Send + Sync {
-    async fn put(
-        &self,
-        artifact_id: ArtifactId,
-        manifest: ArtifactManifest,
-    ) -> Result<AvailabilityReceipt, AdapterError>;
+    async fn put(&self, bundle: StoredArtifactBundle) -> Result<AvailabilityReceipt, AdapterError>;
 
-    async fn get(&self, artifact_id: ArtifactId) -> Result<Vec<u8>, AdapterError>;
+    async fn get(&self, artifact_id: ArtifactId) -> Result<StoredArtifactBundle, AdapterError>;
+}
+
+/// Exact bytes for one canonical path in an artifact manifest. Multi-file
+/// bundles cannot be represented safely as an untyped byte vector.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ArtifactPayload {
+    pub path: String,
+    pub bytes: Vec<u8>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct StoredArtifactBundle {
+    pub artifact_id: ArtifactId,
+    pub manifest: ArtifactManifest,
+    pub payloads: Vec<ArtifactPayload>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

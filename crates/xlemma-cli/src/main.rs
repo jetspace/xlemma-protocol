@@ -10,13 +10,15 @@ use xlemma_consensus::{
     eligible_set_root, evaluate_formal_consensus, randomness_commitment, FormalConsensusPolicy,
 };
 use xlemma_core::{
-    evaluate_reproduction, observation_commitment, Amount, AxiomProfile,
-    CaptureResistanceDashboard, ClaimManifest, ConstitutionalCommitment, CredentialRevocation,
-    EconomicComplianceCertificate, EconomicConstitution, EligibleNode, ForkExitPlan,
-    GovernanceProposal, IndependentCredentialAttestation, NodeCredential, NodeCredentialChain,
+    evaluate_reproduction, observation_commitment, Amount, AvailabilityReceipt, AxiomProfile,
+    CaptureResistanceDashboard, Challenge, ClaimManifest, ComputeReceipt, ConstitutionalCommitment,
+    CredentialRevocation, DependencyDividend, EconomicComplianceCertificate, EconomicConstitution,
+    EligibleNode, ForkExitPlan, GovernanceProposal, IndependentCredentialAttestation,
+    LeanEnvironmentExport, LemmaCapsule, License, NodeCredential, NodeCredentialChain,
     NodeServiceAdvertisement, NodeWorkReceipt, ObjectiveMisconductRecord, ObservationReceipt,
-    OperatorCredential, PolicyId, ProofManifest, ProofTrustEvidence, ReproductionObservation,
-    ResearchComputeCooperative, ResearchVerificationCertificate, ResearcherPortabilityManifest,
+    OperatorCredential, PolicyId, ProofManifest, ProofTrustEvidence, PublicationRecord,
+    QuarantineRecord, ReproductionObservation, ResearchComputeCooperative, ResearchCredit,
+    ResearchVault, ResearchVerificationCertificate, ResearcherPortabilityManifest,
     ResearcherResidualRight, ResearcherSovereigntyBundle, TheoryId, TrustPolicy,
     TrustPolicyRegistry, TrustPolicyRegistrySnapshot, UserCredential, VerificationJob,
     VerificationProfile,
@@ -43,6 +45,8 @@ enum Command {
         kind: IdKind,
         input: PathBuf,
     },
+    /// Validate a Lean environment export and derive its ClaimID and ProofID.
+    LeanExportIds { export: PathBuf, theory: PathBuf },
     /// Evaluate a set of revealed formal observations under a quorum policy.
     EvaluateConsensus {
         policy: PathBuf,
@@ -157,6 +161,16 @@ enum IdKind {
     EconomicComplianceCertificate,
     AxiomProfile,
     TrustPolicy,
+    Challenge,
+    Quarantine,
+    ComputeReceipt,
+    ResearchCredit,
+    ResearchVault,
+    DependencyDividend,
+    License,
+    LemmaCapsule,
+    Publication,
+    AvailabilityReceipt,
 }
 
 fn main() -> Result<()> {
@@ -263,8 +277,45 @@ fn main() -> Result<()> {
                 IdKind::TrustPolicy => serde_json::from_value::<TrustPolicy>(value)?
                     .derive_policy_id()?
                     .to_string(),
+                IdKind::Challenge => serde_json::from_value::<Challenge>(value)?
+                    .derive_challenge_id()?
+                    .to_string(),
+                IdKind::Quarantine => serde_json::from_value::<QuarantineRecord>(value)?
+                    .derive_quarantine_id()?
+                    .to_string(),
+                IdKind::ComputeReceipt => serde_json::from_value::<ComputeReceipt>(value)?
+                    .derive_receipt_id()?
+                    .to_string(),
+                IdKind::ResearchCredit => serde_json::from_value::<ResearchCredit>(value)?
+                    .derive_credit_id()?
+                    .to_string(),
+                IdKind::ResearchVault => serde_json::from_value::<ResearchVault>(value)?
+                    .derive_vault_id()?
+                    .to_string(),
+                IdKind::DependencyDividend => serde_json::from_value::<DependencyDividend>(value)?
+                    .derive_dividend_id()?
+                    .to_string(),
+                IdKind::License => serde_json::from_value::<License>(value)?
+                    .derive_license_id()?
+                    .to_string(),
+                IdKind::LemmaCapsule => serde_json::from_value::<LemmaCapsule>(value)?
+                    .derive_lemma_id()?
+                    .to_string(),
+                IdKind::Publication => serde_json::from_value::<PublicationRecord>(value)?
+                    .derive_publication_id()?
+                    .to_string(),
+                IdKind::AvailabilityReceipt => {
+                    serde_json::from_value::<AvailabilityReceipt>(value)?
+                        .derive_receipt_id()?
+                        .to_string()
+                }
             };
             println!("{id}");
+        }
+        Command::LeanExportIds { export, theory } => {
+            let export: LeanEnvironmentExport = read_json(export)?;
+            let theory: xlemma_core::TheoryManifest = read_json(theory)?;
+            print_json(&export.derive_ids(&theory)?)?;
         }
         Command::EvaluateConsensus {
             policy,

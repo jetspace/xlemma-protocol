@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/lean-derived-ids.schema.json",
+  "title": "IDs derived from a Lean environment export",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "theory_id": { "type": "string", "pattern": "^xlt:blake3:[0-9a-f]{64}$" },
+    "claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "proof_id": { "type": "string", "pattern": "^xlp:blake3:[0-9a-f]{64}$" }
+  },
+  "required": ["theory_id", "claim_id", "proof_id"]
+}

@@ -7,11 +7,15 @@
 
 pub mod adapter;
 pub mod framing;
+pub mod http_transport;
+pub mod projection;
 pub mod state;
 pub mod wire;
 
 pub use adapter::*;
 pub use framing::*;
+pub use http_transport::*;
+pub use projection::*;
 pub use state::*;
 pub use wire::*;
 pub use xlemma_core::{XLMP_MAJOR_VERSION, XLMP_PROTOCOL, XLMP_VERSION};

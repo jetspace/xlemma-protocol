@@ -48,6 +48,33 @@ UserCredential; it is not silently equated with VerifiedUserID. See XLIP-020.
 
 JSON manifests used for identifiers or signatures MUST use RFC 8785 JCS. Integer values outside the exact IEEE-754 range MUST be encoded as decimal strings or rejected. Lean expressions require a dedicated versioned canonical encoding that resolves names, universes, binders, implicit arguments, and type information.
 
+### `xlemma-lean-expr-v1`
+
+The reference Lean environment exporter serializes an elaborated expression as
+compact UTF-8 JSON with no insignificant whitespace. Every node is a tagged
+array. Names retain their exact recursive `anonymous`, `str`, or numeric
+structure; universes retain `zero`, `succ`, `max`, `imax`, and named
+parameters; expressions retain bound-variable indices, sorts, constants and
+universe instantiations, applications, binder mode, lambda/forall/let shape,
+literals, and projections. Natural values are base-10 strings without leading
+zeroes.
+
+Binder names and expression metadata MUST be omitted because they do not affect
+kernel identity. Bound occurrences remain de Bruijn indices. A free variable,
+expression metavariable, or universe metavariable MUST fail export. Unsafe,
+partial, or valueless declarations MUST NOT cross the default export boundary.
+Direct constant names and transitive axioms are emitted separately as evidence.
+
+`canonical_elaborated_type` is exactly the compact structural string hashed
+under `TheoryID` for `ClaimID`. `canonical_proof_object` is exactly the compact
+structural proof string hashed under the resulting `ClaimID` for `ProofID`.
+The outer export record, declaration name, source spelling, dependency summary,
+and axiom summary are evidence and MUST NOT be substituted for either identity
+input. See `lean/XLemma/Export.lean`, the export schema, and
+`examples/lean-export/expected-add-zero.json`. The paired
+`expected-ids.json` vector fixes the resulting Rust reference `ClaimID` and
+`ProofID` under a declared `TheoryID`.
+
 ## Equivalence
 
 Similarity systems MAY propose clusters. A protocol `FORMALLY_EQUIVALENT` edge MUST point to an explicit Lean proof under a declared equivalence relation.

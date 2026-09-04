@@ -18,7 +18,7 @@ deterministic source manifest. It checked:
 - required source, specification, schema, example, contract, Lean, LaTeX, and
   documentation files;
 - JSON syntax, JSON Schema Draft 2020-12 validity, and example conformance,
-  including the forty-message XLMP/1 envelope, node advertisement/reputation/bond vectors,
+  including the 53-message XLMP/1 envelope, node advertisement/reputation/bond vectors,
   pseudonymous user/operator/node credential and revocation vectors, the
   published credential-bound eligible-set/sortition/committee vector, and all
   provider-neutral native-object schemas, including sovereignty bundles,
@@ -47,9 +47,12 @@ cargo clippy --locked --workspace --all-targets -- -D warnings
 cargo test --locked --workspace
 ```
 
-The Rust suite contains 162 unit/async-test declarations. It exercises RFC 8785
+The Rust suite contains 173 unit/async-test declarations. It exercises RFC 8785
 canonicalization and safe-integer rejection, strict XLMP typed ingress,
-content-bound receipt identity, Ed25519 signature and signer/NodeID binding,
+validated Lean environment export ingestion, theory/toolchain/encoding
+matching, domain-separated ClaimID/ProofID derivation, and mandatory
+verifier-request/export identity, dependency-root, and axiom binding,
+content-bound native protocol and receipt identity, Ed25519 signature and signer/NodeID binding,
 statement-alignment identity and signature-verifier boundaries, signed
 protocol success calibration, exclusion of uncalibrated provider offers,
 signed impact-pool authorization and exact revenue-event binding,
@@ -58,8 +61,10 @@ content-derived impact evidence, checked fixed-point quote/allocation math and
 deterministic equal-cost routing,
 Commons and Reciprocal economic constraints, message and advertisement
 identity/mutation rejection, append-only HTTP and
-node-market records, canonical non-HTTP binary framing with exact MessageID
-preservation, durable hash-chained API restart recovery and tamper rejection,
+node-market records, deterministic native lifecycle projection, canonical
+non-HTTP binary framing with exact MessageID preservation, allowlisted HTTPS
+transport, durable hash-chained API restart recovery, native read projections,
+and tamper rejection,
 asset-compatible capacity matching, eight-dimensional
 reputation gates, pseudonymous credential integrity, append-only revocation,
 reproducible future-randomness committee sortition, duplicate node, operator,
@@ -69,15 +74,17 @@ all six research verification profiles, researcher portability and company-disap
 economic-compliance/validity separation, multi-issuer concentration limits,
 multi-chamber governance, compute cooperatives and capture-resistance scoring,
 work-backed node revenue and bond exposure,
-backed credits, revenue conservation, impact-pool caps, provider
-adapters, bounded and symlink-safe storage, hardened Lean/ASTRA adapter
+backed credits, revenue conservation, impact-pool caps, provider adapters,
+actual-use x402 settlement and replay/mutation rejection, immutable multi-file
+storage with exact retrieval, hardened Lean/ASTRA adapter
 boundaries, fail-closed trust-policy and axiom-profile evaluation, mutation
 rejection for registry roots, byte-for-byte deterministic bundle reproduction,
 and x402-to-XLMP binding.
 
-`cargo audit` completed against a current local RustSec advisory database with
-`--deny warnings`: 237 locked dependencies were scanned against 1,239
-advisories with no vulnerable packages reported.
+`cargo audit --no-fetch` completed against the local RustSec advisory database
+at commit `5a0ebed` dated 2026-09-02: 237 locked dependencies were scanned
+against 1,239 advisories with no vulnerable packages reported. This does not
+replace an independent audit or a later scan against a newer database.
 
 `scripts/simulate_economics.py` completed successfully for backing,
 authorization, settlement, refund, solvency, revenue allocation, compounding,
@@ -85,15 +92,27 @@ and conservative compute-impact allocations. Python bytecode compilation also
 completed successfully for the repository scripts.
 
 `scripts/simulate_use_cases.py` completed all eleven documented researcher and
-participant journeys across thirteen executable gates and schema-validated
+participant journeys across 20 executable gates and schema-validated
 ordered end-to-end traces. The run exercised the full Rust suite, durable API
-restart recovery, canonical binary transport identity, structural/schema
-validation, content-derived trust policy,
-formal PoIR, generalized computational reproduction, portability, economic
-compliance and conservation, calibrated compute routing, bounded impact, and
-deterministic artifact packing. It produced the schema-validated structured
+restart recovery, native lifecycle and API projections, canonical binary and
+allowlisted HTTPS transport, immutable filesystem storage, x402 actual-use
+settlement, structural/schema validation, deterministic Lean export-to-ID
+derivation and pseudo self-test, content-derived trust policy, formal PoIR,
+generalized computational reproduction, portability, economic compliance and
+conservation, calibrated compute routing, bounded impact, and deterministic
+artifact packing. It produced the schema-validated structured
 report at `reports/use-case-simulation.json` and the human-readable report at
 `docs/USE_CASE_SIMULATION_REPORT.md`.
+
+After the main snapshot run, the pinned `leanprover/lean4:v4.33.1` toolchain was
+installed locally. The print-only marker was then replaced by a checked-
+environment serializer for closed elaborated types, proof terms, universes,
+direct constants, and transitive axioms. `lake build`, warning-as-error
+elaboration of `XLemma/Example.lean`, exact reproduction of the checked-in
+machine-readable export vector, an empty target-theorem axiom inventory, and
+`lake env leanchecker --fresh XLemma.Example` all completed successfully. This
+is an author-operated pseudo/self-test, documented in
+`docs/LEAN_SELF_TEST_REPORT.md`; it is not independent reproduction.
 
 Foundry 1.4.0 formatting, build-size, unit, fuzz, and invariant checks completed
 successfully against the immutable OpenZeppelin and forge-std revisions listed
@@ -109,16 +128,20 @@ secrets. The committed runtime and service image references use immutable
 digests, the API binds only to loopback by default, and the container profile is
 read-only, non-root, capability-free, and protected by `no-new-privileges`.
 
-The snapshot contains 13 Rust crates, 83 JSON schemas, 24 numbered
+The snapshot contains 13 Rust crates, 85 JSON schemas, 24 numbered
 specifications, 10 Solidity contracts, and 9 Solidity test suites. These source
 counts establish repository coverage; they do not substitute for an audit.
 
 ## Not executed locally
 
-This environment did not include Lean/Lake. The following checks are therefore
-delegated to the included CI workflow and are not claimed as locally executed:
+Lean/Lake and the bundled fresh checker are now installed and were exercised as
+described above. The following Lean assurance checks remain unexecuted locally
+and are not claimed by the pseudo/self-test:
 
-- Lean package build, official kernel replay, nanoda replay, and axiom audit.
+- nanoda or another independently implemented checker-family replay;
+- the comparator challenge workflow, hostile proof corpus, and hardened
+  sandbox execution;
+- independent clean-room reproduction of the exporter encoding and proof bundle.
 
 The following production activities were also outside this validation scope:
 
@@ -135,7 +158,7 @@ The following production activities were also outside this validation scope:
 ## Release status
 
 This remains an architectural reference implementation and prototype. The
-XLMP/1 provider-neutral boundary, forty canonical messages, lifecycle,
+XLMP/1 provider-neutral boundary, 53 canonical messages, lifecycle,
 first-class identity/credential and node-network planes, native sovereignty,
 portability, economic-compliance, generalized-verification, capture,
 node-economics, and governance records, schemas, and adapters are implemented
@@ -157,7 +180,7 @@ cargo clippy --locked --workspace --all-targets -- -D warnings
 cargo test --locked --workspace
 cargo audit --deny warnings
 
-cd lean && lake build
+cd lean && ./self-test.sh
 cd ../contracts && forge fmt --check && forge build --sizes && forge test -vvv
 ```
 

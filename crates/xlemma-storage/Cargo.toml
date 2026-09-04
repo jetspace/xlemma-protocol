@@ -5,12 +5,12 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+async-trait.workspace = true
 blake3.workspace = true
 chrono.workspace = true
 libc.workspace = true
 serde.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true
 xlemma-core = { path = "../xlemma-core" }
-
-[dev-dependencies]
-serde_json.workspace = true
+xlemma-xlmp = { path = "../xlemma-xlmp" }

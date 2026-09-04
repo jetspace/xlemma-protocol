@@ -17,6 +17,7 @@ from typing import Callable
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLE = ROOT / "examples" / "no-arbitrage"
 BUNDLE = ROOT / "examples" / "deterministic-bundle"
+LEAN_EXPORT = ROOT / "examples" / "lean-export"
 
 
 Validator = Callable[[str], tuple[bool, str]]
@@ -71,6 +72,15 @@ def validate_formal(output: str) -> tuple[bool, str]:
         and not value.get("reasons")
     )
     return passed, "3 independent observations: 2 Lean kernel + 1 nanoda"
+
+
+def validate_lean_export_ids(output: str) -> tuple[bool, str]:
+    actual = parse_json_output(output)
+    expected = json.loads((LEAN_EXPORT / "expected-ids.json").read_text())
+    return (
+        actual == expected,
+        "checked environment vector produced its exact TheoryID-bound ClaimID and ProofID",
+    )
 
 
 def validate_generalized(output: str) -> tuple[bool, str]:
@@ -200,6 +210,105 @@ def gates() -> tuple[Gate, ...]:
             ),
         ),
         Gate(
+            "native_protocol_projection",
+            "Native XLMP lifecycle projection",
+            (
+                "cargo",
+                "test",
+                "--locked",
+                "-p",
+                "xlemma-xlmp",
+                "projection::tests::complete_native_research_lifecycle_replays_without_losing_lineage",
+                "--",
+                "--exact",
+            ),
+            lambda _: (
+                True,
+                "native identity, research, proof, rights, economics, publication, challenge, and availability objects replayed into one deterministic state root",
+            ),
+        ),
+        Gate(
+            "native_api_projection",
+            "Authenticated native-object API projection",
+            (
+                "cargo",
+                "test",
+                "--locked",
+                "-p",
+                "xlemma-api",
+                "tests::xlmp_ingress_is_append_only_and_retrievable",
+                "--",
+                "--exact",
+            ),
+            lambda _: (
+                True,
+                "a signed native Claim was accepted once and retrieved through both MessageID and ClaimID projections",
+            ),
+        ),
+        Gate(
+            "https_transport_policy",
+            "Allowlisted XLMP-over-HTTPS transport",
+            (
+                "cargo",
+                "test",
+                "--locked",
+                "-p",
+                "xlemma-xlmp",
+                "http_transport::tests::endpoint_policy_rejects_http_credentials_redirect_targets_and_unlisted_hosts",
+                "--",
+                "--exact",
+            ),
+            lambda _: (
+                True,
+                "transport construction rejected plaintext, credential-bearing, and unlisted endpoints",
+            ),
+        ),
+        Gate(
+            "filesystem_storage_adapter",
+            "Immutable content-addressed storage adapter",
+            (
+                "cargo",
+                "test",
+                "--locked",
+                "-p",
+                "xlemma-storage",
+                "tests::filesystem_adapter_round_trips_exact_multifile_bundle_and_rejects_overwrite",
+                "--",
+                "--exact",
+            ),
+            lambda _: (
+                True,
+                "a multi-file artifact round-tripped byte-for-byte, emitted a signed availability receipt, and rejected overwrite",
+            ),
+        ),
+        Gate(
+            "x402_payment_adapter",
+            "Concrete x402 payment adapter",
+            (
+                "cargo",
+                "test",
+                "--locked",
+                "-p",
+                "xlemma-x402",
+                "tests::concrete_adapter_settles_actual_usage_once_and_preserves_payment_separation",
+                "--",
+                "--exact",
+            ),
+            lambda _: (
+                True,
+                "maximum authorization settled only actual usage, preserved facilitator evidence, and rejected replay without affecting research validity",
+            ),
+        ),
+        Gate(
+            "lean_pseudo_self_test",
+            "Pinned Lean author-operated pseudo self-test",
+            ("lean/self-test.sh",),
+            lambda output: (
+                "xLemma Lean pseudo self-test passed" in output,
+                "the pinned exporter, exact identity vector, negative fixtures, fresh bundled checker, and Rust adapter bindings passed locally",
+            ),
+        ),
+        Gate(
             "trust_policy",
             "Trust-policy and axiom gate",
             cli
@@ -211,6 +320,17 @@ def gates() -> tuple[Gate, ...]:
                 "examples/no-arbitrage/proof-trust-evidence.json",
             ),
             validate_trust,
+        ),
+        Gate(
+            "lean_export_identity",
+            "Lean environment export identity",
+            cli
+            + (
+                "lean-export-ids",
+                "examples/lean-export/expected-add-zero.json",
+                "examples/no-arbitrage/theory.json",
+            ),
+            validate_lean_export_ids,
         ),
         Gate(
             "formal_poir",
@@ -325,6 +445,8 @@ def scenarios() -> tuple[Scenario, ...]:
         "rust_workspace",
         "durable_protocol_history",
         "binary_transport_identity",
+        "native_protocol_projection",
+        "native_api_projection",
     )
     return (
         Scenario(
@@ -333,7 +455,7 @@ def scenarios() -> tuple[Scenario, ...]:
             "identity → sovereignty bundle → backed vault → policy selection",
             "The researcher obtains portable protocol state and mints credits only against backing.",
             "Missing sovereignty protections or insufficient backing is rejected.",
-            baseline + ("trust_policy", "portable_exit"),
+            baseline + ("trust_policy", "portable_exit", "x402_payment_adapter"),
             (
                 "sovereignty::tests::sovereignty_bundle_requires_every_durable_right",
                 "credit::tests::credits_remain_fully_backed_through_usage_settlement",
@@ -345,7 +467,15 @@ def scenarios() -> tuple[Scenario, ...]:
             "CLAIM → COMMIT → FORMALIZE → PROVE → REPRODUCE → CERTIFY",
             "Three independent observations reproduce one exact artifact under the selected trust policy.",
             "A producer cannot self-certify, and missing or divergent evidence cannot advance.",
-            baseline + ("trust_policy", "deterministic_bundle", "formal_poir"),
+            baseline
+            + (
+                "trust_policy",
+                "lean_export_identity",
+                "lean_pseudo_self_test",
+                "deterministic_bundle",
+                "filesystem_storage_adapter",
+                "formal_poir",
+            ),
             (
                 "trust::tests::registered_policy_accepts_exact_fail_closed_evidence",
                 "formal::tests::gold_quorum_certifies_only_unanimous_exact_reproduction",
@@ -357,7 +487,7 @@ def scenarios() -> tuple[Scenario, ...]:
             "deposit backing → mint Rᵢ → authorize maximum → settle actual → unlock remainder",
             "Only consumed credits burn and release an equal amount of neutral backing.",
             "Over-authorization, replay, or under-collateralization fails without partial mutation.",
-            baseline + ("economic_conservation",),
+            baseline + ("economic_conservation", "x402_payment_adapter"),
             (
                 "credit::tests::credits_remain_fully_backed_through_usage_settlement",
                 "credit::tests::forged_or_cloned_authorization_cannot_unlock_another_reservation",
@@ -369,7 +499,13 @@ def scenarios() -> tuple[Scenario, ...]:
             "settled external revenue → costs/refunds/reserves → bounded waterfall → cash + compounding",
             "Net revenue is conserved and auto-compounded credits receive matching vault backing.",
             "Token appreciation, unsettled revenue, or an unauthorized impact signal cannot fund payouts.",
-            baseline + ("economic_conservation", "economic_compliance", "compute_impact"),
+            baseline
+            + (
+                "economic_conservation",
+                "economic_compliance",
+                "compute_impact",
+                "x402_payment_adapter",
+            ),
             (
                 "revenue::tests::revenue_is_conserved_across_waterfall_and_creator_rounding",
                 "dividend::tests::compute_signal_without_economic_authorization_cannot_pay",
@@ -393,7 +529,7 @@ def scenarios() -> tuple[Scenario, ...]:
             "advertise capacity → calibrated quote → candidate generation → compute receipt",
             "A provider-neutral prover can earn for bounded work and return a candidate artifact.",
             "The proof producer is excluded from independent reproduction of its own candidate.",
-            baseline + ("compute_quote",),
+            baseline + ("compute_quote", "https_transport_policy"),
             (
                 "protocol::tests::producer_cannot_count_as_an_independent_reproducer",
                 "tests::endpoint_must_be_https_and_explicitly_allowlisted",
@@ -405,7 +541,7 @@ def scenarios() -> tuple[Scenario, ...]:
             "credential chain → advertisement → sortition → exact execution → commit/reveal → work payment",
             "Distinct verified users, operators, clusters, providers, regions, and checker families reproduce the job.",
             "More machines under common control do not create more independence or truth weight.",
-            baseline + ("formal_poir",),
+            baseline + ("formal_poir", "lean_pseudo_self_test", "https_transport_policy"),
             (
                 "committee::tests::selection_is_reproducible_and_operator_independent",
                 "formal::tests::multiple_nodes_under_one_verified_user_are_not_independent_observations",
@@ -417,7 +553,7 @@ def scenarios() -> tuple[Scenario, ...]:
             "challenge → counterevidence → expanded reproduction → dismiss / quarantine / reject",
             "A valid challenge can move the object into fail-closed quarantine and later revalidation.",
             "Checker divergence is never resolved by a 2-to-1 majority or by slashing honest dissent.",
-            baseline,
+            baseline + ("https_transport_policy",),
             (
                 "formal::tests::checker_disagreement_is_divergent_not_majority_vote",
                 "tests::divergent_reproduction_can_fail_closed",
@@ -430,7 +566,7 @@ def scenarios() -> tuple[Scenario, ...]:
             "final proof dependency → separate economic edge → settled revenue → bounded nonrecursive pool",
             "Eligible upstream contributors can receive a capped allocation from an authorized pool.",
             "Formal dependency alone creates no debt; stuffing, cycles, dust, and recursive charging are blocked.",
-            baseline + ("compute_impact",),
+            baseline + ("compute_impact", "x402_payment_adapter"),
             (
                 "upstream::tests::one_pool_is_bounded_clustered_and_conserved",
                 "protocol::tests::formal_dependency_without_an_economic_edge_never_creates_payment",
@@ -442,7 +578,7 @@ def scenarios() -> tuple[Scenario, ...]:
             "failed or inconclusive work → attributable evidence artifact → commons/public-goods funding",
             "Useful negative evidence remains publishable and fundable without a false validity badge.",
             "Negative results cannot be relabeled as certified proofs or used to mint unbacked credits.",
-            baseline + ("generalized_verification",),
+            baseline + ("generalized_verification", "filesystem_storage_adapter"),
             ("funding::tests::negative_results_are_commons_not_market_funding",),
         ),
         Scenario(
@@ -451,7 +587,7 @@ def scenarios() -> tuple[Scenario, ...]:
             "new immutable object → AMENDS / CORRECTS / SUPERSEDES edge → revalidation",
             "The old artifact, attribution, receipts, and correction lineage remain reconstructable.",
             "A superseded record cannot silently return to published state or overwrite history.",
-            baseline + ("portable_exit",),
+            baseline + ("portable_exit", "filesystem_storage_adapter"),
             (
                 "state::tests::supersession_is_append_only_and_cannot_restore_old_publication_state",
                 "marketplace::tests::order_book_preserves_superseded_advertisements",
@@ -547,6 +683,8 @@ def render_markdown(report: dict[str, object]) -> str:
             "",
             "1. The formal-policy schema and example allowed a zero requirement for an optional checker family, while the Rust validator rejected it. The validator now requires at least one positive family and permits explicit optional zero entries.",
             "2. The published formal observation vector still contained illustrative receipt IDs, evidence roots, and commitments. The CLI now prepares arrays of content-derived observations, and the vector was regenerated so direct PoIR evaluation succeeds.",
+            "3. Several native research objects existed only as Rust/domain concepts. XLMP now carries them as content-derived messages and replays their prerequisites, immutable lineage, and publication/economic relationships into a deterministic projection.",
+            "4. Payment, storage, and outbound HTTP boundaries were interface-only. Concrete fail-closed reference adapters now exercise x402 actual-use settlement and replay protection, immutable multi-file storage, and allowlisted canonical HTTPS delivery.",
             "",
             "## Limitations and production blockers",
             "",
@@ -681,9 +819,10 @@ def main() -> int:
         "gates": gate_results,
         "scenarios": scenario_results,
         "limitations": [
-            "Lean/Lake, official kernel replay, nanoda replay, and the hostile proof corpus were not executed by this harness.",
+            "The Lean gate is an author-operated pseudo self-test using the checker bundled with the same pinned Lean distribution; independent checker replay, nanoda replay, and a hostile clean-room corpus are not claimed.",
             "Formal consensus simulation consumes structurally valid content-derived observations; production ingress must additionally authenticate node signatures, credentials, committee assignments, and non-revocation proofs.",
-            "ASTRA/model calls, x402 or stablecoin settlement, chains, storage providers, credential issuers, and randomness beacons are represented by deterministic adapters and fixtures rather than live external services.",
+            "ASTRA/model calls, live x402/stablecoin settlement, chains, remote storage providers, credential issuers, and randomness beacons remain deterministic reference adapters or fixtures rather than production external services.",
+            "The x402 replay guard and artifact store are local single-process reference implementations; production deployments require durable distributed idempotency, reconciliation, replication, credentialed signers, and monitored recovery.",
             "No independent implementation, clean-room bundle reproduction, cryptographic audit, smart-contract audit, sandbox audit, economic audit, or legal review is claimed.",
             "Passing scenarios demonstrate internal consistency of the checked snapshot, not theorem novelty, informal-statement alignment, commercial value, or production safety.",
         ],

@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS = ROOT / "schemas"
 EXAMPLE = ROOT / "examples" / "no-arbitrage"
 NODE_EXAMPLE = ROOT / "examples" / "node-network"
+LEAN_EXPORT_EXAMPLE = ROOT / "examples" / "lean-export"
 SKIP_SIMULATION_REPORT = "--skip-simulation-report" in sys.argv[1:]
 if any(argument != "--skip-simulation-report" for argument in sys.argv[1:]):
     raise SystemExit("usage: validate_repo.py [--skip-simulation-report]")
@@ -44,6 +45,7 @@ REQUIRED_FILES = [
     "docs/PRIOR_ART_AND_DIFFERENTIATION.md",
     "docs/VALIDATION_REPORT.md",
     "docs/USE_CASE_SIMULATION_REPORT.md",
+    "docs/LEAN_SELF_TEST_REPORT.md",
     "spec/000-overview.md",
     "spec/001-identifiers.md",
     "spec/002-proof-rights-capsule.md",
@@ -79,12 +81,17 @@ REQUIRED_FILES = [
     "contracts/src/RevenueRouter.sol",
     "contracts/src/LemmaCapsule1155.sol",
     "lean/XLemma.lean",
+    "lean/XLemma/Export.lean",
+    "lean/self-test.sh",
+    "lean/tests/RejectUnsafe.lean",
+    "lean/tests/RejectValueless.lean",
     "latex/xlemma.sty",
     "crates/xlemma-crypto/src/lib.rs",
     "crates/xlemma-node/src/lib.rs",
     "crates/xlemma-node/src/marketplace.rs",
     "crates/xlemma-node/src/credentials.rs",
     "crates/xlemma-core/src/identity.rs",
+    "crates/xlemma-core/src/lean_export.rs",
     "crates/xlemma-core/src/capture.rs",
     "crates/xlemma-core/src/governance.rs",
     "crates/xlemma-core/src/network.rs",
@@ -142,6 +149,8 @@ REQUIRED_FILES = [
     "schemas/trust-policy-registry.schema.json",
     "schemas/proof-trust-evidence.schema.json",
     "schemas/use-case-simulation-report.schema.json",
+    "schemas/lean-environment-export.schema.json",
+    "schemas/lean-derived-ids.schema.json",
     "examples/node-network/advertisement.json",
     "examples/node-network/reputation.json",
     "examples/node-network/bond.json",
@@ -191,8 +200,11 @@ REQUIRED_FILES = [
     "examples/deterministic-bundle/proof.lean",
     "examples/deterministic-bundle/statement.txt",
     "examples/deterministic-bundle/expected-bundle.json",
+    "examples/lean-export/expected-add-zero.json",
+    "examples/lean-export/expected-ids.json",
     "reports/use-case-simulation.json",
     "scripts/simulate_use_cases.py",
+    "lean/validate-export.py",
 ]
 
 EXAMPLE_SCHEMA_MAP = {
@@ -335,6 +347,37 @@ def validate_json_syntax_and_schemas() -> None:
             joined = "\n".join(f"  {list(e.path)}: {e.message}" for e in errors)
             fail(f"node-network/{example_name} failed {schema_name}:\n{joined}")
 
+    lean_export = load_json(LEAN_EXPORT_EXAMPLE / "expected-add-zero.json")
+    lean_export_validator = schema_validator(
+        schema_objects["lean-environment-export.schema.json"]
+    )
+    errors = sorted(
+        lean_export_validator.iter_errors(lean_export), key=lambda err: list(err.path)
+    )
+    if errors:
+        joined = "\n".join(f"  {list(e.path)}: {e.message}" for e in errors)
+        fail(f"lean-export/expected-add-zero.json failed its schema:\n{joined}")
+    for field in [
+        "canonical_declaration_name",
+        "canonical_elaborated_type",
+        "canonical_proof_object",
+    ]:
+        try:
+            json.loads(lean_export[field])
+        except (KeyError, TypeError, json.JSONDecodeError) as exc:
+            fail(f"Lean export field {field} is not embedded canonical JSON: {exc}")
+    if lean_export["axioms"] or lean_export["is_unsafe"] or lean_export["is_partial"]:
+        fail("Lean export smoke vector must remain safe, total, and axiom-free")
+
+    lean_ids = load_json(LEAN_EXPORT_EXAMPLE / "expected-ids.json")
+    lean_ids_validator = schema_validator(schema_objects["lean-derived-ids.schema.json"])
+    errors = sorted(
+        lean_ids_validator.iter_errors(lean_ids), key=lambda err: list(err.path)
+    )
+    if errors:
+        joined = "\n".join(f"  {list(e.path)}: {e.message}" for e in errors)
+        fail(f"lean-export/expected-ids.json failed its schema:\n{joined}")
+
     eligible_validator = schema_validator(schema_objects["eligible-node.schema.json"])
     for index, node in enumerate(load_json(NODE_EXAMPLE / "eligible-nodes.json")):
         errors = list(eligible_validator.iter_errors(node))
@@ -342,8 +385,8 @@ def validate_json_syntax_and_schemas() -> None:
             fail(f"eligible-nodes.json[{index}] invalid: {errors[0].message}")
 
     message_variants = schema_objects["xlmp-envelope.schema.json"]["properties"]["message"]["oneOf"]
-    if len(message_variants) != 40:
-        fail(f"expected exactly 40 XLMP/1 message variants, found {len(message_variants)}")
+    if len(message_variants) != 53:
+        fail(f"expected exactly 53 XLMP/1 message variants, found {len(message_variants)}")
 
     observation_schema = schema_objects["observation.schema.json"]
     observation_validator = schema_validator(observation_schema)

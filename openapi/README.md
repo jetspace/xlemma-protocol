@@ -3,7 +3,12 @@
 The API contract describes the intended protocol surface. The Rust reference
 server currently implements health, canonical XLMP/1 message ingress/read,
 verification-job creation/read, committed and signed observation submission,
-and formal reproduction evaluation. Remaining endpoints are specification targets.
+formal reproduction evaluation, and read projections for researchers, theories,
+claims, proofs, capsules, publications, licenses, challenges, quarantines,
+contribution and rights manifests, PoIR certificates, compute receipts,
+research credits, latest vault snapshots, revenue, dependency dividends, and
+artifact availability. Remaining mutation
+and orchestration endpoints are specification targets.
 The node-advertisement, discovery, service-order, and committee-sortition paths
 describe the first-class XLMP node-network surface; they are currently
 specification targets backed by schemas and deterministic Rust reference logic.

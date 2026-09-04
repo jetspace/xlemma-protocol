@@ -11,6 +11,15 @@ XLMP/1 test vector is published in `examples/deterministic-bundle/`.
 
 Availability receipts MUST bind artifact, storage node, operator cluster, provider, region, custody challenge root, retention horizon, time, and signature.
 
+The reference `StorageAdapter` accepts and returns the complete typed
+multi-file bundle rather than an ambiguous byte vector. A successful `put`
+MUST validate every payload against the manifest and ArtifactID before
+publishing it, MUST refuse replacement of an existing artifact, and MUST
+return a content-derived signed availability receipt. Retrieval MUST re-read
+and re-hash every payload. The checked-in filesystem implementation is a
+single-process reference and does not itself establish multi-provider
+availability.
+
 Policies SHOULD require independent replicas across operators, providers, and regions. Periodic proof-of-custody challenges SHOULD be used for long-lived certificates.
 
 The certificate root MUST point to underlying receipts; it MUST NOT replace them.

@@ -28,8 +28,11 @@ use xlemma_consensus::{
     FormalConsensusPolicy, MAX_COMMITTEE_SLOTS,
 };
 use xlemma_core::{
-    ArtifactId, ClaimId, JobId, ObservationReceipt, PolicyId, ResearcherId, SortitionMember,
-    TheoryId, VerificationState,
+    ArtifactId, AvailabilityReceipt, Challenge, ClaimId, ClaimManifest, ComputeReceipt,
+    ContributionManifest, DependencyDividend, JobId, LemmaCapsule, License, ObservationReceipt,
+    PoIRCertificate, PolicyId, ProofManifest, PublicationRecord, QuarantineRecord, ResearchCredit,
+    ResearchVault, ResearcherId, ResearcherNodeManifest, RevenueEvent, RightsManifest,
+    SortitionMember, TheoryId, TheoryManifest, VerificationState,
 };
 use xlemma_xlmp::{
     validate_ed25519_signer, verify_ed25519_detached, verify_ed25519_signature,
@@ -251,6 +254,33 @@ async fn main() -> anyhow::Result<()> {
     let protected = Router::new()
         .route("/xlmp/v1/messages", post(accept_xlmp_message))
         .route("/xlmp/v1/messages/{message_id}", get(get_xlmp_message))
+        .route("/v1/researchers/{researcher_id}", get(get_researcher))
+        .route("/v1/theories/{theory_id}", get(get_theory))
+        .route("/v1/claims/{claim_id}", get(get_claim))
+        .route(
+            "/v1/contributions/{manifest_hash}",
+            get(get_contribution_manifest),
+        )
+        .route("/v1/rights/{manifest_hash}", get(get_rights_manifest))
+        .route("/v1/proofs/{proof_id}", get(get_proof))
+        .route("/v1/certificates/{certificate_id}", get(get_certificate))
+        .route(
+            "/v1/compute-receipts/{receipt_id}",
+            get(get_compute_receipt),
+        )
+        .route("/v1/research-credits/{credit_id}", get(get_research_credit))
+        .route("/v1/research-vaults/{vault_id}", get(get_research_vault))
+        .route("/v1/lemmas/{lemma_id}", get(get_capsule))
+        .route("/v1/publications/{publication_id}", get(get_publication))
+        .route("/v1/licenses/{license_id}", get(get_license))
+        .route("/v1/challenges/{challenge_id}", get(get_challenge))
+        .route("/v1/quarantines/{quarantine_id}", get(get_quarantine))
+        .route("/v1/revenue-events/{revenue_event_id}", get(get_revenue))
+        .route("/v1/dependency-dividends/{dividend_id}", get(get_dividend))
+        .route(
+            "/v1/artifacts/{artifact_id}/availability",
+            get(get_availability),
+        )
         .route("/v1/verification-jobs", post(create_job))
         .route("/v1/verification-jobs/{job_id}", get(get_job))
         .route(
@@ -326,6 +356,341 @@ fn authenticate_node_sender(
 ) -> Result<(), ApiError> {
     if state.node_signers.get(node_id).map(String::as_str) != Some(sender) {
         return Err(ApiError::Unauthorized);
+    }
+    Ok(())
+}
+
+fn native_object_key(message: &XlmpMessage) -> Option<String> {
+    match message {
+        XlmpMessage::Researcher(value) => Some(value.researcher.researcher_id.to_string()),
+        XlmpMessage::Theory(value) => Some(value.theory_id.to_string()),
+        XlmpMessage::Claim(value) => Some(value.claim_id.to_string()),
+        XlmpMessage::Contribution(value) => Some(value.manifest_hash.clone()),
+        XlmpMessage::Rights(value) => Some(value.manifest_hash.clone()),
+        XlmpMessage::ProofCandidate(value) => Some(value.proof_id.to_string()),
+        XlmpMessage::Certificate(value) => Some(value.certificate.certificate_id.to_string()),
+        XlmpMessage::Challenge(value) => Some(value.challenge.challenge_id.to_string()),
+        XlmpMessage::Quarantine(value) => Some(value.record.quarantine_id.to_string()),
+        XlmpMessage::ComputeReceipt(value) => Some(value.receipt.receipt_id.to_string()),
+        XlmpMessage::ResearchCredit(value) => Some(value.credit.credit_id.to_string()),
+        XlmpMessage::ResearchVault(value) => Some(format!(
+            "{}:{}",
+            value.vault.vault_id, value.vault.state_root
+        )),
+        XlmpMessage::Revenue(value) => Some(value.event.revenue_event_id.to_string()),
+        XlmpMessage::DependencyDividend(value) => Some(value.dividend.dividend_id.to_string()),
+        XlmpMessage::License(value) => Some(value.license.license_id.to_string()),
+        XlmpMessage::Capsule(value) => Some(value.capsule.lemma_id.to_string()),
+        XlmpMessage::Publish(value) => Some(value.publication.publication_id.to_string()),
+        XlmpMessage::Availability(value) => Some(value.receipt.receipt_id.to_string()),
+        _ => None,
+    }
+}
+
+fn validate_native_relationships(
+    history: &BTreeMap<String, XlmpEnvelope>,
+    message: &XlmpMessage,
+) -> Result<(), ApiError> {
+    if let Some(key) = native_object_key(message) {
+        if history
+            .values()
+            .any(|envelope| native_object_key(&envelope.message).as_ref() == Some(&key))
+        {
+            return Err(ApiError::Conflict(
+                "native protocol object is append-only and already exists".into(),
+            ));
+        }
+    }
+    let contains = |predicate: &dyn Fn(&XlmpMessage) -> bool| {
+        history
+            .values()
+            .any(|envelope| predicate(&envelope.message))
+    };
+    match message {
+        XlmpMessage::Contribution(value) => {
+            if !contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Claim(claim)
+                    if claim.claim_id == value.manifest.claim_id
+                        && claim.contribution_manifest_hash == value.manifest_hash)
+            }) {
+                return Err(ApiError::Invalid(
+                    "contribution manifest must match an accepted claim commitment".into(),
+                ));
+            }
+        }
+        XlmpMessage::Rights(value) => {
+            if !contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Claim(claim)
+                    if claim.claim_id == value.manifest.claim_id
+                        && claim.rights_manifest_hash == value.manifest_hash)
+            }) {
+                return Err(ApiError::Invalid(
+                    "rights manifest must match an accepted claim commitment".into(),
+                ));
+            }
+        }
+        XlmpMessage::Challenge(value) => {
+            let certificate_known = contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Certificate(certificate)
+                    if certificate.certificate.certificate_id == value.challenge.certificate_id)
+            });
+            let parent_known = value.challenge.supersedes.as_ref().is_none_or(|parent| {
+                contains(&|candidate| {
+                    matches!(candidate, XlmpMessage::Challenge(challenge)
+                        if &challenge.challenge.challenge_id == parent
+                            && challenge.challenge.certificate_id
+                                == value.challenge.certificate_id)
+                })
+            });
+            if !certificate_known || !parent_known {
+                return Err(ApiError::Invalid(
+                    "challenge must reference an accepted certificate and supersession parent"
+                        .into(),
+                ));
+            }
+        }
+        XlmpMessage::Quarantine(value) => {
+            let certificate_matches = contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Certificate(certificate)
+                    if certificate.certificate.certificate_id == value.record.certificate_id
+                        && certificate.certificate.claim_id == value.record.affected_claim_id)
+            });
+            let challenge_known = value
+                .record
+                .challenge_id
+                .as_ref()
+                .is_none_or(|challenge_id| {
+                    contains(&|candidate| {
+                        matches!(candidate, XlmpMessage::Challenge(challenge)
+                        if &challenge.challenge.challenge_id == challenge_id
+                            && challenge.challenge.certificate_id == value.record.certificate_id)
+                    })
+                });
+            let parent_known = value.record.supersedes.as_ref().is_none_or(|parent| {
+                contains(&|candidate| {
+                    matches!(candidate, XlmpMessage::Quarantine(quarantine)
+                        if &quarantine.record.quarantine_id == parent
+                            && quarantine.record.certificate_id == value.record.certificate_id)
+                })
+            });
+            if !certificate_matches || !challenge_known || !parent_known {
+                return Err(ApiError::Invalid(
+                    "quarantine must bind an accepted certificate, challenge, and supersession parent"
+                        .into(),
+                ));
+            }
+        }
+        XlmpMessage::Finalize(value) => {
+            let certificate = history
+                .values()
+                .find_map(|envelope| match &envelope.message {
+                    XlmpMessage::Certificate(certificate)
+                        if certificate.certificate.certificate_id == value.certificate_id =>
+                    {
+                        Some(&certificate.certificate)
+                    }
+                    _ => None,
+                });
+            let unresolved_challenge = history.values().any(|envelope| {
+                let XlmpMessage::Challenge(challenge) = &envelope.message else {
+                    return false;
+                };
+                challenge.challenge.certificate_id == value.certificate_id
+                    && matches!(
+                        challenge.challenge.status,
+                        xlemma_core::ChallengeStatus::Open
+                            | xlemma_core::ChallengeStatus::EvidenceRequested
+                    )
+                    && !contains(&|candidate| {
+                        matches!(candidate, XlmpMessage::Challenge(candidate)
+                            if candidate.challenge.supersedes.as_ref()
+                                == Some(&challenge.challenge.challenge_id))
+                    })
+            });
+            let quarantined = contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Quarantine(quarantine)
+                    if quarantine.record.certificate_id == value.certificate_id)
+            });
+            if certificate.is_none_or(|certificate| {
+                certificate.claim_id != value.claim_id
+                    || value.finalized_at < certificate.challenge_window_ends_at
+            }) || unresolved_challenge
+                || quarantined
+            {
+                return Err(ApiError::Invalid(
+                    "finalization requires an ended challenge window and no unresolved challenge"
+                        .into(),
+                ));
+            }
+        }
+        XlmpMessage::ResearchCredit(value) => {
+            if !contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Researcher(researcher)
+                    if researcher.researcher.researcher_id == value.credit.researcher_id)
+            }) {
+                return Err(ApiError::Invalid(
+                    "research credit must reference an accepted researcher".into(),
+                ));
+            }
+        }
+        XlmpMessage::ResearchVault(value) => {
+            if !contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Researcher(researcher)
+                    if researcher.researcher.researcher_id == value.vault.researcher_id)
+            }) {
+                return Err(ApiError::Invalid(
+                    "research vault must reference an accepted researcher".into(),
+                ));
+            }
+            let newest = history
+                .values()
+                .filter_map(|envelope| match &envelope.message {
+                    XlmpMessage::ResearchVault(vault)
+                        if vault.vault.vault_id == value.vault.vault_id =>
+                    {
+                        Some(vault.vault.observed_at)
+                    }
+                    _ => None,
+                });
+            if newest
+                .max()
+                .is_some_and(|time| time >= value.vault.observed_at)
+            {
+                return Err(ApiError::Conflict(
+                    "vault snapshots must advance append-only observation time".into(),
+                ));
+            }
+        }
+        XlmpMessage::License(value) => {
+            let rights_known = contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Rights(rights)
+                    if rights.manifest_hash == value.license.rights_manifest_hash)
+            });
+            let parent_known = value.license.supersedes.as_ref().is_none_or(|parent| {
+                contains(&|candidate| {
+                    matches!(candidate, XlmpMessage::License(license)
+                        if &license.license.license_id == parent)
+                })
+            });
+            if !rights_known || !parent_known {
+                return Err(ApiError::Invalid(
+                    "license requires accepted rights and valid supersession lineage".into(),
+                ));
+            }
+        }
+        XlmpMessage::Capsule(value) => {
+            let claim_known = contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Claim(claim)
+                    if claim.claim_id == value.capsule.claim_id
+                        && claim.claim.theory_id == value.capsule.theory_id)
+            });
+            let proof_known = value.capsule.proof_id.as_ref().is_none_or(|proof_id| {
+                contains(&|candidate| {
+                    matches!(candidate, XlmpMessage::ProofCandidate(proof)
+                        if &proof.proof_id == proof_id
+                            && proof.proof.claim_id == value.capsule.claim_id
+                            && proof.artifact_id == value.capsule.artifact_id)
+                })
+            });
+            let contribution_known = contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Contribution(contribution)
+                    if contribution.manifest_hash == value.capsule.contribution_manifest_hash)
+            });
+            let rights_known = contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Rights(rights)
+                    if rights.manifest_hash == value.capsule.rights_manifest_hash)
+            });
+            if !claim_known || !proof_known || !contribution_known || !rights_known {
+                return Err(ApiError::Invalid(
+                    "capsule requires accepted claim, proof, contribution, and rights objects"
+                        .into(),
+                ));
+            }
+        }
+        XlmpMessage::Publish(value) => {
+            let certificate_finalized = contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Finalize(finalized)
+                    if finalized.certificate_id == value.publication.certificate_id
+                        && finalized.claim_id == value.publication.claim_id)
+            });
+            let certificate_matches = contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Certificate(certificate)
+                    if certificate.certificate.certificate_id == value.publication.certificate_id
+                        && certificate.certificate.claim_id == value.publication.claim_id
+                        && certificate.certificate.proof_id == value.publication.proof_id
+                        && certificate.certificate.artifact_id == value.publication.artifact_id)
+            });
+            let capsule_matches = contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Capsule(capsule)
+                    if capsule.capsule.claim_id == value.publication.claim_id
+                        && capsule.capsule.proof_id.as_ref() == Some(&value.publication.proof_id)
+                        && capsule.capsule.artifact_id == value.publication.artifact_id
+                        && capsule.capsule.rights_manifest_hash
+                            == value.publication.rights_manifest_hash)
+            });
+            let licenses_known = value.publication.license_ids.iter().all(|license_id| {
+                contains(&|candidate| {
+                    matches!(candidate, XlmpMessage::License(license)
+                        if &license.license.license_id == license_id)
+                })
+            });
+            let quarantined = contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Quarantine(quarantine)
+                    if quarantine.record.certificate_id == value.publication.certificate_id
+                        || quarantine.record.affected_claim_id == value.publication.claim_id)
+            });
+            if !certificate_finalized
+                || !certificate_matches
+                || !capsule_matches
+                || !licenses_known
+                || quarantined
+            {
+                return Err(ApiError::Invalid(
+                    "publication requires matching finalized certificate, capsule, and licenses"
+                        .into(),
+                ));
+            }
+        }
+        XlmpMessage::Revenue(value) => {
+            if !contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Publish(publication)
+                    if publication.publication.claim_id == value.event.claim_id)
+            }) {
+                return Err(ApiError::Invalid(
+                    "revenue must reference accepted published research".into(),
+                ));
+            }
+        }
+        XlmpMessage::DependencyDividend(value) => {
+            let revenue_matches = contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Revenue(revenue)
+                    if revenue.event.revenue_event_id == value.dividend.revenue_event_id
+                        && revenue.event.claim_id == value.dividend.downstream_claim_id)
+            });
+            let upstream_known = contains(&|candidate| {
+                matches!(candidate, XlmpMessage::Claim(claim)
+                    if claim.claim_id == value.dividend.upstream_claim_id)
+            });
+            if !revenue_matches || !upstream_known {
+                return Err(ApiError::Invalid(
+                    "dependency dividend requires matching settled revenue and upstream claim"
+                        .into(),
+                ));
+            }
+        }
+        XlmpMessage::Availability(value) => {
+            if !contains(&|candidate| {
+                matches!(candidate, XlmpMessage::ProofCandidate(proof)
+                    if proof.artifact_id == value.receipt.artifact_id)
+                    || matches!(candidate, XlmpMessage::Capsule(capsule)
+                        if capsule.capsule.artifact_id == value.receipt.artifact_id)
+            }) {
+                return Err(ApiError::Invalid(
+                    "availability receipt must reference an accepted artifact".into(),
+                ));
+            }
+        }
+        _ => {}
     }
     Ok(())
 }
@@ -439,6 +804,7 @@ async fn accept_xlmp_message(
         _ => {}
     }
     let mut messages = state.messages.write().await;
+    validate_native_relationships(&messages, &envelope.message)?;
     let message_id = envelope.message_id.to_string();
     if messages.contains_key(&message_id) {
         return Err(ApiError::Conflict(
@@ -465,6 +831,282 @@ async fn get_xlmp_message(
         .await
         .get(&message_id)
         .cloned()
+        .map(Json)
+        .ok_or(ApiError::NotFound)
+}
+
+async fn get_researcher(
+    State(state): State<AppState>,
+    Path(researcher_id): Path<String>,
+) -> Result<Json<ResearcherNodeManifest>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::Researcher(value)
+            if value.researcher.researcher_id.as_str() == researcher_id =>
+        {
+            Some(value.researcher.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_theory(
+    State(state): State<AppState>,
+    Path(theory_id): Path<String>,
+) -> Result<Json<TheoryManifest>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::Theory(value) if value.theory_id.as_str() == theory_id => {
+            Some(value.theory.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_claim(
+    State(state): State<AppState>,
+    Path(claim_id): Path<String>,
+) -> Result<Json<ClaimManifest>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::Claim(value) if value.claim_id.as_str() == claim_id => {
+            Some(value.claim.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_contribution_manifest(
+    State(state): State<AppState>,
+    Path(manifest_hash): Path<String>,
+) -> Result<Json<ContributionManifest>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::Contribution(value) if value.manifest_hash == manifest_hash => {
+            Some(value.manifest.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_rights_manifest(
+    State(state): State<AppState>,
+    Path(manifest_hash): Path<String>,
+) -> Result<Json<RightsManifest>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::Rights(value) if value.manifest_hash == manifest_hash => {
+            Some(value.manifest.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_proof(
+    State(state): State<AppState>,
+    Path(proof_id): Path<String>,
+) -> Result<Json<ProofManifest>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::ProofCandidate(value) if value.proof_id.as_str() == proof_id => {
+            Some(value.proof.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_certificate(
+    State(state): State<AppState>,
+    Path(certificate_id): Path<String>,
+) -> Result<Json<PoIRCertificate>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::Certificate(value)
+            if value.certificate.certificate_id.as_str() == certificate_id =>
+        {
+            Some(value.certificate.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_compute_receipt(
+    State(state): State<AppState>,
+    Path(receipt_id): Path<String>,
+) -> Result<Json<ComputeReceipt>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::ComputeReceipt(value) if value.receipt.receipt_id.as_str() == receipt_id => {
+            Some(value.receipt.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_research_credit(
+    State(state): State<AppState>,
+    Path(credit_id): Path<String>,
+) -> Result<Json<ResearchCredit>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::ResearchCredit(value) if value.credit.credit_id.as_str() == credit_id => {
+            Some(value.credit.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_research_vault(
+    State(state): State<AppState>,
+    Path(vault_id): Path<String>,
+) -> Result<Json<ResearchVault>, ApiError> {
+    state
+        .messages
+        .read()
+        .await
+        .values()
+        .filter_map(|envelope| match &envelope.message {
+            XlmpMessage::ResearchVault(value) if value.vault.vault_id.as_str() == vault_id => {
+                Some(value.vault.clone())
+            }
+            _ => None,
+        })
+        .max_by_key(|vault| vault.observed_at)
+        .map(Json)
+        .ok_or(ApiError::NotFound)
+}
+
+async fn get_capsule(
+    State(state): State<AppState>,
+    Path(lemma_id): Path<String>,
+) -> Result<Json<LemmaCapsule>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::Capsule(value) if value.capsule.lemma_id.as_str() == lemma_id => {
+            Some(value.capsule.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_publication(
+    State(state): State<AppState>,
+    Path(publication_id): Path<String>,
+) -> Result<Json<PublicationRecord>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::Publish(value)
+            if value.publication.publication_id.as_str() == publication_id =>
+        {
+            Some(value.publication.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_license(
+    State(state): State<AppState>,
+    Path(license_id): Path<String>,
+) -> Result<Json<License>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::License(value) if value.license.license_id.as_str() == license_id => {
+            Some(value.license.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_challenge(
+    State(state): State<AppState>,
+    Path(challenge_id): Path<String>,
+) -> Result<Json<Challenge>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::Challenge(value) if value.challenge.challenge_id.as_str() == challenge_id => {
+            Some(value.challenge.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_quarantine(
+    State(state): State<AppState>,
+    Path(quarantine_id): Path<String>,
+) -> Result<Json<QuarantineRecord>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::Quarantine(value) if value.record.quarantine_id.as_str() == quarantine_id => {
+            Some(value.record.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_revenue(
+    State(state): State<AppState>,
+    Path(revenue_event_id): Path<String>,
+) -> Result<Json<RevenueEvent>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::Revenue(value)
+            if value.event.revenue_event_id.as_str() == revenue_event_id =>
+        {
+            Some(value.event.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_dividend(
+    State(state): State<AppState>,
+    Path(dividend_id): Path<String>,
+) -> Result<Json<DependencyDividend>, ApiError> {
+    find_projected(&state, |message| match message {
+        XlmpMessage::DependencyDividend(value)
+            if value.dividend.dividend_id.as_str() == dividend_id =>
+        {
+            Some(value.dividend.clone())
+        }
+        _ => None,
+    })
+    .await
+}
+
+async fn get_availability(
+    State(state): State<AppState>,
+    Path(artifact_id): Path<String>,
+) -> Result<Json<Vec<AvailabilityReceipt>>, ApiError> {
+    let receipts = state
+        .messages
+        .read()
+        .await
+        .values()
+        .filter_map(|envelope| match &envelope.message {
+            XlmpMessage::Availability(value)
+                if value.receipt.artifact_id.as_str() == artifact_id =>
+            {
+                Some(value.receipt.clone())
+            }
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    if receipts.is_empty() {
+        return Err(ApiError::NotFound);
+    }
+    Ok(Json(receipts))
+}
+
+async fn find_projected<T>(
+    state: &AppState,
+    select: impl Fn(&XlmpMessage) -> Option<T>,
+) -> Result<Json<T>, ApiError> {
+    state
+        .messages
+        .read()
+        .await
+        .values()
+        .find_map(|envelope| select(&envelope.message))
         .map(Json)
         .ok_or(ApiError::NotFound)
 }
@@ -880,6 +1522,16 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(fetched.0, envelope);
+        let XlmpMessage::Claim(claim_message) = &envelope.message else {
+            unreachable!();
+        };
+        let projected = get_claim(
+            State(state.clone()),
+            Path(claim_message.claim_id.to_string()),
+        )
+        .await
+        .unwrap();
+        assert_eq!(projected.0, claim_message.claim);
 
         let duplicate = accept_xlmp_message(State(state), Json(StrictXlmpEnvelope(envelope))).await;
         assert!(matches!(duplicate, Err(ApiError::Conflict(_))));

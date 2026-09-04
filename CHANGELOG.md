@@ -22,7 +22,7 @@
 - Deferred universal research units, per-lemma speculative tokens, mandatory
   royalties, and tradeable compute futures from the core launch profile.
 - Added `xlemma-xlmp` as the canonical wire, message, lifecycle, and adapter-contract layer.
-- Added typed, content-derived XLMP MessageIDs and twenty-five XLMP/1 message discriminators, including native user, operator, node credential, and revocation messages.
+- Added typed, content-derived XLMP MessageIDs and 53 XLMP/1 message discriminators, including native research objects and user, operator, node credential, and revocation messages.
 - Added the constitutional `VerifiedUserID → OperatorID → NodeID(s)` identity chain, pseudonymous credentials, tiered role qualifications, delegation, fresh non-revocation status, and append-only revocation records.
 - Added an append-only credential registry with a production signature-verifier adapter boundary and exact canonical credential vectors.
 - Added a first-class node-network protocol plane with signed service advertisements, constrained discovery, append-only orders and matches, evidence-backed bonds, and exact advertisement identity vectors.
@@ -30,11 +30,29 @@
 - Added deterministic committee sortition over a credential-bound committed eligible set and future randomness, with unique VerifiedUserIDs, OperatorIDs, operator clusters, provider/region diversity, and reproducible member-rank and selection roots.
 - Elevated verification, challenge, quarantine, compute, credit, vault, revenue, dividend, license, and publication records into provider-neutral core types and schemas.
 - Added canonical HTTP XLMP ingress while retaining REST endpoints as convenience adapters.
+- Added a deterministic append-only native research projection and authenticated
+  read endpoints for researcher, theory, claim, proof, capsule, publication,
+  license, challenge, quarantine, revenue, dividend, and availability objects.
+- Added concrete reference adapters for allowlisted canonical HTTPS delivery,
+  immutable content-addressed multi-file storage, and x402 authorization and
+  actual-use settlement. Authorization mutation, overwrite, and replay fail
+  closed; distributed durability and external reconciliation remain deployment
+  responsibilities.
 - Recast ASTRA, Lean, x402, chains, transports, and storage providers as replaceable adapters that cannot redefine research consensus.
 - Bound x402 offers to an XLMP MessageID and renamed the extension namespace to `xlmp`.
 - Added XLMP lifecycle, integrity, node-market, sortition, economic backing, and dependency-cap tests.
 - Restricted ClaimID and ProofID construction to theory-bound elaborated types
   and claim-bound canonical proof objects, excluding presentation metadata.
+- Replaced the print-only Lean export marker with the deterministic
+  `xlemma-lean-expr-v1` checked-environment serializer, fail-closed negative
+  fixtures, schemas, paired export/ID vectors, Rust structural ingestion, and
+  a theory/toolchain/axiom-bound `lean-export-ids` CLI path.
+- Replaced the verifier adapter's legacy text axiom scraping with mandatory
+  single-record export parsing and exact request/export identity and
+  environment binding before receipt construction.
+- Added Lean export identity and the author-operated Lean pseudo self-test to
+  the end-to-end journey harness; all eleven journeys now pass 20 executable
+  gates and 173 Rust tests.
 - Added and pinned `Cargo.lock` for reproducible Rust 1.82 reference builds.
 
 ## 0.2.0 — Researcher-first consensus architecture

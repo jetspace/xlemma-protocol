@@ -21,3 +21,11 @@ The payment facilitator verifies and settles payment. It MUST NOT issue a formal
 ## Idempotency
 
 Every retryable payment MUST include a stable payment identifier. Settlement MUST be at most once for an authorization.
+
+The reference adapter binds the job, quote, parties, scheme, network, maximum
+amount, terms root, expiration, payer attestation, and facilitator-verified
+x402 envelope into its authorization identity. It rejects alteration of any of
+those fields, enforces `exact` or `upto` charging, and validates the complete
+settlement receipt before returning it. Its replay set is process-local and is
+not a substitute for production transactional idempotency or external
+reconciliation.

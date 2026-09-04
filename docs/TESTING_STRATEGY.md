@@ -66,10 +66,13 @@ Required properties include:
 
 `scripts/simulate_use_cases.py` is the repository-level end-to-end journey
 harness. It maps all eleven documented participant journeys to ordered traces,
-the complete Rust suite, durable API restart recovery, and
-to semantic CLI gates for trust policy, formal and generalized reproduction,
-portable exit, economic compliance, credit/revenue conservation, calibrated
-quotes, bounded impact, and deterministic bundles. Its JSON report is schema
+the complete Rust suite, durable API restart recovery, native object/API
+projection, canonical binary and allowlisted HTTPS transport, immutable local
+storage, concrete x402 authorization/settlement, and semantic gates for Lean
+export identity and the pinned Lean pseudo self-test, trust policy, formal and
+generalized reproduction, portable exit, economic compliance, credit/revenue
+conservation, calibrated quotes, bounded impact, and deterministic bundles.
+Its JSON report is schema
 validated and must not contain a failed gate, failed trace step, or unsupported journey.
 
 - `ResearchProver` candidate to default Lean adapter to independent check to PoIR certificate;
@@ -108,6 +111,19 @@ The checker test corpus must contain:
 - version and universe edge cases.
 
 A Gold release is blocked until the corpus passes through the official Lean path and at least one independently implemented checker.
+
+`lean/self-test.sh` supplies a narrower author-operated smoke path for the
+pinned toolchain, package build, warning-as-error example elaboration,
+byte-stable environment-export vector, empty target-theorem axiom inventory,
+and bundled fresh checker. `XLemma.Export` also guards alpha-invariance and
+fail-closed free-variable/metavariable handling during its build. The result is
+recorded in `docs/LEAN_SELF_TEST_REPORT.md` and must never be counted as
+clean-room or independent-checker evidence.
+
+Rust adapter tests additionally require exactly one machine export and reject
+missing, duplicate, malformed, structurally invalid, identity-mismatched,
+environment-mismatched, or request-prohibited axiom evidence before a verifier
+receipt can be constructed.
 
 ## 3. Consensus adversarial tests
 
@@ -200,7 +216,7 @@ Payment success must never set formal status by itself.
 
 ## 7. XLMP transport and downgrade testing
 
-- all forty XLMP/1 message discriminators validate against the canonical schema;
+- all 53 XLMP/1 message discriminators validate against the canonical schema;
 - unsupported protocol names and major versions fail closed;
 - unknown required fields fail schema validation;
 - MessageID mutation, sender substitution, correlation substitution, and replay are rejected;

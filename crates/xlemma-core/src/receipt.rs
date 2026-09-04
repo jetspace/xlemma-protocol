@@ -272,6 +272,67 @@ pub struct PaymentReceipt {
     pub facilitator_signature: String,
 }
 
+#[derive(Serialize)]
+struct PaymentReceiptIdentity<'a> {
+    job_id: &'a JobId,
+    payment_identifier: &'a str,
+    scheme: &'a str,
+    network: &'a str,
+    payer: &'a str,
+    payee: &'a str,
+    authorized: &'a Amount,
+    settled: &'a Amount,
+    settlement_reference: &'a str,
+    settled_at: &'a DateTime<Utc>,
+}
+
+impl PaymentReceipt {
+    pub fn derive_receipt_id(&self) -> Result<ReceiptId, PaymentReceiptIntegrityError> {
+        Ok(ReceiptId::derive(&PaymentReceiptIdentity {
+            job_id: &self.job_id,
+            payment_identifier: &self.payment_identifier,
+            scheme: &self.scheme,
+            network: &self.network,
+            payer: &self.payer,
+            payee: &self.payee,
+            authorized: &self.authorized,
+            settled: &self.settled,
+            settlement_reference: &self.settlement_reference,
+            settled_at: &self.settled_at,
+        })?)
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), PaymentReceiptIntegrityError> {
+        self.receipt_id.validate()?;
+        self.job_id.validate()?;
+        self.authorized.ensure_compatible(&self.settled)?;
+        if self.receipt_id != self.derive_receipt_id()?
+            || self.payment_identifier.trim().is_empty()
+            || !matches!(self.scheme.as_str(), "exact" | "upto" | "batch-settlement")
+            || self.network.trim().is_empty()
+            || self.payer.trim().is_empty()
+            || self.payee.trim().is_empty()
+            || self.authorized.units == 0
+            || self.settled.units > self.authorized.units
+            || self.settlement_reference.trim().is_empty()
+            || self.facilitator_signature.trim().is_empty()
+        {
+            return Err(PaymentReceiptIntegrityError::InvalidReceipt);
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum PaymentReceiptIntegrityError {
+    #[error(transparent)]
+    Id(#[from] crate::IdError),
+    #[error(transparent)]
+    Money(#[from] crate::MoneyError),
+    #[error("payment receipt identity, amount, settlement evidence, or signature is invalid")]
+    InvalidReceipt,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ObservationReceipt {
     pub receipt_id: ReceiptId,
@@ -427,6 +488,73 @@ pub struct AvailabilityReceipt {
     pub available_until: DateTime<Utc>,
     pub observed_at: DateTime<Utc>,
     pub signature: String,
+}
+
+#[derive(Serialize)]
+struct AvailabilityReceiptIdentity<'a> {
+    artifact_id: &'a ArtifactId,
+    storage_node_id: &'a NodeId,
+    operator_cluster_id: &'a OperatorClusterId,
+    provider: &'a str,
+    region: &'a str,
+    custody_challenge_root: &'a str,
+    available_until: &'a DateTime<Utc>,
+    observed_at: &'a DateTime<Utc>,
+}
+
+impl AvailabilityReceipt {
+    pub fn derive_receipt_id(&self) -> Result<ReceiptId, AvailabilityIntegrityError> {
+        Ok(ReceiptId::derive(&AvailabilityReceiptIdentity {
+            artifact_id: &self.artifact_id,
+            storage_node_id: &self.storage_node_id,
+            operator_cluster_id: &self.operator_cluster_id,
+            provider: &self.provider,
+            region: &self.region,
+            custody_challenge_root: &self.custody_challenge_root,
+            available_until: &self.available_until,
+            observed_at: &self.observed_at,
+        })?)
+    }
+
+    pub fn signing_bytes(&self) -> Result<Vec<u8>, AvailabilityIntegrityError> {
+        Ok(crate::canonical_json_bytes(&AvailabilityReceiptIdentity {
+            artifact_id: &self.artifact_id,
+            storage_node_id: &self.storage_node_id,
+            operator_cluster_id: &self.operator_cluster_id,
+            provider: &self.provider,
+            region: &self.region,
+            custody_challenge_root: &self.custody_challenge_root,
+            available_until: &self.available_until,
+            observed_at: &self.observed_at,
+        })?)
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), AvailabilityIntegrityError> {
+        self.receipt_id.validate()?;
+        self.artifact_id.validate()?;
+        self.storage_node_id.validate()?;
+        self.operator_cluster_id.validate()?;
+        if self.receipt_id != self.derive_receipt_id()?
+            || self.provider.trim().is_empty()
+            || self.region.trim().is_empty()
+            || self.custody_challenge_root.trim().is_empty()
+            || self.observed_at >= self.available_until
+            || self.signature.trim().is_empty()
+        {
+            return Err(AvailabilityIntegrityError::InvalidReceipt);
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum AvailabilityIntegrityError {
+    #[error(transparent)]
+    Id(#[from] crate::IdError),
+    #[error(transparent)]
+    Canonicalization(#[from] crate::CanonicalizationError),
+    #[error("availability receipt identity, custody evidence, timing, or signature is invalid")]
+    InvalidReceipt,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

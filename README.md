@@ -157,10 +157,14 @@ conservation. Named external technologies are replaceable adapters:
 
 The canonical envelope and required messages are specified in
 [`spec/018-xlmp-wire-protocol.md`](spec/018-xlmp-wire-protocol.md). XLMP/1
-includes `XLMP_CLAIM`, `XLMP_COMMIT`, `XLMP_COMPUTE_QUOTE`,
+includes `XLMP_RESEARCHER`, `XLMP_THEORY`, `XLMP_CLAIM`,
+`XLMP_CONTRIBUTION`, `XLMP_RIGHTS`, `XLMP_COMMIT`, `XLMP_COMPUTE_QUOTE`,
 `XLMP_PROOF_CANDIDATE`, `XLMP_VERIFY_REQUEST`, `XLMP_OBSERVATION_COMMIT`,
 `XLMP_OBSERVATION_REVEAL`, `XLMP_CERTIFICATE`, `XLMP_CHALLENGE`,
-`XLMP_FINALIZE`, `XLMP_REVENUE`, `XLMP_REVALIDATE`,
+`XLMP_QUARANTINE`, `XLMP_FINALIZE`, `XLMP_REVENUE`,
+`XLMP_COMPUTE_RECEIPT`, `XLMP_RESEARCH_CREDIT`, `XLMP_RESEARCH_VAULT`,
+`XLMP_DEPENDENCY_DIVIDEND`, `XLMP_LICENSE`, `XLMP_CAPSULE`, `XLMP_PUBLISH`,
+`XLMP_AVAILABILITY`, `XLMP_REVALIDATE`,
 `XLMP_NODE_ADVERTISE`, `XLMP_DISCOVERY_REQUEST`,
 `XLMP_DISCOVERY_RESPONSE`, `XLMP_SERVICE_ORDER`, `XLMP_SERVICE_MATCH`,
 `XLMP_SORTITION_REQUEST`, `XLMP_COMMITTEE`, `XLMP_REPUTATION`, `XLMP_BOND`,
@@ -552,6 +556,15 @@ x402 is one optional payment and paid-HTTP adapter. xLemma maps compatible resea
 
 The payment facilitator validates and settles payment payloads. It is intentionally outside research consensus. `PaymentReceipt` and `VerificationReceipt` remain separate, though both bind the same immutable job and artifact identifiers.
 
+The concrete reference adapter binds job, quote, parties, scheme, network,
+maximum amount, terms, expiry, payer attestation, and facilitator evidence;
+`upto` settlement charges only actual compatible usage and rejects replay.
+Its replay state is intentionally local and must be replaced by durable
+transactional reconciliation in production. The repository also includes a
+host-allowlisted HTTPS XLMP transport and immutable multi-file filesystem
+storage adapter with signed content-derived receipts; neither claims live
+network finality or independent replica availability.
+
 ## Launch profile
 
 The first credible deployment is intentionally narrower than a universal
@@ -585,7 +598,7 @@ crates/
   xlemma-cli/            command-line reference client
 
 contracts/               unaudited Solidity reference contracts
-lean/                    Lean tag attribute, export marker and example
+lean/                    Lean tag, deterministic environment exporter/vector test and example
 latex/                   xlemma.sty and example document
 schemas/                 JSON Schema definitions for protocol objects
 spec/                    normative protocol specifications
@@ -627,6 +640,9 @@ python3 scripts/simulate_economics.py
 python3 scripts/simulate_use_cases.py
 sha256sum -c MANIFEST.sha256
 
+# Author-operated Lean pseudo/self-test (not independent verification)
+cd lean && ./self-test.sh && cd ..
+
 # Requires Rust 1.82+
 cargo test --workspace
 cargo run -p xlemma-api
@@ -634,6 +650,9 @@ cargo run -p xlemma-cli -- --help
 
 # Reproduce canonical identity vectors
 cargo run -p xlemma-cli -- derive-id user-credential examples/node-network/user-credential.json
+cargo run -p xlemma-cli -- lean-export-ids \
+  examples/lean-export/expected-add-zero.json \
+  examples/no-arbitrage/theory.json
 cargo run -p xlemma-cli -- credential-chain-root examples/node-network/credential-chain.json
 cargo run -p xlemma-cli -- evaluate-reproduction \
   examples/no-arbitrage/computational-verification-profile.json \
@@ -681,6 +700,8 @@ The journal provides durable restart recovery, but it is not a replicated HA
 database; run one writer per journal and include it in encrypted backups.
 
 Lean and Solidity toolchains are optional for the structural validator and required for their respective modules.
+The recorded local Lean run is explicitly a pseudo/self-test; it does not
+satisfy the independent checker or clean-room reproduction gates.
 
 ## Non-negotiable invariants
 

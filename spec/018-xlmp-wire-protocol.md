@@ -84,7 +84,11 @@ XLMP/1 defines these message discriminators:
 
 | Message | Meaning |
 |---|---|
+| `XLMP_RESEARCHER` | Publish a sovereign researcher manifest without exposing issuer-private identity evidence |
+| `XLMP_THEORY` | Publish a pinned theory, dependency, trust, checker, axiom, and canonical-encoding environment |
 | `XLMP_CLAIM` | Publish a formal claim manifest and bind contribution and rights roots |
+| `XLMP_CONTRIBUTION` | Reveal the content-derived contribution manifest committed by a claim |
+| `XLMP_RIGHTS` | Reveal the non-mutating rights manifest committed by a claim |
 | `XLMP_COMMIT` | Commit a researcher and job to a claim, policy, and reveal deadline |
 | `XLMP_COMPUTE_QUOTE` | Publish a signed, expiring provider-neutral compute quote |
 | `XLMP_PROOF_CANDIDATE` | Publish an untrusted proof candidate and immutable artifact binding |
@@ -93,8 +97,17 @@ XLMP/1 defines these message discriminators:
 | `XLMP_OBSERVATION_REVEAL` | Reveal the complete signed observation and commitment salt |
 | `XLMP_CERTIFICATE` | Publish a PoIR certificate that references, but does not replace, observations |
 | `XLMP_CHALLENGE` | Append bonded counterevidence against a certificate |
+| `XLMP_QUARANTINE` | Append a fail-closed quarantine record bound to a certificate and optional challenge |
 | `XLMP_FINALIZE` | Record completion of the challenge gate and finalization evidence |
 | `XLMP_REVENUE` | Record realized external revenue bound to an independent settlement receipt |
+| `XLMP_COMPUTE_RECEIPT` | Record provider-neutral metering, charge, context, implementation, and output evidence |
+| `XLMP_RESEARCH_CREDIT` | Record credit issuance only when independently valued backing covers the issuance |
+| `XLMP_RESEARCH_VAULT` | Publish a content-bound, solvent vault snapshot without redefining research validity |
+| `XLMP_DEPENDENCY_DIVIDEND` | Record one capped, authorized, nonrecursive allocation from realized downstream revenue |
+| `XLMP_LICENSE` | Publish a bounded license under the exact committed rights root and economic mode |
+| `XLMP_CAPSULE` | Publish an immutable Lemma Capsule that binds research, evidence, rights, and economics |
+| `XLMP_PUBLISH` | Publish the finalized claim, proof, certificate, artifact, rights, license, and location binding |
+| `XLMP_AVAILABILITY` | Publish a node-signed custody and retention receipt for one content-addressed artifact |
 | `XLMP_REVALIDATE` | Request fresh reproduction of a previously certified object |
 | `XLMP_NODE_ADVERTISE` | Publish an append-only, expiring node capability/price/capacity advertisement |
 | `XLMP_DISCOVERY_REQUEST` | Query advertisements using explicit service, implementation, capacity, latency, reputation, and independence constraints |
@@ -224,6 +237,12 @@ length mismatches, trailing bytes, oversized frames, non-canonical JSON, and an
 envelope whose content-derived MessageID does not match. The length prefix is a
 transport concern and is not part of MessageID derivation.
 
+The reference outbound HTTP adapter accepts only allowlisted HTTPS endpoints,
+does not follow redirects, bounds response time and size, and requires the
+recipient to echo an intact canonical envelope with the same MessageID before
+issuing a signed, content-derived transport receipt. Transport authentication
+material MUST NOT be copied into that receipt.
+
 ### 6.5 Finality and storage
 
 Chains MAY anchor state roots, ordering, settlement, and challenge deadlines.
@@ -233,6 +252,12 @@ validity, novelty, attribution, or legal rights.
 Storage adapters MAY use IPFS, content-addressed object stores, local archival
 systems, or future networks. Availability evidence remains distinct from proof
 validity and rights evidence.
+
+An indexer MAY replay canonical messages into the reference
+`ProtocolProjection`. The projection MUST reject duplicate native objects and
+orphaned research, certificate, publication, economic, availability, or
+supersession references. Its state root commits to accepted MessageIDs; it is
+an auditable view and MUST NOT replace the signed source messages.
 
 ## 7. Economic conservation
 

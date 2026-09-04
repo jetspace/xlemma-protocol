@@ -4,7 +4,8 @@ use crate::{
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
+use thiserror::Error;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TheoryManifest {
@@ -15,6 +16,31 @@ pub struct TheoryManifest {
     pub checker_policy_id: PolicyId,
     pub permitted_axioms: Vec<String>,
     pub canonical_encoding: String,
+}
+
+impl TheoryManifest {
+    pub fn derive_theory_id(&self) -> Result<TheoryId, IdError> {
+        TheoryId::derive(self)
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), ManifestIntegrityError> {
+        self.trust_policy_id.validate()?;
+        self.checker_policy_id.validate()?;
+        let unique_axioms = self.permitted_axioms.iter().collect::<BTreeSet<_>>();
+        if self.protocol_version != XLMP_VERSION
+            || self.lean_toolchain.trim().is_empty()
+            || self.dependency_merkle_root.trim().is_empty()
+            || self.canonical_encoding.trim().is_empty()
+            || unique_axioms.len() != self.permitted_axioms.len()
+            || self
+                .permitted_axioms
+                .iter()
+                .any(|axiom| axiom.trim().is_empty())
+        {
+            return Err(ManifestIntegrityError::InvalidTheory);
+        }
+        Ok(())
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -213,6 +239,55 @@ pub struct ContributionManifest {
     pub dispute_status: String,
 }
 
+impl ContributionManifest {
+    pub fn validate_integrity(&self) -> Result<(), ManifestIntegrityError> {
+        self.claim_id.validate()?;
+        let unique_contributors = self
+            .contributors
+            .iter()
+            .map(|share| &share.contributor)
+            .collect::<BTreeSet<_>>();
+        let total = self.contributors.iter().try_fold(0_u32, |sum, share| {
+            sum.checked_add(u32::from(share.share_bps))
+                .ok_or(ManifestIntegrityError::InvalidContribution)
+        })?;
+        if self.contributors.is_empty()
+            || unique_contributors.len() != self.contributors.len()
+            || total != 10_000
+            || self.dispute_status.trim().is_empty()
+        {
+            return Err(ManifestIntegrityError::InvalidContribution);
+        }
+        for share in &self.contributors {
+            share.contributor.validate()?;
+            let unique_roles = share.roles.iter().map(|role| format!("{role:?}"));
+            if share.roles.is_empty()
+                || unique_roles.collect::<BTreeSet<_>>().len() != share.roles.len()
+                || share.share_bps == 0
+                || share.evidence_root.trim().is_empty()
+                || share.signature.trim().is_empty()
+            {
+                return Err(ManifestIntegrityError::InvalidContribution);
+            }
+        }
+        if self.machine_contributions.iter().any(|record| {
+            record.provider.trim().is_empty()
+                || record.model.trim().is_empty()
+                || record.request_hash.trim().is_empty()
+                || record.context_root.trim().is_empty()
+                || record.output_artifact_roots.is_empty()
+                || record
+                    .output_artifact_roots
+                    .iter()
+                    .any(|root| root.trim().is_empty())
+                || record.disclosure.trim().is_empty()
+        }) {
+            return Err(ManifestIntegrityError::InvalidContribution);
+        }
+        Ok(())
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MachineContributionRecord {
     pub provider: String,
@@ -261,6 +336,29 @@ pub struct RightsManifest {
     pub legal_wrapper: Option<String>,
     pub signed_by: Vec<String>,
     pub signed_at: DateTime<Utc>,
+}
+
+impl RightsManifest {
+    pub fn validate_integrity(&self) -> Result<(), ManifestIntegrityError> {
+        self.claim_id.validate()?;
+        let unique_signers = self.signed_by.iter().collect::<BTreeSet<_>>();
+        if !self.originator_attribution_nontransferable
+            || self.employer_university_grant_clearance.trim().is_empty()
+            || self.signed_by.is_empty()
+            || unique_signers.len() != self.signed_by.len()
+            || self.signed_by.iter().any(|signer| signer.trim().is_empty())
+            || self.claims.iter().any(|claim| {
+                claim.controller.trim().is_empty()
+                    || claim
+                        .limitations
+                        .iter()
+                        .any(|limitation| limitation.trim().is_empty())
+            })
+        {
+            return Err(ManifestIntegrityError::InvalidRights);
+        }
+        Ok(())
+    }
 }
 
 /// Economic treatment selected for a capsule. This never changes origin,
@@ -340,6 +438,120 @@ pub struct LemmaCapsule {
     pub metadata: BTreeMap<String, String>,
 }
 
+#[derive(Serialize)]
+struct LemmaCapsuleIdentity<'a> {
+    theory_id: &'a TheoryId,
+    claim_id: &'a ClaimId,
+    proof_id: &'a Option<ProofId>,
+    artifact_id: &'a ArtifactId,
+    presentation_ids: &'a [String],
+    origin_certificate_id: &'a ReceiptId,
+    contribution_manifest_hash: &'a str,
+    rights_manifest_hash: &'a str,
+    dependency_root: &'a str,
+    verification_receipt_ids: &'a [ReceiptId],
+    novelty_receipt_ids: &'a [ReceiptId],
+    statement_alignment_receipt_ids: &'a [ReceiptId],
+    economic_mode: CapsuleEconomicMode,
+    revenue_route: &'a RevenueRoute,
+    formal_status: FormalStatus,
+    novelty_status: NoveltyDecision,
+    parent_capsule: &'a Option<LemmaId>,
+    supersedes: &'a Option<LemmaId>,
+    created_at: &'a DateTime<Utc>,
+    metadata: &'a BTreeMap<String, String>,
+}
+
+impl LemmaCapsule {
+    pub fn derive_lemma_id(&self) -> Result<LemmaId, IdError> {
+        LemmaId::derive(&LemmaCapsuleIdentity {
+            theory_id: &self.theory_id,
+            claim_id: &self.claim_id,
+            proof_id: &self.proof_id,
+            artifact_id: &self.artifact_id,
+            presentation_ids: &self.presentation_ids,
+            origin_certificate_id: &self.origin_certificate_id,
+            contribution_manifest_hash: &self.contribution_manifest_hash,
+            rights_manifest_hash: &self.rights_manifest_hash,
+            dependency_root: &self.dependency_root,
+            verification_receipt_ids: &self.verification_receipt_ids,
+            novelty_receipt_ids: &self.novelty_receipt_ids,
+            statement_alignment_receipt_ids: &self.statement_alignment_receipt_ids,
+            economic_mode: self.economic_mode,
+            revenue_route: &self.revenue_route,
+            formal_status: self.formal_status,
+            novelty_status: self.novelty_status,
+            parent_capsule: &self.parent_capsule,
+            supersedes: &self.supersedes,
+            created_at: &self.created_at,
+            metadata: &self.metadata,
+        })
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), ManifestIntegrityError> {
+        self.lemma_id.validate()?;
+        self.theory_id.validate()?;
+        self.claim_id.validate()?;
+        self.artifact_id.validate()?;
+        self.origin_certificate_id.validate()?;
+        if let Some(proof_id) = &self.proof_id {
+            proof_id.validate()?;
+        }
+        if let Some(parent) = &self.parent_capsule {
+            parent.validate()?;
+        }
+        if let Some(parent) = &self.supersedes {
+            parent.validate()?;
+        }
+        for receipt_id in self
+            .verification_receipt_ids
+            .iter()
+            .chain(&self.novelty_receipt_ids)
+            .chain(&self.statement_alignment_receipt_ids)
+        {
+            receipt_id.validate()?;
+        }
+        for researcher_id in self.revenue_route.auto_compound_bps_by_researcher.keys() {
+            researcher_id.validate()?;
+        }
+        let certified_without_proof = matches!(
+            self.formal_status,
+            FormalStatus::Reproduced | FormalStatus::Certified
+        ) && (self.proof_id.is_none()
+            || self.verification_receipt_ids.is_empty());
+        let commons_charges_dependencies = self.economic_mode == CapsuleEconomicMode::Commons
+            && (self.revenue_route.waterfall.upstream_dependency_pool_bps != 0
+                || self.revenue_route.dependency_reward_cap_bps != 0);
+        if self.lemma_id != self.derive_lemma_id()?
+            || self.contribution_manifest_hash.trim().is_empty()
+            || self.rights_manifest_hash.trim().is_empty()
+            || self.dependency_root.trim().is_empty()
+            || self.revenue_route.settlement_asset.trim().is_empty()
+            || self.revenue_route.researcher_vault.trim().is_empty()
+            || self
+                .revenue_route
+                .contributor_manifest_hash
+                .trim()
+                .is_empty()
+            || self.revenue_route.economic_policy_root.trim().is_empty()
+            || self.revenue_route.waterfall.total_bps() != 10_000
+            || self.revenue_route.dependency_reward_cap_bps > 10_000
+            || self
+                .revenue_route
+                .auto_compound_bps_by_researcher
+                .values()
+                .any(|bps| *bps > 10_000)
+            || certified_without_proof
+            || commons_charges_dependencies
+            || self.parent_capsule.as_ref() == Some(&self.lemma_id)
+            || self.supersedes.as_ref() == Some(&self.lemma_id)
+        {
+            return Err(ManifestIntegrityError::InvalidCapsule);
+        }
+        Ok(())
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ResearcherNodeManifest {
     pub researcher_id: ResearcherId,
@@ -356,6 +568,54 @@ pub struct ResearcherNodeManifest {
     pub reputation_root: String,
     pub supported_domains: Vec<String>,
     pub created_at: DateTime<Utc>,
+}
+
+impl ResearcherNodeManifest {
+    pub fn validate_integrity(&self) -> Result<(), ManifestIntegrityError> {
+        self.researcher_id.validate()?;
+        self.governance_policy_id.validate()?;
+        if let Some(verified_user_id) = &self.verified_user_id {
+            verified_user_id.validate()?;
+        }
+        if let Some(credential_id) = &self.user_credential_id {
+            credential_id.validate()?;
+        }
+        let unique_keys = self.identity_keys.iter().collect::<BTreeSet<_>>();
+        let unique_domains = self.supported_domains.iter().collect::<BTreeSet<_>>();
+        if self.verified_user_id.is_some() != self.user_credential_id.is_some()
+            || self.identity_keys.is_empty()
+            || unique_keys.len() != self.identity_keys.len()
+            || self.identity_keys.iter().any(|key| key.trim().is_empty())
+            || unique_domains.len() != self.supported_domains.len()
+            || self
+                .supported_domains
+                .iter()
+                .any(|domain| domain.trim().is_empty())
+            || self.research_credit_asset.trim().is_empty()
+            || self.research_vault.trim().is_empty()
+            || self.contribution_identity_root.trim().is_empty()
+            || self.reputation_root.trim().is_empty()
+        {
+            return Err(ManifestIntegrityError::InvalidResearcher);
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum ManifestIntegrityError {
+    #[error(transparent)]
+    Id(#[from] IdError),
+    #[error("theory manifest is incomplete, duplicated, or uses the wrong protocol")]
+    InvalidTheory,
+    #[error("contribution manifest does not conserve shares or lacks evidence")]
+    InvalidContribution,
+    #[error("rights manifest permits mutable origin or lacks clearance evidence")]
+    InvalidRights,
+    #[error("lemma capsule identity, assurance, economics, or lineage is invalid")]
+    InvalidCapsule,
+    #[error("researcher manifest identity, credential binding, or endpoints are invalid")]
+    InvalidResearcher,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

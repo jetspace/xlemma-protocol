@@ -49,6 +49,23 @@ storage network
 
 Controls: TheoryID, exact challenge, pinned toolchain, dependency lock, artifact root, environment root, proof export, multiple checker families, and append-only receipts.
 
+### Forged or ambiguous Lean environment export
+
+Attack: a producer hashes pretty-printed source, injects unresolved variables,
+changes binder spelling to manufacture a new identity, supplies noncanonical
+JSON, hides an axiom, or pairs an export with a different toolchain/theory.
+
+Controls: `#xlemma_export` reads the checked environment, uses a versioned
+structural expression encoding, removes binder names and metadata, rejects
+free variables, metavariables, unsafe/partial declarations and valueless
+objects, and separately emits sorted direct constants and transitive axioms.
+The Rust ingress parser rejects unknown outer fields, malformed structural
+tags, noncanonical embedded JSON, duplicate evidence names, theory protocol,
+encoding or toolchain mismatch, and axioms not permitted by that theory before
+deriving domain-separated ClaimID and ProofID. The export still cannot certify
+itself: exact artifact/dependency binding and independent checker receipts
+remain mandatory.
+
 ### Malicious Lean metaprogram or build script
 
 Controls: no-network sandbox, read-only root, explicit writable paths, process/memory/CPU/time limits, seccomp or equivalent, immutable build image, artifact size limits, bounded receipt output, and checker replay outside the sandbox. `LocalCommandRunner` refuses all execution; a separately administered `SandboxRunner` and receipt signer are mandatory.
@@ -141,6 +158,52 @@ canonical XLMP envelope, caps payloads at one MiB, rejects trailing or
 truncated bytes and non-canonical JSON, and revalidates the content-derived
 MessageID after decoding. Framing bytes never acquire research-consensus or
 payment meaning.
+
+### Outbound transport downgrade, redirect, or credential leakage
+
+Controls: the reference HTTP transport accepts only explicitly allowlisted
+HTTPS hosts, rejects URL-embedded credentials and fragments, disables
+redirects, bounds time and response size, sends canonical XLMP media bytes,
+requires an HTTP 202 response containing the exact valid envelope and
+MessageID, and signs a domain-separated content-derived transport receipt.
+Bearer tokens are never copied into receipts or adapter errors. Production
+operators must additionally control DNS resolution, egress policy, certificate
+roots, key rotation, and endpoint ownership; a hostname allowlist alone does
+not eliminate DNS or infrastructure compromise.
+
+### Artifact traversal, substitution, or overwrite
+
+Controls: the local storage adapter rejects absolute paths, parent traversal,
+duplicates, symlinks, non-regular files, hidden manifest collision, manifest
+or ArtifactID mismatch, per-file and aggregate over-size payloads, and any
+retrieved byte mismatch. It writes new files with create-new semantics, fsyncs
+payloads and metadata, publishes through a directory rename, serializes writes
+within one adapter, and refuses an existing artifact directory. This is a
+single-process reference store, not proof of independent availability;
+production storage needs a transactional cross-process writer, authenticated
+custody challenges, replication, backups, and independent provider receipts.
+
+### x402 authorization mutation or local replay-state loss
+
+Controls: the reference x402 adapter content-binds the job, quote, payer,
+payee, scheme, network, maximum amount, payment terms, expiry, payer
+attestation, and facilitator-verified x402 envelope into one authorization ID.
+Settlement checks every bound field, enforces exact/upto amount semantics,
+rejects duplicate consumption, and accepts only a content-derived facilitator
+receipt with the same parties, job, asset, amounts, scheme, network, and
+payment identifier. The reference replay set is deliberately process-local;
+real settlement requires durable transactional idempotency and reconciliation
+against the facilitator or chain before restart/failover.
+
+### Projection reordering or orphaned protocol objects
+
+Controls: the native projection first validates every signed envelope and
+content-derived object, rejects duplicate objects, then enforces accepted
+theory/claim/proof/certificate, rights/contribution, finalization, publication,
+revenue/dividend, artifact, and supersession prerequisites. Its deterministic
+root commits to the exact accepted MessageID set. Ordering and completeness
+still depend on the underlying authenticated journal or replicated log; the
+projection is an index and does not replace signed source messages.
 
 ### Revenue fabrication
 
@@ -239,6 +302,8 @@ Slashing requires objectively provable misconduct: equivocation, false artifact 
 
 - A trusted challenge may itself be misleading or wrong.
 - All checker implementations may share a logic flaw.
+- The reference Lean encoder and Rust structural validator may share a
+  specification defect until a clean-room encoder reproduces the vectors.
 - Sandboxing may fail.
 - Operator clustering can be evaded.
 - A credential issuer can mis-verify uniqueness, be compromised, censor applicants, or leak private evidence.
@@ -253,3 +318,6 @@ Slashing requires objectively provable misconduct: equivocation, false artifact 
 - Public beacon/VRF authentication and decentralized eligible-set publication are not yet integrated into the prototype service.
 - Capacity, latency, hardware, reputation evidence, and operator clustering still require independent measurement and challenge infrastructure.
 - The reference credential registry supplies deterministic structure and an adapter boundary; production issuer, delegation-signature, key-resolution, privacy, and accumulator-proof implementations remain deployment work.
+- The concrete HTTPS, filesystem-storage, and x402 implementations are bounded
+  reference adapters. They do not supply distributed finality, replicated
+  availability, live facilitator assurance, or production key custody.

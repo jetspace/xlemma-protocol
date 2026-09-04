@@ -27,7 +27,13 @@ cryptographically verified checker receipts.
 
 ## Identity warning
 
-Do not hash source text as a claim identity. Notation, whitespace, implicit arguments, binder names, and imported syntax can differ while elaborating to the same expression. The production exporter must canonicalize the elaborated expression under `TheoryID`.
+Do not hash source text as a claim identity. Notation, whitespace, implicit
+arguments, binder names, and imported syntax can differ while elaborating to
+the same expression. `#xlemma_export` emits the reference
+`xlemma-lean-expr-v1` canonical elaborated type for hashing under `TheoryID`.
+Its declaration name, dependency list, and outer JSON record are evidence, not
+substitute ClaimID inputs. The encoding remains subject to the roadmap's
+clean-room reproduction gate.
 
 ## LaTeX workflow
 

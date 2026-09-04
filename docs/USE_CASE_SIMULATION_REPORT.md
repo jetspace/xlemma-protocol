@@ -7,21 +7,21 @@ Generated: 2026-09-04T20:00:00Z
 
 ## Executive result
 
-**11/11 documented journeys passed** across **13/13 executable gates** and **162 Rust tests**.
+**11/11 documented journeys passed** across **20/20 executable gates** and **173 Rust tests**.
 
 | ID | Documented journey | Result | Executable gates |
 |---|---|---:|---|
-| UC-01 | Researcher onboarding | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `trust_policy`, `portable_exit` |
-| UC-02 | Create and verify a lemma | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `trust_policy`, `deterministic_bundle`, `formal_poir` |
-| UC-03 | Pay with researcher credits | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `economic_conservation` |
-| UC-04 | Earn from a verified result | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `economic_conservation`, `economic_compliance`, `compute_impact` |
-| UC-05 | Support a decentralized researcher | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `economic_compliance` |
-| UC-06 | Operate a prover node | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `compute_quote` |
-| UC-07 | Operate a checker node | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `formal_poir` |
-| UC-08 | Challenge a certificate | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity` |
-| UC-09 | Reuse an upstream lemma | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `compute_impact` |
-| UC-10 | Publish a negative result | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `generalized_verification` |
-| UC-11 | Correct or supersede work | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `portable_exit` |
+| UC-01 | Researcher onboarding | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `native_protocol_projection`, `native_api_projection`, `trust_policy`, `portable_exit`, `x402_payment_adapter` |
+| UC-02 | Create and verify a lemma | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `native_protocol_projection`, `native_api_projection`, `trust_policy`, `lean_export_identity`, `lean_pseudo_self_test`, `deterministic_bundle`, `filesystem_storage_adapter`, `formal_poir` |
+| UC-03 | Pay with researcher credits | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `native_protocol_projection`, `native_api_projection`, `economic_conservation`, `x402_payment_adapter` |
+| UC-04 | Earn from a verified result | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `native_protocol_projection`, `native_api_projection`, `economic_conservation`, `economic_compliance`, `compute_impact`, `x402_payment_adapter` |
+| UC-05 | Support a decentralized researcher | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `native_protocol_projection`, `native_api_projection`, `economic_compliance` |
+| UC-06 | Operate a prover node | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `native_protocol_projection`, `native_api_projection`, `compute_quote`, `https_transport_policy` |
+| UC-07 | Operate a checker node | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `native_protocol_projection`, `native_api_projection`, `formal_poir`, `lean_pseudo_self_test`, `https_transport_policy` |
+| UC-08 | Challenge a certificate | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `native_protocol_projection`, `native_api_projection`, `https_transport_policy` |
+| UC-09 | Reuse an upstream lemma | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `native_protocol_projection`, `native_api_projection`, `compute_impact`, `x402_payment_adapter` |
+| UC-10 | Publish a negative result | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `native_protocol_projection`, `native_api_projection`, `generalized_verification`, `filesystem_storage_adapter` |
+| UC-11 | Correct or supersede work | **PASS** | `repository_structure`, `rust_workspace`, `durable_protocol_history`, `binary_transport_identity`, `native_protocol_projection`, `native_api_projection`, `portable_exit`, `filesystem_storage_adapter` |
 
 ## Executable gate results
 
@@ -49,11 +49,53 @@ Generated: 2026-09-04T20:00:00Z
 - Evidence: the published HTTP envelope survived canonical binary framing with the identical MessageID
 - Command: `cargo test --locked -p xlemma-xlmp framing::tests::binary_transport_round_trip_preserves_message_identity -- --exact`
 
+### native_protocol_projection — Native XLMP lifecycle projection
+
+- Result: **PASS**
+- Evidence: native identity, research, proof, rights, economics, publication, challenge, and availability objects replayed into one deterministic state root
+- Command: `cargo test --locked -p xlemma-xlmp projection::tests::complete_native_research_lifecycle_replays_without_losing_lineage -- --exact`
+
+### native_api_projection — Authenticated native-object API projection
+
+- Result: **PASS**
+- Evidence: a signed native Claim was accepted once and retrieved through both MessageID and ClaimID projections
+- Command: `cargo test --locked -p xlemma-api tests::xlmp_ingress_is_append_only_and_retrievable -- --exact`
+
+### https_transport_policy — Allowlisted XLMP-over-HTTPS transport
+
+- Result: **PASS**
+- Evidence: transport construction rejected plaintext, credential-bearing, and unlisted endpoints
+- Command: `cargo test --locked -p xlemma-xlmp http_transport::tests::endpoint_policy_rejects_http_credentials_redirect_targets_and_unlisted_hosts -- --exact`
+
+### filesystem_storage_adapter — Immutable content-addressed storage adapter
+
+- Result: **PASS**
+- Evidence: a multi-file artifact round-tripped byte-for-byte, emitted a signed availability receipt, and rejected overwrite
+- Command: `cargo test --locked -p xlemma-storage tests::filesystem_adapter_round_trips_exact_multifile_bundle_and_rejects_overwrite -- --exact`
+
+### x402_payment_adapter — Concrete x402 payment adapter
+
+- Result: **PASS**
+- Evidence: maximum authorization settled only actual usage, preserved facilitator evidence, and rejected replay without affecting research validity
+- Command: `cargo test --locked -p xlemma-x402 tests::concrete_adapter_settles_actual_usage_once_and_preserves_payment_separation -- --exact`
+
+### lean_pseudo_self_test — Pinned Lean author-operated pseudo self-test
+
+- Result: **PASS**
+- Evidence: the pinned exporter, exact identity vector, negative fixtures, fresh bundled checker, and Rust adapter bindings passed locally
+- Command: `lean/self-test.sh`
+
 ### trust_policy — Trust-policy and axiom gate
 
 - Result: **PASS**
 - Evidence: content-derived policy and axiom profile accepted exact evidence
 - Command: `cargo run --quiet -p xlemma-cli -- verify-trust examples/no-arbitrage/trust-policy-registry.json examples/no-arbitrage/theory.json examples/no-arbitrage/proof.json examples/no-arbitrage/proof-trust-evidence.json`
+
+### lean_export_identity — Lean environment export identity
+
+- Result: **PASS**
+- Evidence: checked environment vector produced its exact TheoryID-bound ClaimID and ProofID
+- Command: `cargo run --quiet -p xlemma-cli -- lean-export-ids examples/lean-export/expected-add-zero.json examples/no-arbitrage/theory.json`
 
 ### formal_poir — Formal PoIR reproduction
 
@@ -199,12 +241,15 @@ Each ordered trace is accepted only when every linked executable gate and named 
 
 1. The formal-policy schema and example allowed a zero requirement for an optional checker family, while the Rust validator rejected it. The validator now requires at least one positive family and permits explicit optional zero entries.
 2. The published formal observation vector still contained illustrative receipt IDs, evidence roots, and commitments. The CLI now prepares arrays of content-derived observations, and the vector was regenerated so direct PoIR evaluation succeeds.
+3. Several native research objects existed only as Rust/domain concepts. XLMP now carries them as content-derived messages and replays their prerequisites, immutable lineage, and publication/economic relationships into a deterministic projection.
+4. Payment, storage, and outbound HTTP boundaries were interface-only. Concrete fail-closed reference adapters now exercise x402 actual-use settlement and replay protection, immutable multi-file storage, and allowlisted canonical HTTPS delivery.
 
 ## Limitations and production blockers
 
-- Lean/Lake, official kernel replay, nanoda replay, and the hostile proof corpus were not executed by this harness.
+- The Lean gate is an author-operated pseudo self-test using the checker bundled with the same pinned Lean distribution; independent checker replay, nanoda replay, and a hostile clean-room corpus are not claimed.
 - Formal consensus simulation consumes structurally valid content-derived observations; production ingress must additionally authenticate node signatures, credentials, committee assignments, and non-revocation proofs.
-- ASTRA/model calls, x402 or stablecoin settlement, chains, storage providers, credential issuers, and randomness beacons are represented by deterministic adapters and fixtures rather than live external services.
+- ASTRA/model calls, live x402/stablecoin settlement, chains, remote storage providers, credential issuers, and randomness beacons remain deterministic reference adapters or fixtures rather than production external services.
+- The x402 replay guard and artifact store are local single-process reference implementations; production deployments require durable distributed idempotency, reconciliation, replication, credentialed signers, and monitored recovery.
 - No independent implementation, clean-room bundle reproduction, cryptographic audit, smart-contract audit, sandbox audit, economic audit, or legal review is claimed.
 - Passing scenarios demonstrate internal consistency of the checked snapshot, not theorem novelty, informal-statement alignment, commercial value, or production safety.
 

@@ -15,7 +15,11 @@
     "sent_at": { "type": "string", "format": "date-time" },
     "message": {
       "oneOf": [
+        { "$ref": "#/$defs/researcherMessage" },
+        { "$ref": "#/$defs/theoryMessage" },
         { "$ref": "#/$defs/claimMessage" },
+        { "$ref": "#/$defs/contributionMessage" },
+        { "$ref": "#/$defs/rightsMessage" },
         { "$ref": "#/$defs/commitMessage" },
         { "$ref": "#/$defs/computeQuoteMessage" },
         { "$ref": "#/$defs/proofCandidateMessage" },
@@ -24,8 +28,17 @@
         { "$ref": "#/$defs/observationRevealMessage" },
         { "$ref": "#/$defs/certificateMessage" },
         { "$ref": "#/$defs/challengeMessage" },
+        { "$ref": "#/$defs/quarantineMessage" },
         { "$ref": "#/$defs/finalizeMessage" },
         { "$ref": "#/$defs/revenueMessage" },
+        { "$ref": "#/$defs/computeReceiptMessage" },
+        { "$ref": "#/$defs/researchCreditMessage" },
+        { "$ref": "#/$defs/researchVaultMessage" },
+        { "$ref": "#/$defs/dependencyDividendMessage" },
+        { "$ref": "#/$defs/licenseMessage" },
+        { "$ref": "#/$defs/capsuleMessage" },
+        { "$ref": "#/$defs/publishMessage" },
+        { "$ref": "#/$defs/availabilityMessage" },
         { "$ref": "#/$defs/revalidateMessage" },
         { "$ref": "#/$defs/nodeAdvertiseMessage" },
         { "$ref": "#/$defs/discoveryRequestMessage" },
@@ -69,6 +82,33 @@
     "policyId": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
     "receiptId": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
     "certificateId": { "type": "string", "pattern": "^xlcert:blake3:[0-9a-f]{64}$" },
+    "researcherMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_RESEARCHER" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "researcher": { "$ref": "researcher-node.schema.json" } },
+          "required": ["researcher"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "theoryMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_THEORY" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "theory_id": { "type": "string", "pattern": "^xlt:blake3:[0-9a-f]{64}$" },
+            "theory": { "$ref": "theory.schema.json" }
+          },
+          "required": ["theory_id", "theory"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
     "claimPayload": {
       "type": "object",
       "additionalProperties": false,
@@ -173,6 +213,36 @@
       "properties": { "type": { "const": "XLMP_CLAIM" }, "payload": { "$ref": "#/$defs/claimPayload" } },
       "required": ["type", "payload"]
     },
+    "contributionMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_CONTRIBUTION" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "manifest_hash": { "$ref": "common.schema.json#/$defs/hash" },
+            "manifest": { "$ref": "contribution.schema.json" }
+          },
+          "required": ["manifest_hash", "manifest"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "rightsMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_RIGHTS" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "manifest_hash": { "$ref": "common.schema.json#/$defs/hash" },
+            "manifest": { "$ref": "rights.schema.json" }
+          },
+          "required": ["manifest_hash", "manifest"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
     "commitMessage": {
       "type": "object", "additionalProperties": false,
       "properties": { "type": { "const": "XLMP_COMMIT" }, "payload": { "$ref": "#/$defs/commitPayload" } },
@@ -241,6 +311,18 @@
       },
       "required": ["type", "payload"]
     },
+    "quarantineMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_QUARANTINE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "record": { "$ref": "quarantine-record.schema.json" } },
+          "required": ["record"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
     "finalizeMessage": {
       "type": "object", "additionalProperties": false,
       "properties": { "type": { "const": "XLMP_FINALIZE" }, "payload": { "$ref": "#/$defs/finalizePayload" } },
@@ -254,6 +336,102 @@
           "type": "object", "additionalProperties": false,
           "properties": { "event": { "$ref": "revenue-event.schema.json" } },
           "required": ["event"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "computeReceiptMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_COMPUTE_RECEIPT" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "receipt": { "$ref": "compute-receipt.schema.json" } },
+          "required": ["receipt"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "researchCreditMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_RESEARCH_CREDIT" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "credit": { "$ref": "research-credit.schema.json" } },
+          "required": ["credit"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "researchVaultMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_RESEARCH_VAULT" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "vault": { "$ref": "research-vault.schema.json" } },
+          "required": ["vault"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "dependencyDividendMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_DEPENDENCY_DIVIDEND" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "dividend": { "$ref": "dependency-dividend.schema.json" } },
+          "required": ["dividend"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "licenseMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_LICENSE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "license": { "$ref": "license.schema.json" } },
+          "required": ["license"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "capsuleMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_CAPSULE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "capsule": { "$ref": "lemma-capsule.schema.json" } },
+          "required": ["capsule"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "publishMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_PUBLISH" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "publication": { "$ref": "publication-record.schema.json" } },
+          "required": ["publication"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "availabilityMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_AVAILABILITY" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "receipt": { "$ref": "availability.schema.json" } },
+          "required": ["receipt"]
         }
       },
       "required": ["type", "payload"]

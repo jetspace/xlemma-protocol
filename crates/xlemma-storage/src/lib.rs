@@ -6,13 +6,18 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeMap, BTreeSet},
     fs::{self, File, OpenOptions},
-    io::Read,
+    io::{Read, Write},
     path::{Component, Path, PathBuf},
+    sync::Mutex,
 };
 use thiserror::Error;
-use xlemma_core::{ArtifactEntry, ArtifactId, ArtifactManifest, AvailabilityReceipt, XLMP_VERSION};
+use xlemma_core::{
+    canonical_json_bytes, ArtifactEntry, ArtifactId, ArtifactManifest, AvailabilityReceipt, NodeId,
+    OperatorClusterId, XLMP_VERSION,
+};
+use xlemma_xlmp::{AdapterError, ArtifactPayload, StorageAdapter, StoredArtifactBundle};
 
 pub const MAX_BUNDLE_ENTRIES: usize = 4_096;
 pub const MAX_BUNDLE_FILE_BYTES: u64 = 64 * 1024 * 1024;
@@ -63,6 +68,295 @@ pub enum StorageError {
     Io(#[from] std::io::Error),
     #[error("artifact identifier failed: {0}")]
     Id(#[from] xlemma_core::IdError),
+    #[error("stored bundle does not exactly match its content-addressed manifest")]
+    InvalidBundle,
+    #[error("artifact already exists and immutable storage refuses replacement")]
+    AlreadyExists,
+    #[error("artifact was not found")]
+    NotFound,
+    #[error("availability receipt signing failed")]
+    ReceiptSigning,
+    #[error("immutable storage writer lock is unavailable")]
+    WriteLock,
+    #[error("stored manifest serialization failed: {0}")]
+    Json(#[from] serde_json::Error),
+}
+
+pub trait AvailabilityReceiptSigner: Send + Sync {
+    fn sign(&self, signing_bytes: &[u8]) -> Result<String, StorageError>;
+}
+
+/// A local, content-addressed storage implementation suitable for development,
+/// clean-room reconstruction tests, and single-operator archival nodes. It is
+/// not evidence of multi-provider availability by itself.
+pub struct FilesystemStorageAdapter<S> {
+    root: PathBuf,
+    storage_node_id: NodeId,
+    operator_cluster_id: OperatorClusterId,
+    provider: String,
+    region: String,
+    retention: chrono::Duration,
+    signer: S,
+    write_lock: Mutex<()>,
+}
+
+impl<S: AvailabilityReceiptSigner> FilesystemStorageAdapter<S> {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        root: PathBuf,
+        storage_node_id: NodeId,
+        operator_cluster_id: OperatorClusterId,
+        provider: String,
+        region: String,
+        retention: chrono::Duration,
+        signer: S,
+    ) -> Result<Self, StorageError> {
+        storage_node_id.validate()?;
+        operator_cluster_id.validate()?;
+        if provider.trim().is_empty()
+            || region.trim().is_empty()
+            || retention <= chrono::Duration::zero()
+        {
+            return Err(StorageError::InvalidBundle);
+        }
+        fs::create_dir_all(&root)?;
+        let metadata = fs::symlink_metadata(&root)?;
+        if metadata.file_type().is_symlink() || !metadata.is_dir() {
+            return Err(StorageError::Symlink(root.display().to_string()));
+        }
+        let root = fs::canonicalize(root)?;
+        Ok(Self {
+            root,
+            storage_node_id,
+            operator_cluster_id,
+            provider,
+            region,
+            retention,
+            signer,
+            write_lock: Mutex::new(()),
+        })
+    }
+
+    fn artifact_directory(&self, artifact_id: &ArtifactId) -> PathBuf {
+        let digest = artifact_id
+            .as_str()
+            .rsplit(':')
+            .next()
+            .expect("validated ArtifactID contains a digest");
+        self.root.join(digest)
+    }
+
+    fn put_bundle(
+        &self,
+        bundle: StoredArtifactBundle,
+    ) -> Result<AvailabilityReceipt, StorageError> {
+        validate_stored_bundle(&bundle)?;
+        // Production processes still coordinate through a transactional
+        // store; this lock prevents calls on one adapter from racing the
+        // immutable existence check and final directory rename.
+        let _write_guard = self
+            .write_lock
+            .lock()
+            .map_err(|_| StorageError::WriteLock)?;
+        let final_directory = self.artifact_directory(&bundle.artifact_id);
+        if final_directory.exists() {
+            return Err(StorageError::AlreadyExists);
+        }
+        let observed_at = Utc::now();
+        let custody_material = serde_json::json!({
+            "artifact_id": bundle.artifact_id,
+            "manifest_root": bundle.manifest.root,
+            "provider": self.provider,
+            "region": self.region,
+            "observed_at": observed_at,
+        });
+        let mut receipt = AvailabilityReceipt {
+            receipt_id: xlemma_core::ReceiptId::derive(&"placeholder")?,
+            artifact_id: bundle.artifact_id.clone(),
+            storage_node_id: self.storage_node_id.clone(),
+            operator_cluster_id: self.operator_cluster_id.clone(),
+            provider: self.provider.clone(),
+            region: self.region.clone(),
+            custody_challenge_root: format!(
+                "blake3:{}",
+                blake3::hash(
+                    &canonical_json_bytes(&custody_material)
+                        .map_err(|_| StorageError::InvalidBundle)?
+                )
+                .to_hex()
+            ),
+            available_until: observed_at + self.retention,
+            observed_at,
+            signature: String::new(),
+        };
+        receipt.receipt_id = receipt
+            .derive_receipt_id()
+            .map_err(|_| StorageError::InvalidBundle)?;
+        receipt.signature = self.signer.sign(
+            &receipt
+                .signing_bytes()
+                .map_err(|_| StorageError::InvalidBundle)?,
+        )?;
+        receipt
+            .validate_integrity()
+            .map_err(|_| StorageError::ReceiptSigning)?;
+        let temporary_directory = self.root.join(format!(
+            ".{}.tmp-{}-{}",
+            bundle
+                .artifact_id
+                .as_str()
+                .rsplit(':')
+                .next()
+                .expect("validated ArtifactID contains a digest"),
+            std::process::id(),
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        fs::create_dir(&temporary_directory)?;
+        let write_result = (|| -> Result<(), StorageError> {
+            for payload in &bundle.payloads {
+                let path = temporary_directory.join(&payload.path);
+                if let Some(parent) = path.parent() {
+                    fs::create_dir_all(parent)?;
+                }
+                let mut file = OpenOptions::new().write(true).create_new(true).open(path)?;
+                file.write_all(&payload.bytes)?;
+                file.sync_all()?;
+            }
+            let manifest_bytes =
+                canonical_json_bytes(&bundle.manifest).map_err(|_| StorageError::InvalidBundle)?;
+            let mut manifest_file = OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(temporary_directory.join(".xlemma-manifest.json"))?;
+            manifest_file.write_all(&manifest_bytes)?;
+            manifest_file.sync_all()?;
+            File::open(&temporary_directory)?.sync_all()?;
+            fs::rename(&temporary_directory, &final_directory)?;
+            File::open(&self.root)?.sync_all()?;
+            Ok(())
+        })();
+        if let Err(error) = write_result {
+            let _ = fs::remove_dir_all(&temporary_directory);
+            return Err(error);
+        }
+
+        Ok(receipt)
+    }
+
+    fn get_bundle(&self, artifact_id: ArtifactId) -> Result<StoredArtifactBundle, StorageError> {
+        artifact_id.validate()?;
+        let directory = self.artifact_directory(&artifact_id);
+        if !directory.exists() {
+            return Err(StorageError::NotFound);
+        }
+        let metadata = fs::symlink_metadata(&directory)?;
+        if metadata.file_type().is_symlink() || !metadata.is_dir() {
+            return Err(StorageError::Symlink(directory.display().to_string()));
+        }
+        let canonical_directory = fs::canonicalize(&directory)?;
+        let manifest_path = directory.join(".xlemma-manifest.json");
+        let mut manifest_file = open_regular_file_without_following_symlinks(&manifest_path)?;
+        let mut manifest_bytes = Vec::new();
+        Read::by_ref(&mut manifest_file)
+            .take(MAX_BUNDLE_FILE_BYTES + 1)
+            .read_to_end(&mut manifest_bytes)?;
+        if manifest_bytes.len() as u64 > MAX_BUNDLE_FILE_BYTES {
+            return Err(StorageError::BundleTooLarge);
+        }
+        let manifest: ArtifactManifest = serde_json::from_slice(&manifest_bytes)?;
+        let mut payloads = Vec::with_capacity(manifest.entries.len());
+        for entry in &manifest.entries {
+            validate_relative_path(Path::new(&entry.path))?;
+            let path = directory.join(&entry.path);
+            let canonical_file = fs::canonicalize(&path)?;
+            if !canonical_file.starts_with(&canonical_directory) {
+                return Err(StorageError::OutsideRoot(path.display().to_string()));
+            }
+            let mut file = open_regular_file_without_following_symlinks(&path)?;
+            let mut bytes = Vec::new();
+            Read::by_ref(&mut file)
+                .take(MAX_BUNDLE_FILE_BYTES + 1)
+                .read_to_end(&mut bytes)?;
+            if bytes.len() as u64 > MAX_BUNDLE_FILE_BYTES {
+                return Err(StorageError::BundleTooLarge);
+            }
+            payloads.push(ArtifactPayload {
+                path: entry.path.clone(),
+                bytes,
+            });
+        }
+        let bundle = StoredArtifactBundle {
+            artifact_id,
+            manifest,
+            payloads,
+        };
+        validate_stored_bundle(&bundle)?;
+        Ok(bundle)
+    }
+}
+
+#[async_trait::async_trait]
+impl<S: AvailabilityReceiptSigner> StorageAdapter for FilesystemStorageAdapter<S> {
+    async fn put(&self, bundle: StoredArtifactBundle) -> Result<AvailabilityReceipt, AdapterError> {
+        self.put_bundle(bundle).map_err(storage_adapter_error)
+    }
+
+    async fn get(&self, artifact_id: ArtifactId) -> Result<StoredArtifactBundle, AdapterError> {
+        self.get_bundle(artifact_id).map_err(storage_adapter_error)
+    }
+}
+
+fn storage_adapter_error(error: StorageError) -> AdapterError {
+    AdapterError {
+        adapter: "filesystem-content-addressed-storage".into(),
+        reason: error.to_string(),
+    }
+}
+
+pub fn validate_stored_bundle(bundle: &StoredArtifactBundle) -> Result<(), StorageError> {
+    bundle.artifact_id.validate()?;
+    if bundle.manifest.derive_artifact_id()? != bundle.artifact_id
+        || bundle.payloads.len() != bundle.manifest.entries.len()
+        || bundle.payloads.len() > MAX_BUNDLE_ENTRIES
+    {
+        return Err(StorageError::InvalidBundle);
+    }
+    if !bundle
+        .payloads
+        .windows(2)
+        .all(|pair| pair[0].path < pair[1].path)
+    {
+        return Err(StorageError::InvalidBundle);
+    }
+    let payloads = bundle
+        .payloads
+        .iter()
+        .map(|payload| (payload.path.as_str(), &payload.bytes))
+        .collect::<BTreeMap<_, _>>();
+    if payloads.len() != bundle.payloads.len() {
+        return Err(StorageError::InvalidBundle);
+    }
+    if payloads.contains_key(".xlemma-manifest.json") {
+        return Err(StorageError::InvalidBundle);
+    }
+    let mut total = 0_u64;
+    for entry in &bundle.manifest.entries {
+        validate_relative_path(Path::new(&entry.path))?;
+        let bytes = payloads
+            .get(entry.path.as_str())
+            .ok_or(StorageError::InvalidBundle)?;
+        total = total
+            .checked_add(bytes.len() as u64)
+            .ok_or(StorageError::BundleTooLarge)?;
+        if bytes.len() as u64 != entry.byte_length
+            || entry.content_hash != format!("blake3:{}", blake3::hash(bytes).to_hex())
+            || bytes.len() as u64 > MAX_BUNDLE_FILE_BYTES
+            || total > MAX_BUNDLE_BYTES
+        {
+            return Err(StorageError::InvalidBundle);
+        }
+    }
+    Ok(())
 }
 
 pub fn build_bundle_manifest(
@@ -148,7 +442,7 @@ pub fn build_bundle_manifest_at(
             return Err(StorageError::Symlink(full_path.display().to_string()));
         }
         let mut bytes = Vec::with_capacity(opened_metadata.len() as usize);
-        file.by_ref()
+        Read::by_ref(&mut file)
             .take(MAX_BUNDLE_FILE_BYTES + 1)
             .read_to_end(&mut bytes)?;
         if bytes.len() as u64 != opened_metadata.len() || bytes.len() as u64 > MAX_BUNDLE_FILE_BYTES
@@ -290,6 +584,14 @@ mod tests {
     impl AvailabilityReceiptVerifier for AcceptTestReceipts {
         fn verify(&self, _receipt: &AvailabilityReceipt) -> bool {
             true
+        }
+    }
+
+    struct TestReceiptSigner;
+
+    impl AvailabilityReceiptSigner for TestReceiptSigner {
+        fn sign(&self, _signing_bytes: &[u8]) -> Result<String, StorageError> {
+            Ok("ed25519:test-storage-signature".into())
         }
     }
 
@@ -484,5 +786,75 @@ mod tests {
             &receipts,
             &AcceptTestReceipts
         ));
+    }
+
+    #[test]
+    fn filesystem_adapter_round_trips_exact_multifile_bundle_and_rejects_overwrite() {
+        let source = temp_root("adapter-source");
+        fs::create_dir(source.join("nested")).unwrap();
+        fs::write(source.join("proof.lean"), "example : True := by trivial\n").unwrap();
+        fs::write(source.join("nested/README.md"), "# Reproduce\n").unwrap();
+        let inputs = vec![
+            BundleInput {
+                relative_path: PathBuf::from("proof.lean"),
+                media_type: "text/x-lean".into(),
+                encrypted: false,
+            },
+            BundleInput {
+                relative_path: PathBuf::from("nested/README.md"),
+                media_type: "text/markdown".into(),
+                encrypted: false,
+            },
+        ];
+        let built = build_bundle_manifest_at(
+            &source,
+            &inputs,
+            "leanprover/lean4:v4.33.1",
+            "blake3:dependency-lock",
+            None,
+            None,
+            "2026-09-04T12:00:00Z".parse().unwrap(),
+        )
+        .unwrap();
+        let payloads = built
+            .manifest
+            .entries
+            .iter()
+            .map(|entry| ArtifactPayload {
+                path: entry.path.clone(),
+                bytes: fs::read(source.join(&entry.path)).unwrap(),
+            })
+            .collect();
+        let bundle = StoredArtifactBundle {
+            artifact_id: built.artifact_id,
+            manifest: built.manifest,
+            payloads,
+        };
+        let storage_root = temp_root("adapter-store");
+        let adapter = FilesystemStorageAdapter::new(
+            storage_root.clone(),
+            NodeId::derive(&"storage-node").unwrap(),
+            OperatorClusterId::derive(&"storage-operator").unwrap(),
+            "local-development-provider".into(),
+            "local-development-region".into(),
+            Duration::days(30),
+            TestReceiptSigner,
+        )
+        .unwrap();
+
+        let receipt = adapter.put_bundle(bundle.clone()).unwrap();
+        assert_eq!(receipt.artifact_id, bundle.artifact_id);
+        assert!(receipt.validate_integrity().is_ok());
+        assert_eq!(
+            adapter.get_bundle(bundle.artifact_id.clone()).unwrap(),
+            bundle
+        );
+        assert!(matches!(
+            adapter.put_bundle(adapter.get_bundle(bundle.artifact_id).unwrap()),
+            Err(StorageError::AlreadyExists)
+        ));
+
+        fs::remove_dir_all(source).unwrap();
+        fs::remove_dir_all(storage_root).unwrap();
     }
 }

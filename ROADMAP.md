@@ -13,13 +13,21 @@ does not imply an independent audit, live-network deployment, or legal review.
 - [x] Run all eleven documented participant journeys through a repeatable conformance harness with machine-readable and human-readable reports.
 - [x] Replace volatile API history with a single-writer durable, hash-chained event journal that fsyncs before acknowledgement and fails closed during restart recovery.
 - [x] Add canonical length-delimited XLMP framing for non-HTTP binary transports with exact MessageID preservation and malformed/non-canonical frame rejection.
+- [x] Install the pinned Lean 4.33.1 toolchain and record an author-operated package/export/axiom/fresh-checker pseudo self-test with explicit non-independence limitations.
+- [x] Replace the print-only Lean marker with a deterministic environment exporter for closed elaborated types, proof terms, universes, direct constants, and transitive axioms, plus a schema and byte-stable reference vector.
+- [x] Make the Lean verifier adapter require exactly one valid export and bind its TheoryID, ClaimID, ProofID, toolchain, dependency root, and axiom inventory before producing a receipt.
+- [x] Carry all 53 canonical XLMP/1 message families, including native researcher, theory, contribution, rights, quarantine, compute receipt, credit, vault, dividend, license, capsule, publication, and availability objects.
+- [x] Add a deterministic append-only native research projection with prerequisite, finalization, economic-edge, and supersession checks plus a stable replay root.
+- [x] Add authenticated read projections for native objects while preserving canonical signed-message ingress and the durable hash-chained journal.
+- [x] Implement concrete reference adapters for allowlisted XLMP-over-HTTPS delivery, immutable multi-file local storage, and actual-use x402 settlement with authorization-integrity and replay checks.
+- [x] Exercise all eleven participant journeys through 20 executable gates, including native lifecycle replay, API projection, transport policy, storage, x402, and the pinned Lean pseudo self-test.
 - [ ] Obtain clean-room cross-implementation results before declaring the encodings or schemas frozen.
-- [ ] Complete and independently test the Lean environment exporter; the current `#xlemma_export` command remains a prototype print boundary.
+- [ ] Reproduce the Lean export vector in a clean-room implementation and exercise it with an independently implemented checker family before calling the exporter independently tested.
 
 ## Phase 0 — deterministic research objects
 
 - Freeze canonical encodings for TheoryID, ClaimID, ProofID, ArtifactRoot and ReceiptID after the published reference vectors pass clean-room reproduction.
-- Complete the Lean exporter for elaborated expression, universe, dependency, proof-term, and trust-evidence serialization.
+- Extend the completed reference Lean exporter into an independently reproduced hostile corpus, dependency-root resolver, signed trust-evidence packer, and checker-family comparison workflow.
 - Extend deterministic vectors to every XLMP message and receipt type in a second implementation.
 - Authenticate trust-registry root publication through production governance and key resolution.
 - Freeze sovereignty, residual-right, portability, economic-constitution/compliance, generalized-verification, funding, capture, governance, trust-policy, and axiom-profile schemas after independent implementation review.
@@ -33,6 +41,7 @@ does not imply an independent audit, live-network deployment, or legal review.
 - Deploy PoIR commit-reveal committees with verified-user, OperatorID, and operator-cluster controls.
 - Add watcher, dispute, quarantine and revalidation services.
 - Scale the implemented durable single-writer API event journal to a replicated transactional log/outbox, preserving hash-chain verification and the authenticated-observation certificate gate.
+- Replace reference in-process adapter locks/replay sets with durable distributed idempotency, signer/key rotation, reconciliation, replication, and monitored recovery.
 
 ## Phase 2 — researcher credits and x402
 
@@ -70,7 +79,7 @@ does not imply an independent audit, live-network deployment, or legal review.
 ## Production blockers
 
 - Independent cryptographic, smart-contract and sandbox audits.
-- Deterministic Lean exporter and cross-checker test corpus.
+- Clean-room reproduction of the deterministic Lean exporter and a cross-checker hostile corpus.
 - Audited participant uniqueness, credential privacy/revocation, and conservative operator-cluster resistance.
 - Economic conservation and insolvency proofs.
 - Privacy, sanctions, identity, tax and jurisdictional review.

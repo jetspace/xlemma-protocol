@@ -15,6 +15,16 @@ Lean is the default XLMP/1 formal-verification implementation, not the protocol 
 7. compare exact theorem statements;
 8. sign independent receipts.
 
+The reference `#xlemma_export` command emits a deterministic
+`xlemma-lean-environment-export/v1` record from Lean's checked environment. Its
+canonical type/proof fields use `xlemma-lean-expr-v1`; it does not parse source
+text and it cannot issue a verification receipt or certificate. An operator
+MUST bind its toolchain, dependency lock, artifact root, trust policy, exact
+challenge, and checker results outside the exporter before requesting PoIR.
+The reference verifier adapter requires exactly one such record and rejects a
+TheoryID, ClaimID, ProofID, toolchain, dependency-root, or axiom mismatch before
+constructing its receipt.
+
 A model, builder, or checker MUST NOT silently modify the trusted claim.
 
 The deployment MUST resolve the theory's content-derived trust policy through

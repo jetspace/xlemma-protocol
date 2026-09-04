@@ -21,6 +21,16 @@ Payment offers MUST be derived from authorized server-side job and quote state.
 The reference HTTP server does not expose a payment-offer constructor; the
 provider-neutral `xlemma-x402` codec remains available to a payment adapter.
 
+The reference server also exposes read-only projections for researchers,
+theories, claims, contribution and rights manifests, proofs, PoIR certificates,
+compute receipts, research credits, latest vault snapshots, lemma capsules,
+publications, licenses, challenges, quarantine records, revenue events,
+dependency dividends, and availability receipts. Canonical ingress rejects duplicate native objects and enforces
+cross-object prerequisites for claim-bound contribution/rights manifests,
+challenges/finalization, vault ownership, capsule assembly, publication,
+revenue, dividends, and artifact availability. These projections are indexes
+over accepted XLMP messages; they are not a second source of protocol truth.
+
 The protocol-level lifecycle is `CLAIM → COMMIT → FORMALIZE → PROVE → REPRODUCE → CERTIFY → CHALLENGE → FINALIZE → PUBLISH → REUSE → REWARD → REVALIDATE`. The implementation-level verification sequence below refines part of that lifecycle:
 
 The canonical verification state sequence is:

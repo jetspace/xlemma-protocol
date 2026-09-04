@@ -1,0 +1,26 @@
+{
+  "axioms": [],
+  "canonical_declaration_name": "[\"str\",[\"str\",[\"str\",[\"anonymous\"],\"XLemma\"],\"Example\"],\"add_zero_verified\"]",
+  "canonical_elaborated_type": "[\"forall\",\"default\",[\"constant\",[\"str\",[\"anonymous\"],\"Nat\"],[]],[\"application\",[\"application\",[\"application\",[\"constant\",[\"str\",[\"anonymous\"],\"Eq\"],[[\"succ\",[\"zero\"]]]],[\"constant\",[\"str\",[\"anonymous\"],\"Nat\"],[]]],[\"application\",[\"application\",[\"application\",[\"application\",[\"application\",[\"application\",[\"constant\",[\"str\",[\"str\",[\"anonymous\"],\"HAdd\"],\"hAdd\"],[[\"zero\"],[\"zero\"],[\"zero\"]]],[\"constant\",[\"str\",[\"anonymous\"],\"Nat\"],[]]],[\"constant\",[\"str\",[\"anonymous\"],\"Nat\"],[]]],[\"constant\",[\"str\",[\"anonymous\"],\"Nat\"],[]]],[\"application\",[\"application\",[\"constant\",[\"str\",[\"anonymous\"],\"instHAdd\"],[[\"zero\"]]],[\"constant\",[\"str\",[\"anonymous\"],\"Nat\"],[]]],[\"constant\",[\"str\",[\"anonymous\"],\"instAddNat\"],[]]]],[\"bound\",\"0\"]],[\"application\",[\"application\",[\"application\",[\"constant\",[\"str\",[\"str\",[\"anonymous\"],\"OfNat\"],\"ofNat\"],[[\"zero\"]]],[\"constant\",[\"str\",[\"anonymous\"],\"Nat\"],[]]],[\"literal\",[\"nat\",\"0\"]]],[\"application\",[\"constant\",[\"str\",[\"anonymous\"],\"instOfNatNat\"],[]],[\"literal\",[\"nat\",\"0\"]]]]]],[\"bound\",\"0\"]]]",
+  "canonical_encoding": "xlemma-lean-expr-v1",
+  "canonical_proof_object": "[\"lambda\",\"default\",[\"constant\",[\"str\",[\"anonymous\"],\"Nat\"],[]],[\"application\",[\"constant\",[\"str\",[\"str\",[\"anonymous\"],\"Nat\"],\"add_zero\"],[]],[\"bound\",\"0\"]]]",
+  "declaration_kind": "theorem",
+  "declaration_name": "XLemma.Example.add_zero_verified",
+  "direct_dependencies": [
+    "Eq",
+    "Nat",
+    "instAddNat",
+    "instHAdd",
+    "instOfNatNat",
+    "HAdd.hAdd",
+    "Nat.add_zero",
+    "OfNat.ofNat"
+  ],
+  "is_partial": false,
+  "is_unsafe": false,
+  "lean_commit": "819816b2e0a3bf405af45ae5c7af2491d8f5bee6",
+  "lean_version": "4.33.1",
+  "level_parameters": [],
+  "protocol_version": "XLMP/1",
+  "schema": "xlemma-lean-environment-export/v1"
+}

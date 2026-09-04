@@ -30,12 +30,14 @@ Every major concept requested or developed in the design is mapped to its primar
 | Durable API protocol history | `spec/014-api-protocol.md`, `docs/THREAT_MODEL.md` | `xlemma-api::event_store`; hash-chained fsync-before-ack journal and restart replay tests |
 | Research prover neutrality | `spec/007-astra-lean.md` | `ResearchProver`; ASTRA reference adapter |
 | Formal-system neutrality | same | `VerifierAdapter`; Lean default adapter |
-| Payment neutrality | `spec/008-x402-transport.md` | `PaymentAdapter`; x402 optional adapter |
-| Transport neutrality | `spec/018-xlmp-wire-protocol.md` | `TransportAdapter`; HTTP XLMP ingress |
+| Payment neutrality | `spec/008-x402-transport.md` | `PaymentAdapter`; replay-protected `X402PaymentAdapter` over payer/facilitator boundaries |
+| Transport neutrality | `spec/018-xlmp-wire-protocol.md` | `TransportAdapter`; allowlisted canonical HTTPS adapter and HTTP XLMP ingress |
 | Canonical non-HTTP binary framing | same | `encode_xlmp_frame`, `decode_xlmp_frame`; exact HTTP-vector MessageID round trip |
-| Sovereignty and anti-capture wire interoperability | `spec/018-xlmp-wire-protocol.md`, `spec/022-researcher-sovereignty.md` | fifteen native XLMP message variants with integrity validation and schemas |
+| Native object wire interoperability | `spec/018-xlmp-wire-protocol.md` | 53 XLMP message variants, including researcher/theory, contribution/rights, quarantine, compute/credit/vault, dividend/license/capsule/publication, and availability records |
 | Chain/finality neutrality | `spec/017-deployment-operations.md` | `FinalityAdapter` and chain reference contracts |
-| Storage neutrality | `spec/015-storage-availability.md` | `StorageAdapter`, `xlemma-storage` |
+| Storage neutrality | `spec/015-storage-availability.md` | multi-file `StorageAdapter`, deterministic bundle validation, and immutable local content-addressed adapter with signed availability receipts |
+| Append-only research projection | `spec/018-xlmp-wire-protocol.md`, `spec/014-api-protocol.md` | `ProtocolProjection`; prerequisite and supersession checks plus deterministic projection root |
+| Native object read API | `spec/014-api-protocol.md` | durable read projections for researcher/theory/claim, contribution/rights, proof/certificate, compute/credit/vault, capsule/publication/license, challenge/quarantine, revenue/dividend, and availability objects |
 | Decentralized researcher as target user | `FULL_DESIGN.md` §§1, 5–7 | `xlemma-core::ResearcherNodeManifest` |
 | One researcher token, many lemma capsules | `FULL_DESIGN.md` §§1, 5–6 | `ResearcherCredit.sol`, `LemmaCapsule1155.sol` |
 | Researcher identity and treasury | `spec/002-proof-rights-capsule.md`, `spec/004-researcher-credit.md` | `ResearcherNodeManifest`, `ResearchVault.sol` |
@@ -68,8 +70,8 @@ Every major concept requested or developed in the design is mapped to its primar
 | Immutable object graph | `spec/001-identifiers.md` | `xlemma-core`, `ProofRegistry.sol` |
 | Minimal on-chain research projection | `spec/022-researcher-sovereignty.md` | `ResearchCommitmentRegistry.sol`; roots only, with full evidence off-chain |
 | TheoryID | `spec/001-identifiers.md` | `TheoryId`, `theory.schema.json` |
-| ClaimID from elaborated Lean type | `spec/001-identifiers.md` | `ClaimId::from_canonical_elaborated_type`, `ClaimManifest::derive_claim_id`, Lean exporter boundary |
-| ProofID from proof object | `spec/001-identifiers.md` | `ProofId::from_canonical_proof_object`, `ProofManifest::derive_proof_id` |
+| ClaimID from elaborated Lean type | `spec/001-identifiers.md` | `XLemma.canonicalExprString`, `#xlemma_export`, `ClaimId::from_canonical_elaborated_type`, deterministic Lean vector |
+| ProofID from proof object | `spec/001-identifiers.md` | `#xlemma_export` canonical proof field, `ProofId::from_canonical_proof_object`, deterministic Lean vector |
 | ArtifactID / Merkle bundle | `spec/015-storage-availability.md` | `xlemma-storage::build_bundle_manifest` |
 | ReceiptID | `spec/001-identifiers.md` | `ReceiptId` and receipt structs |
 | Formal equivalence edge | `spec/001-identifiers.md` | Lean example pattern; graph specification |
@@ -79,8 +81,9 @@ Every major concept requested or developed in the design is mapped to its primar
 | ASTRA compute receipt | same | `AstraComputeReceipt` |
 | ASTRA cannot self-certify | `spec/007-astra-lean.md` | service separation and receipt types |
 | Lean annotation | `docs/LEAN_LATEX_GUIDE.md` | `lean/XLemma/Metadata.lean` |
-| Lean export marker | same | `lean/XLemma/Export.lean` |
-| Axiom inventory | `spec/007-astra-lean.md` | `#print axioms`, `xlemma-lean::extract_axioms` |
+| Deterministic Lean environment export | `spec/001-identifiers.md`, same | `lean/XLemma/Export.lean`, `LeanEnvironmentExport`, `xlemma lean-export-ids`, schemas and paired export/ID vectors |
+| Author-operated Lean pseudo self-test | `docs/LEAN_SELF_TEST_REPORT.md` | `lean/self-test.sh`; pinned build, exact export vector/axiom inspection, bundled fresh checker |
+| Axiom inventory | `spec/007-astra-lean.md` | `#xlemma_export`, `LeanEnvironmentExport`, mandatory verifier-adapter export/request binding |
 | Trusted challenge | same | `LeanVerificationRequest.trusted_challenge_path` |
 | Sandboxed build | `docs/THREAT_MODEL.md` | `SandboxPolicy`, `SandboxRunner` |
 | Official Lean kernel | `spec/003-poir-consensus.md` | `CheckerFamily::LeanKernel` |
@@ -158,7 +161,7 @@ Every major concept requested or developed in the design is mapped to its primar
 | Future BFT / succinct verification | `ROADMAP.md` | planned, not falsely implemented |
 | Architecture and trust diagrams | `docs/ARCHITECTURE_DIAGRAMS.md` | Mermaid system, sequence, state, graph and deployment views |
 | Researcher/supporter/node workflows | `docs/RESEARCHER_USER_JOURNEYS.md` | End-to-end operational journeys |
-| All documented journey simulations | `docs/USE_CASE_SIMULATION_REPORT.md` | `scripts/simulate_use_cases.py`, schema-validated ordered traces, `reports/use-case-simulation.json`, 12 executable gates |
+| All documented journey simulations | `docs/USE_CASE_SIMULATION_REPORT.md` | `scripts/simulate_use_cases.py`, schema-validated ordered traces, `reports/use-case-simulation.json`, 20 executable gates |
 | Governance limits and emergency powers | `docs/GOVERNANCE_CONSTITUTION.md` | Constitutional protocol constraints |
 | Multi-constituency constitutional activation | `docs/GOVERNANCE_CONSTITUTION.md` | `GovernanceProposal::validate_for_activation`, all-chamber approvals, seven-day timelock, public simulation |
 | Fork/exit with identity, artifacts, history, and funds | same, `spec/022-researcher-sovereignty.md` | `ForkExitPlan::validate_integrity`, proposal activation binding |
