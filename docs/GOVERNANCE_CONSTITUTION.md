@@ -17,8 +17,10 @@ This constitution defines powers that protocol governance may exercise and bound
 11. No node may contribute to xLemma consensus without a valid, non-revoked OperatorCredential ultimately controlled by a verified xLemma participant; multiple nodes under the same participant form one operator-independence domain.
 12. Formal validity and statement alignment are separate evidence classes; governance cannot infer either from the other.
 13. A formal dependency cannot create a payment obligation, compulsory license, or publication veto without an explicit economic agreement.
-14. Open Commons artifacts carry no mandatory per-use protocol fee.
+14. Commons artifacts carry no mandatory per-use protocol fee; Reciprocal terms are bounded, nonrecursive, and grant no downstream veto.
 15. Compute markets price defined services, not universal scientific value; provider success claims do not control routing.
+16. Origin, attribution, historical evidence, deterministic validity, and portable exit are constitutional invariants outside chamber discretion.
+17. Material activation requires public simulation, approval by the Researcher, Operator, and Commons chambers, at least a seven-day timelock, and an available fork/exit plan.
 
 These principles should be encoded as immutable contract constraints where practical and as social/governance constraints where not.
 
@@ -94,13 +96,26 @@ Submit counterevidence and monitor execution, availability, solvency, conflicts,
 
 ## 5. Multi-chamber governance
 
-A mature network should avoid a single fungible-token electorate. Material changes should require concurrence from independent chambers such as:
+A mature network avoids a single fungible-token electorate. Material changes
+require concurrence from three independent chambers:
 
-- verified researcher identities;
-- qualified node operators, capped independently per VerifiedUserID, OperatorID, and conservative OperatorClusterID;
-- maintainers and security experts;
-- public-goods or user representatives;
-- optional capital providers, without unilateral epistemic power.
+- **Researcher Chamber:** verified researcher identities, capped per
+  independent operator domain;
+- **Operator Chamber:** active qualified operators, capped per VerifiedUserID,
+  OperatorID, and conservative OperatorClusterID;
+- **Commons Chamber:** domain, public-goods, user, maintenance, and safety
+  representatives.
+
+The immutable Constitutional Layer sits outside all three chambers. Maintainer,
+security-expert, and capital-provider views may inform a chamber or public
+simulation but do not form a fourth route around cross-chamber approval.
+
+No single operator may contribute more than 1,000 basis points of a chamber's
+recorded influence. Material or constitutional-impact proposals require every
+chamber to pass its declared threshold, an independently reproducible public
+simulation, at least seven days between voting finalization and activation,
+and a fork/exit plan preserving identity, artifacts, history, open client
+access, and funds.
 
 A chamber vote can approve policies. It still cannot change the observed output of a checker run.
 

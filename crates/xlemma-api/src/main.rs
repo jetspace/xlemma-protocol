@@ -31,8 +31,8 @@ use xlemma_core::{
 };
 use xlemma_xlmp::{
     validate_ed25519_signer, verify_ed25519_detached, verify_ed25519_signature,
-    verify_observation_commit_reveal, ObservationCommitMessage, XlmpEnvelope, XlmpMessage,
-    XLMP_VERSION,
+    verify_observation_commit_reveal, verify_reproduction_commit_reveal, ObservationCommitMessage,
+    XlmpEnvelope, XlmpMessage, XLMP_VERSION,
 };
 
 #[derive(Clone)]
@@ -340,6 +340,70 @@ async fn accept_xlmp_message(
             verify_observation_commit_reveal(committed, observation)
                 .map_err(|error| ApiError::Invalid(error.to_string()))?;
         }
+        XlmpMessage::ReproductionObservation(reveal) => {
+            let observation = &reveal.observation;
+            authenticate_node_sender(&state, &observation.verifier_node_id, &envelope.sender)?;
+            verify_ed25519_detached(
+                &envelope.sender,
+                &observation.signature,
+                &observation
+                    .signing_bytes()
+                    .map_err(|error| ApiError::Invalid(error.to_string()))?,
+            )
+            .map_err(|error| ApiError::Invalid(error.to_string()))?;
+            let committed = commits
+                .get(observation.receipt_id.as_str())
+                .ok_or_else(|| {
+                    ApiError::Invalid(
+                        "reproduction observation has no prior XLMP commit".to_owned(),
+                    )
+                })?;
+            verify_reproduction_commit_reveal(committed, observation, &reveal.job, &reveal.profile)
+                .map_err(|error| ApiError::Invalid(error.to_string()))?;
+        }
+        XlmpMessage::Certificate(certificate_message) => {
+            let history = state.messages.read().await;
+            let all_observations_previously_authenticated = certificate_message
+                .certificate
+                .observation_receipt_ids
+                .iter()
+                .all(|receipt_id| {
+                    history.values().any(|prior| {
+                        matches!(
+                            &prior.message,
+                            XlmpMessage::ObservationReveal(reveal)
+                                if &reveal.observation.receipt_id == receipt_id
+                                    && reveal.observation.job_id
+                                        == certificate_message.certificate.job_id
+                        )
+                    })
+                });
+            if !all_observations_previously_authenticated {
+                return Err(ApiError::Invalid(
+                    "certificate references an observation not authenticated through XLMP ingress"
+                        .to_owned(),
+                ));
+            }
+        }
+        XlmpMessage::ResearchCertificate(certificate_message) => {
+            let history = state.messages.read().await;
+            let all_observations_previously_authenticated =
+                certificate_message.observations.iter().all(|observation| {
+                    history.values().any(|prior| {
+                        matches!(
+                            &prior.message,
+                            XlmpMessage::ReproductionObservation(reveal)
+                                if &reveal.observation == observation
+                        )
+                    })
+                });
+            if !all_observations_previously_authenticated {
+                return Err(ApiError::Invalid(
+                    "research certificate embeds an observation not authenticated through XLMP ingress"
+                        .to_owned(),
+                ));
+            }
+        }
         _ => {}
     }
     let mut messages = state.messages.write().await;
@@ -640,9 +704,13 @@ mod tests {
     use ed25519_dalek::{Signer, SigningKey};
     use xlemma_core::{
         ClaimManifest, JobId, NodeCredentialId, NodeId, OperatorClusterId, OperatorCredentialId,
-        OperatorId, ReceiptId, UserCredentialId, VerifiedUserId,
+        OperatorId, ReceiptId, ReproductionObservation, UserCredentialId, VerificationJob,
+        VerificationProfile, VerifiedUserId,
     };
-    use xlemma_xlmp::{ClaimMessage, ObservationCommitMessage, XlmpMessage};
+    use xlemma_xlmp::{
+        ClaimMessage, ObservationCommitMessage, ReproductionObservationMessage,
+        ResearchCertificateMessage, XlmpMessage,
+    };
 
     fn signer_id(key: &SigningKey) -> String {
         format!(
@@ -685,6 +753,38 @@ mod tests {
         .unwrap();
         sign_envelope(&key, &mut envelope);
         (envelope, sender)
+    }
+
+    fn published_reproduction() -> (
+        VerificationProfile,
+        VerificationJob,
+        ReproductionObservation,
+    ) {
+        let profile = serde_json::from_str(include_str!(
+            "../../../examples/no-arbitrage/computational-verification-profile.json"
+        ))
+        .unwrap();
+        let job = serde_json::from_str(include_str!(
+            "../../../examples/no-arbitrage/computational-verification-job.json"
+        ))
+        .unwrap();
+        let observation = serde_json::from_str(include_str!(
+            "../../../examples/no-arbitrage/computational-observation-a.json"
+        ))
+        .unwrap();
+        (profile, job, observation)
+    }
+
+    fn node_state(key: &SigningKey, node_id: NodeId) -> AppState {
+        let signer = signer_id(key);
+        AppState {
+            jobs: Arc::default(),
+            messages: Arc::default(),
+            observation_commits: Arc::default(),
+            auth_token: "test-auth-token-that-is-at-least-32-bytes".into(),
+            trusted_signers: Arc::new(BTreeSet::from([signer.clone()])),
+            node_signers: Arc::new(BTreeMap::from([(node_id, signer)])),
+        }
     }
 
     #[tokio::test]
@@ -778,6 +878,121 @@ mod tests {
 
         let result = accept_xlmp_message(State(state), Json(StrictXlmpEnvelope(envelope))).await;
         assert!(matches!(result, Err(ApiError::Unauthorized)));
+    }
+
+    #[tokio::test]
+    async fn generalized_reproduction_requires_commit_then_authenticated_reveal() {
+        let key = SigningKey::from_bytes(&[10_u8; 32]);
+        let sender = signer_id(&key);
+        let (profile, job, mut observation) = published_reproduction();
+        let state = node_state(&key, observation.verifier_node_id.clone());
+
+        observation.signature = format!(
+            "ed25519:{}",
+            URL_SAFE_NO_PAD.encode(key.sign(&observation.signing_bytes().unwrap()).to_bytes())
+        );
+        let reproduction_message =
+            XlmpMessage::ReproductionObservation(ReproductionObservationMessage {
+                job: job.clone(),
+                profile: profile.clone(),
+                observation: observation.clone(),
+            });
+        let mut early_reveal = XlmpEnvelope::new(
+            None,
+            sender.clone(),
+            Utc::now(),
+            reproduction_message.clone(),
+            "pending-signature",
+        )
+        .unwrap();
+        sign_envelope(&key, &mut early_reveal);
+        let result =
+            accept_xlmp_message(State(state.clone()), Json(StrictXlmpEnvelope(early_reveal))).await;
+        assert!(matches!(result, Err(ApiError::Invalid(_))));
+
+        let commit = ObservationCommitMessage {
+            job_id: observation.job_id.clone(),
+            receipt_id: observation.receipt_id.clone(),
+            node_id: observation.verifier_node_id.clone(),
+            verified_user_id: observation.verified_user_id.clone(),
+            operator_id: observation.operator_id.clone(),
+            operator_cluster_id: observation.operator_cluster_id.clone(),
+            user_credential_id: observation.user_credential_id.clone(),
+            operator_credential_id: observation.operator_credential_id.clone(),
+            node_credential_id: observation.node_credential_id.clone(),
+            credential_chain_root: observation.credential_chain_root.clone(),
+            commitment: observation.commitment.clone(),
+            committed_at: observation.committed_at,
+            signature: "covered-by-envelope-signature".into(),
+        };
+        let mut commit_envelope = XlmpEnvelope::new(
+            None,
+            sender.clone(),
+            observation.committed_at,
+            XlmpMessage::ObservationCommit(commit),
+            "pending-signature",
+        )
+        .unwrap();
+        sign_envelope(&key, &mut commit_envelope);
+        let _accepted_commit = accept_xlmp_message(
+            State(state.clone()),
+            Json(StrictXlmpEnvelope(commit_envelope)),
+        )
+        .await
+        .unwrap();
+
+        let mut reveal_envelope = XlmpEnvelope::new(
+            None,
+            sender,
+            observation.reproduced_at,
+            reproduction_message,
+            "pending-signature",
+        )
+        .unwrap();
+        sign_envelope(&key, &mut reveal_envelope);
+        assert_eq!(
+            accept_xlmp_message(State(state), Json(StrictXlmpEnvelope(reveal_envelope)),)
+                .await
+                .unwrap()
+                .0,
+            StatusCode::ACCEPTED
+        );
+    }
+
+    #[tokio::test]
+    async fn research_certificate_rejects_observations_that_bypassed_ingress() {
+        let key = SigningKey::from_bytes(&[11_u8; 32]);
+        let sender = signer_id(&key);
+        let (profile, job, _) = published_reproduction();
+        let observations: Vec<ReproductionObservation> = serde_json::from_str(include_str!(
+            "../../../examples/no-arbitrage/computational-observations.json"
+        ))
+        .unwrap();
+        let certificate = serde_json::from_str(include_str!(
+            "../../../examples/no-arbitrage/computational-research-certificate.json"
+        ))
+        .unwrap();
+        let mut envelope = XlmpEnvelope::new(
+            None,
+            sender.clone(),
+            Utc::now(),
+            XlmpMessage::ResearchCertificate(ResearchCertificateMessage {
+                job,
+                profile,
+                observations,
+                certificate,
+            }),
+            "pending-signature",
+        )
+        .unwrap();
+        sign_envelope(&key, &mut envelope);
+
+        let result = accept_xlmp_message(
+            State(AppState::for_test(sender)),
+            Json(StrictXlmpEnvelope(envelope)),
+        )
+        .await;
+        assert!(matches!(result, Err(ApiError::Invalid(_))));
     }
 
     #[test]

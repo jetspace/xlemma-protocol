@@ -1,0 +1,19 @@
+{
+  "policy_id": "xlpolicy:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+  "mode": "reciprocal",
+  "qualifying_revenue_sources": ["settled_xlmp_commercial_artifact_revenue"],
+  "upstream_pool_bps": 500,
+  "per_ancestor_cap_bps": 100,
+  "max_ancestors": 16,
+  "max_dependency_depth": 4,
+  "depth_decay_bps": 5000,
+  "minimum_payout_units": 1,
+  "bare_citations_eligible": false,
+  "externally_independent_claims_eligible": false,
+  "downstream_veto": false,
+  "recursive_charging": false,
+  "single_charge_per_revenue_event": true,
+  "equivalent_claim_clustering": true,
+  "policy_root": "blake3:economic-constitution-root",
+  "signatures": ["ed25519:researcher-signature"]
+}

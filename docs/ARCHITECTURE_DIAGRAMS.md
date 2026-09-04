@@ -309,3 +309,37 @@ flowchart LR
 ```
 
 Failures are compartmentalized. A payment outage cannot change formal status, and a model outage cannot invalidate an already verified proof.
+
+## 10. Researcher-sovereignty and anti-capture planes
+
+```mermaid
+flowchart TB
+    Researcher[Verified researcher / cooperative]
+    Bundle[Sovereignty bundle<br/>origin · attribution · custody · participation · license · consent · exit]
+    Evidence[Evidence graph<br/>dependencies · provenance · reproduction]
+    Economy[Economic graph<br/>explicit policies · settled obligations]
+    Network[Node network<br/>discovery · sortition · reputation · bonding]
+    Funding[Market · Commons · Assurance]
+    Portable[Portable export<br/>open client · redundant storage · funds exit]
+    Chain[Settlement projection<br/>roots · ordering · bonds · challenges · revenue]
+    Adapters[Replaceable adapters<br/>provers · verifiers · payments · chains · storage]
+
+    Researcher --> Bundle
+    Bundle --> Evidence
+    Bundle --> Economy
+    Network --> Evidence
+    Network --> Economy
+    Funding --> Economy
+    Bundle --> Portable
+    Evidence --> Portable
+    Economy --> Portable
+    Evidence --> Chain
+    Economy --> Chain
+    Adapters --> Network
+    Adapters --> Portable
+```
+
+Evidence edges never authorize payment by themselves. Economic edges never
+establish scientific validity. The capture dashboard measures identity,
+compute, models, verification, storage, settlement, discovery, and governance,
+and publishes the weakest layer as the effective independence score.

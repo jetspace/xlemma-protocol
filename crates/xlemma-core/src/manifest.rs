@@ -80,14 +80,20 @@ pub struct ArtifactManifest {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ContributionRole {
+    QuestionOriginator,
     FormulaOriginator,
     ConjectureAuthor,
     ProofDiscoverer,
     LeanFormalizer,
     TacticAuthor,
+    ToolDeveloper,
     LibraryAuthor,
     DatasetCreator,
     ExperimentalContributor,
+    StatementAlignmentReviewer,
+    IndependentVerifier,
+    ApplicationDeveloper,
+    Maintainer,
     Reviewer,
     ExpositionAuthor,
     Sponsor,
@@ -171,9 +177,14 @@ pub struct RightsManifest {
 #[serde(rename_all = "snake_case")]
 pub enum CapsuleEconomicMode {
     /// Public artifact use carries no mandatory per-use protocol payment.
-    OpenCommons,
+    #[serde(alias = "open_commons")]
+    Commons,
+    /// Monetized participating descendants route one bounded, non-recursive
+    /// pool upstream without creating a veto over publication or use.
+    Reciprocal,
     /// Defined commercial artifacts may carry explicit, bounded license terms.
-    CommercialResearch,
+    #[serde(alias = "commercial_research")]
+    CommercialArtifact,
     /// A sponsor precommits bounty, allocation, acceptance, and result terms.
     SponsoredChallenge,
 }

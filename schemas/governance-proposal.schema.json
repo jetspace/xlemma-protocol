@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/governance-proposal.schema.json",
+  "title": "GovernanceProposal",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "approval": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "chamber": { "type": "string", "enum": ["researcher", "operator", "commons"] },
+        "eligible_independent_domains": { "type": "integer", "minimum": 1 },
+        "approving_independent_domains": { "type": "integer", "minimum": 0 },
+        "approval_threshold_bps": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "maximum_single_operator_influence_bps": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "vote_record_root": { "$ref": "common.schema.json#/$defs/hash" },
+        "finalized_at": { "type": "string", "format": "date-time" },
+        "signature": { "$ref": "common.schema.json#/$defs/signature" }
+      },
+      "required": ["chamber", "eligible_independent_domains", "approving_independent_domains", "approval_threshold_bps", "maximum_single_operator_influence_bps", "vote_record_root", "finalized_at", "signature"]
+    }
+  },
+  "properties": {
+    "proposal_id": { "type": "string", "pattern": "^xlgov:blake3:[0-9a-f]{64}$" },
+    "policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "constitutional_commitment_id": { "type": "string", "pattern": "^xlconstitution:blake3:[0-9a-f]{64}$" },
+    "subject": { "type": "string", "enum": ["credential_policy", "economic_parameter_range", "treasury_allocation", "settlement_adapter", "software_version_migration", "challenge_window", "insurance_requirement"] },
+    "impact": { "type": "string", "enum": ["routine", "material", "constitutional"] },
+    "change_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "public_simulation_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "fork_exit_plan_id": { "type": "string", "pattern": "^xlfork:blake3:[0-9a-f]{64}$" },
+    "proposer": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "voting_ends_at": { "type": "string", "format": "date-time" },
+    "timelock_ends_at": { "type": "string", "format": "date-time" },
+    "activation_at": { "type": "string", "format": "date-time" },
+    "approvals": {
+      "type": "object", "additionalProperties": false,
+      "properties": { "researcher": { "$ref": "#/$defs/approval" }, "operator": { "$ref": "#/$defs/approval" }, "commons": { "$ref": "#/$defs/approval" } },
+      "required": ["researcher", "operator", "commons"]
+    },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": ["proposal_id", "policy_id", "constitutional_commitment_id", "subject", "impact", "change_root", "public_simulation_root", "fork_exit_plan_id", "proposer", "created_at", "voting_ends_at", "timelock_ends_at", "activation_at", "approvals", "signature"]
+}

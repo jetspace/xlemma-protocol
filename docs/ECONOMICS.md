@@ -42,9 +42,35 @@ participant block publication. Payment requires a separately signed economic
 policy, an eligible economic edge, a settled external revenue event, and a
 bounded pool.
 
-Open Commons is the default: its mandatory upstream pool is zero. Commercial
-Research and Sponsored Challenge may define a bounded upstream pool before
-monetization.
+`RevenueEventID` is content-derived from the exact claim, source,
+related-party disclosure, settlement receipt, gross amount, deductions, time,
+and evidence root. Changing any settlement fact creates a different event.
+Related-party events remain auditable but are excluded from the reference
+upstream allocator so wash activity cannot manufacture apparent external
+demand.
+
+Commons is the default: its mandatory upstream pool is zero. Reciprocal,
+Commercial Artifact, and Sponsored Challenge may define a bounded upstream
+pool before monetization. The constitution also declares a settlement-asset
+minor-unit payout floor. Allocations below it stay in the explicit unallocated
+remainder, preserving conservation without creating dust transfers.
+
+## Market, commons, and assurance rails
+
+Every settled `FundingReceipt` names one rail, one purpose, an external-value
+evidence root, a settlement receipt, an economic policy, and a destination
+vault. A purpose has exactly one rail:
+
+- **market** funds bounties, formalization contracts, proof APIs, commercial
+  licenses, certified implementations, reserved compute, and maintenance;
+- **commons** funds foundational work, formal libraries, negative results,
+  benchmarks, tactics, open data, exposition, and retrospective impact; and
+- **assurance** funds verifier-bond, challenge, revalidation, warranty, and
+  reliance-insurance reserves.
+
+Protocol fees MUST conserve the settled amount and allocate a nonzero share to
+both commons and assurance. A self-issued credit, token-price increase, or
+unsettled promise is not funding.
 
 ## Compute-savings impact signal
 

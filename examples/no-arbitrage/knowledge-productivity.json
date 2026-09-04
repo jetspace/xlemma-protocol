@@ -1,0 +1,9 @@
+{
+  "claim_id": "xlc:blake3:1117d892ad3a90b5c40d700b96fa1df96882dfc4a52dc23a00ebf1eefc5815f8",
+  "independently_verified_downstream_outcomes": 4,
+  "attributable_effort_milliunits": 2000,
+  "confidence_bps": 7500,
+  "evidence_root": "blake3:independent-downstream-outcome-evidence",
+  "observed_at": "2026-09-03T20:00:00Z",
+  "supersedes": null
+}

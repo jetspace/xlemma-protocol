@@ -92,6 +92,27 @@ descendant nodes ineligible. Historical observations remain readable and are
 not silently deleted; policy decides whether affected certificates require
 quarantine or revalidation.
 
+### 3.5 Independent issuer evidence
+
+`CredentialIssuerPolicy` names at least two approved issuers and the claim
+kinds each may attest: uniqueness, organization, operator eligibility, role
+qualification, conflict clearance, and non-revocation. Requirements may name
+an `any_of` group, allowing a participant to prove uniqueness or accountable
+organization status without exposing private identity attributes.
+
+`IndependentCredentialAttestation` binds a pseudonymous VerifiedUserID,
+authorized claim kinds, optional role qualifications, selective-disclosure
+proof, public status-registry root, non-revocation proof, private-evidence
+commitment, validity interval, and issuer signature. Raw identity evidence
+remains issuer-private.
+
+`XLMP_CREDENTIAL_EVIDENCE` carries the policy and exact attestation set at an
+evaluation time. The set MUST meet every claim group, minimum distinct issuer
+count, and maximum per-issuer attestation share. One xLemma company or issuer
+cannot be configured as the sole eligibility authority in a conforming
+consensus profile. Key possession and nonempty signature text alone are not
+authorization; deployment cryptography still verifies issuers and proofs.
+
 ## 4. Credential tiers
 
 | Tier | Meaning | Consensus authority |
@@ -118,6 +139,9 @@ Before admitting a node to an eligible set, an implementation MUST:
 6. verify the status proof against the current revocation registry root;
 7. reject any effective user, operator, or node revocation;
 8. bind the validated chain and status proof into the eligible-set commitment.
+9. validate any multi-issuer claim groups, concentration cap, selective
+   disclosure, and public revocation roots required by the active issuer
+   policy.
 
 The reference Rust registry is append-only and requires a
 `CredentialProofVerifier` adapter. Its structural checks do not substitute for

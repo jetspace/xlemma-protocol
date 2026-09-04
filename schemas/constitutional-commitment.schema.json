@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/constitutional-commitment.schema.json",
+  "title": "ConstitutionalCommitment",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "commitment_id": { "type": "string", "pattern": "^xlconstitution:blake3:[0-9a-f]{64}$" },
+    "protocol_version": { "type": "string", "minLength": 1 },
+    "invariants": {
+      "type": "array", "minItems": 13, "maxItems": 13, "uniqueItems": true,
+      "items": { "type": "string", "enum": ["deterministic_validity", "independent_reproduction", "prover_cannot_self_certify", "backed_research_credit", "work_neutral_verifier_compensation", "checker_divergence_quarantine", "formal_claim_identity", "immutable_origin_and_history", "rights_do_not_own_truth", "evidence_economic_graph_separation", "bounded_nonrecursive_participation", "adapter_neutrality", "portable_exit"] }
+    },
+    "immutable": { "const": true },
+    "specification_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "effective_at": { "type": "string", "format": "date-time" },
+    "signatures": { "type": "array", "minItems": 1, "items": { "$ref": "common.schema.json#/$defs/signature" } }
+  },
+  "required": ["commitment_id", "protocol_version", "invariants", "immutable", "specification_root", "effective_at", "signatures"]
+}

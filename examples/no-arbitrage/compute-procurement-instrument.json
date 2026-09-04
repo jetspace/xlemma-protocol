@@ -1,0 +1,19 @@
+{
+  "instrument_id": "capacity-option:formal-finance:2026-10",
+  "stage": "capacity_option",
+  "buyer": "research-cooperative:one",
+  "provider_id": "compute-provider:two",
+  "service": "research_prover_generation",
+  "domain": "formal-finance",
+  "service_profile_root": "blake3:domain-service-profile",
+  "minimum_units": 100,
+  "maximum_units": 1000,
+  "maximum_spend": {"units": 1000000000, "asset": "USDC", "decimals": 6},
+  "delivery_start": "2026-10-01T00:00:00Z",
+  "delivery_end": "2026-11-01T00:00:00Z",
+  "exercise_deadline": "2026-09-20T00:00:00Z",
+  "reservation_or_collateral_root": "blake3:provider-capacity-collateral",
+  "settlement_policy_id": "xlpolicy:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+  "transferable": false,
+  "signatures": ["ed25519:buyer", "ed25519:provider"]
+}

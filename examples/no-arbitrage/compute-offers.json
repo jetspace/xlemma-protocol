@@ -2,7 +2,7 @@
   {
     "offer_id": "offer-astra_generation",
     "provider_id": "provider-0",
-    "service": "astra_generation",
+    "service": "research_prover_generation",
     "model_or_checker": "gpt-6-astra",
     "hardware_class": "reference",
     "domain": "finance",

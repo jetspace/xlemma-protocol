@@ -8,6 +8,7 @@
     "revenue_event_id": { "type": "string", "pattern": "^xlrevenue:blake3:[0-9a-f]{64}$" },
     "claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
     "source": { "type": "string", "minLength": 1 },
+    "related_party": { "type": "boolean" },
     "settlement_receipt_id": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
     "gross_collected": { "$ref": "common.schema.json#/$defs/amount" },
     "refunds": { "$ref": "common.schema.json#/$defs/amount" },
@@ -18,7 +19,7 @@
     "signature": { "$ref": "common.schema.json#/$defs/signature" }
   },
   "required": [
-    "revenue_event_id", "claim_id", "source", "settlement_receipt_id", "gross_collected",
+    "revenue_event_id", "claim_id", "source", "related_party", "settlement_receipt_id", "gross_collected",
     "refunds", "service_costs", "reserves", "realized_at", "evidence_root", "signature"
   ]
 }

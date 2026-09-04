@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/knowledge-productivity-observation.schema.json",
+  "title": "KnowledgeProductivityObservation",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "independently_verified_downstream_outcomes": { "type": "integer", "minimum": 1 },
+    "attributable_effort_milliunits": { "type": "integer", "minimum": 1 },
+    "confidence_bps": { "type": "integer", "minimum": 1, "maximum": 10000 },
+    "evidence_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "supersedes": { "type": ["string", "null"], "pattern": "^xlr:blake3:[0-9a-f]{64}$" }
+  },
+  "required": ["claim_id", "independently_verified_downstream_outcomes", "attributable_effort_milliunits", "confidence_bps", "evidence_root", "observed_at", "supersedes"],
+  "$comment": "This revisable impact signal cannot create payment debt."
+}

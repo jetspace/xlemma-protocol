@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/capture-resistance-dashboard.schema.json",
+  "title": "CaptureResistanceDashboard",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "optionalBps": { "type": ["integer", "null"], "minimum": 0, "maximum": 10000 },
+    "assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "largest_operator_share_bps": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "largest_beneficial_owner_share_bps": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "provider_concentration_bps": { "$ref": "#/$defs/optionalBps" },
+        "region_concentration_bps": { "$ref": "#/$defs/optionalBps" },
+        "software_family_concentration_bps": { "$ref": "#/$defs/optionalBps" },
+        "credential_issuer_concentration_bps": { "$ref": "#/$defs/optionalBps" },
+        "frontend_concentration_bps": { "$ref": "#/$defs/optionalBps" },
+        "independent_control_domains": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "minimum_censorship_coalition": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "minimum_corruption_coalition": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "evidence_root": { "$ref": "common.schema.json#/$defs/hash" }
+      },
+      "required": ["largest_operator_share_bps", "largest_beneficial_owner_share_bps", "provider_concentration_bps", "region_concentration_bps", "software_family_concentration_bps", "credential_issuer_concentration_bps", "frontend_concentration_bps", "independent_control_domains", "minimum_censorship_coalition", "minimum_corruption_coalition", "evidence_root"]
+    }
+  },
+  "properties": {
+    "dashboard_id": { "type": "string", "pattern": "^xlcapture:blake3:[0-9a-f]{64}$" },
+    "policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "layers": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "identity": { "$ref": "#/$defs/assessment" },
+        "compute": { "$ref": "#/$defs/assessment" },
+        "models": { "$ref": "#/$defs/assessment" },
+        "verification": { "$ref": "#/$defs/assessment" },
+        "storage": { "$ref": "#/$defs/assessment" },
+        "settlement": { "$ref": "#/$defs/assessment" },
+        "discovery": { "$ref": "#/$defs/assessment" },
+        "governance": { "$ref": "#/$defs/assessment" }
+      },
+      "required": ["identity", "compute", "models", "verification", "storage", "settlement", "discovery", "governance"]
+    },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "evidence_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "assessor_signatures": { "type": "array", "minItems": 1, "items": { "$ref": "common.schema.json#/$defs/signature" } }
+  },
+  "required": ["dashboard_id", "policy_id", "layers", "observed_at", "evidence_root", "assessor_signatures"]
+}

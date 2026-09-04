@@ -1,0 +1,14 @@
+{
+  "receipt_id": "xlwork:blake3:3333333333333333333333333333333333333333333333333333333333333333",
+  "node_id": "xlnode:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "operator_id": "xlop:blake3:e7e8b7222bc5e3d3781ab251f5cf130fd879d9478162b65d012007deeb7c2e3b",
+  "job_id": null,
+  "service": "storage",
+  "revenue_kind": "availability",
+  "settled_amount": {"units": 2500000, "asset": "USDC", "decimals": 6},
+  "settlement_receipt_id": "xlr:blake3:5555555555555555555555555555555555555555555555555555555555555555",
+  "work_evidence_root": "blake3:retention-and-retrieval-evidence",
+  "external_value_evidence_root": "blake3:settled-payer-value",
+  "completed_at": "2026-09-03T20:00:00Z",
+  "signature": "ed25519:node-signature"
+}

@@ -5,7 +5,8 @@ This package is intentionally simple: `Market.noFreeLunch` is defined as absence
 Files include theory, claim, proof, artifact, contributions, rights, researcher,
 lemma capsule, statement-alignment review, generalized quorum policy, three
 independent observations, compute offers, independent protocol success
-estimates, work estimates, x402 extension, and authorized compute-impact inputs.
+estimates, work estimates, x402 extension, authorized compute-impact inputs,
+and a computational-profile reproduction/certificate vector.
 
 Reference CLI flows:
 
@@ -24,9 +25,17 @@ cargo run -p xlemma-cli -- compute-impact \
   impact-pool-authorization.json \
   --trusted-authorizer ed25519:_RckOFqgx1tk-3jNYC-h2ZH96_drE8WO1wLqyDXp9hg
 
+cargo run -p xlemma-cli -- evaluate-reproduction \
+  computational-verification-profile.json \
+  computational-verification-job.json \
+  computational-observations.json
+
 cargo run -p xlemma-cli -- pack . bundle-inputs.json \
   --lean-toolchain leanprover/lean4:v4.33.1 \
   --dependency-lock-hash blake3:example
 ```
 
-The illustrative IDs demonstrate wire format and are not claimed to be hashes of the included content; a production exporter must regenerate every identifier from canonical inputs.
+Legacy illustrative IDs demonstrate wire format and are not all claimed to be
+hashes of included content. The computational observation/certificate vector
+and vectors explicitly covered by Rust tests are content-derived. A production
+exporter must regenerate and verify every identifier from canonical inputs.

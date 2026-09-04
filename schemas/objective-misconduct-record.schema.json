@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/objective-misconduct-record.schema.json",
+  "title": "ObjectiveMisconductRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "record_id": { "type": "string", "pattern": "^xlmisconduct:blake3:[0-9a-f]{64}$" },
+    "node_id": { "type": "string", "pattern": "^xlnode:blake3:[0-9a-f]{64}$" },
+    "operator_id": { "type": "string", "pattern": "^xlop:blake3:[0-9a-f]{64}$" },
+    "bond_id": { "type": "string", "pattern": "^xlbond:blake3:[0-9a-f]{64}$" },
+    "kind": { "type": "string", "enum": ["signed_unchecked_artifact", "equivocation", "falsified_execution_evidence", "concealed_beneficial_control", "failed_promised_retention", "unauthorized_artifact_substitution", "receipt_forgery"] },
+    "evidence_roots": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "common.schema.json#/$defs/hash" } },
+    "adjudication_policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "slash_amount": { "$ref": "common.schema.json#/$defs/amount" },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "signatures": { "type": "array", "minItems": 1, "items": { "$ref": "common.schema.json#/$defs/signature" } }
+  },
+  "required": ["record_id", "node_id", "operator_id", "bond_id", "kind", "evidence_roots", "adjudication_policy_id", "slash_amount", "observed_at", "signatures"],
+  "$comment": "Checker divergence and FAIL verdicts are deliberately not misconduct kinds."
+}

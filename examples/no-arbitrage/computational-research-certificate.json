@@ -1,0 +1,22 @@
+{
+  "certificate_id": "xlresearchcert:blake3:b08486472547803bd13338dd1e53986e4690fe5b97b10b9dcf42c1635e81a521",
+  "job_id": "xljob:blake3:8888888888888888888888888888888888888888888888888888888888888888",
+  "claim_id": "xlc:blake3:1117d892ad3a90b5c40d700b96fa1df96882dfc4a52dc23a00ebf1eefc5815f8",
+  "candidate_proof_id": null,
+  "verification_policy_id": "xlpolicy:blake3:8888888888888888888888888888888888888888888888888888888888888888",
+  "verification_profile_class": "computational",
+  "observation_receipt_ids": [
+    "xlr:blake3:25caeca3c8677910e86fa72f577c46a0b61203919b215b76791d67c6e20a2fa8",
+    "xlr:blake3:3fad4f12feefee7cafc66abf935977dde6cbd0d008fd8966e5473414fbf8dfc3"
+  ],
+  "operator_cluster_ids": [
+    "xloperator:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "xloperator:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  ],
+  "verifier_implementations": ["container-runner:v1", "container-runner:v1"],
+  "evidence_bundle_root": "blake3:benchmark-reproduction-bundle",
+  "status": "certified",
+  "issued_at": "2026-09-03T22:00:00Z",
+  "challenge_window_ends_at": "2026-09-04T22:00:00Z",
+  "aggregate_signature": "ed25519:research-certificate"
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/fork-exit-plan.schema.json",
+  "title": "ForkExitPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "plan_id": { "type": "string", "pattern": "^xlfork:blake3:[0-9a-f]{64}$" },
+    "identity_export_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "artifact_export_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "history_export_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "funds_exit_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "open_client_source_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "destination_protocol": { "type": "string", "minLength": 1 },
+    "available_from": { "type": "string", "format": "date-time" },
+    "available_until": { "type": "string", "format": "date-time" },
+    "signatures": { "type": "array", "minItems": 1, "items": { "$ref": "common.schema.json#/$defs/signature" } }
+  },
+  "required": ["plan_id", "identity_export_root", "artifact_export_root", "history_export_root", "funds_exit_root", "open_client_source_root", "destination_protocol", "available_from", "available_until", "signatures"]
+}

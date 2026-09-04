@@ -62,10 +62,12 @@ REQUIRED_FILES = [
     "spec/019-node-network.md",
     "spec/020-identity-credentials.md",
     "spec/021-alignment-rights-and-impact.md",
+    "spec/022-researcher-sovereignty.md",
     "openapi/openapi.yaml",
     "contracts/src/ResearchVault.sol",
     "contracts/src/ResearcherCredit.sol",
     "contracts/src/ProofRegistry.sol",
+    "contracts/src/ResearchCommitmentRegistry.sol",
     "contracts/src/PoIRCertificateRegistry.sol",
     "contracts/src/NodeBondRegistry.sol",
     "contracts/src/BountyEscrow.sol",
@@ -78,7 +80,10 @@ REQUIRED_FILES = [
     "crates/xlemma-node/src/marketplace.rs",
     "crates/xlemma-node/src/credentials.rs",
     "crates/xlemma-core/src/identity.rs",
+    "crates/xlemma-core/src/capture.rs",
+    "crates/xlemma-core/src/governance.rs",
     "crates/xlemma-core/src/network.rs",
+    "crates/xlemma-core/src/sovereignty.rs",
     "crates/xlemma-xlmp/src/lib.rs",
     "schemas/node-network-common.schema.json",
     "schemas/node-service-advertisement.schema.json",
@@ -102,6 +107,30 @@ REQUIRED_FILES = [
     "schemas/protocol-success-estimates.schema.json",
     "schemas/compute-savings-evidence.schema.json",
     "schemas/impact-pool-authorization.schema.json",
+    "schemas/researcher-sovereignty-bundle.schema.json",
+    "schemas/researcher-portability-manifest.schema.json",
+    "schemas/researcher-residual-right.schema.json",
+    "schemas/economic-constitution.schema.json",
+    "schemas/research-graph-edge.schema.json",
+    "schemas/verification-profile.schema.json",
+    "schemas/research-compute-cooperative.schema.json",
+    "schemas/capture-resistance-dashboard.schema.json",
+    "schemas/node-work-receipt.schema.json",
+    "schemas/node-exposure-limit.schema.json",
+    "schemas/objective-misconduct-record.schema.json",
+    "schemas/upstream-allocation.schema.json",
+    "schemas/knowledge-productivity-observation.schema.json",
+    "schemas/constitutional-commitment.schema.json",
+    "schemas/fork-exit-plan.schema.json",
+    "schemas/governance-proposal.schema.json",
+    "schemas/credential-issuer-policy.schema.json",
+    "schemas/independent-credential-attestation.schema.json",
+    "schemas/funding-receipt.schema.json",
+    "schemas/compute-procurement-instrument.schema.json",
+    "schemas/compute-concentration-policy.schema.json",
+    "schemas/reproduction-observation.schema.json",
+    "schemas/research-verification-certificate.schema.json",
+    "schemas/economic-compliance-certificate.schema.json",
     "examples/node-network/advertisement.json",
     "examples/node-network/reputation.json",
     "examples/node-network/bond.json",
@@ -119,6 +148,29 @@ REQUIRED_FILES = [
     "examples/no-arbitrage/protocol-success-estimates.json",
     "examples/no-arbitrage/compute-savings-evidence.json",
     "examples/no-arbitrage/impact-pool-authorization.json",
+    "examples/no-arbitrage/sovereignty-bundle.json",
+    "examples/no-arbitrage/portability-manifest.json",
+    "examples/no-arbitrage/residual-right.json",
+    "examples/no-arbitrage/economic-constitution.json",
+    "examples/no-arbitrage/verification-profile.json",
+    "examples/no-arbitrage/evidence-graph-edge.json",
+    "examples/node-network/compute-cooperative.json",
+    "examples/node-network/capture-dashboard.json",
+    "examples/node-network/node-work-receipt.json",
+    "examples/node-network/node-exposure-limit.json",
+    "examples/node-network/objective-misconduct.json",
+    "examples/no-arbitrage/upstream-allocation.json",
+    "examples/no-arbitrage/knowledge-productivity.json",
+    "examples/no-arbitrage/funding-receipt.json",
+    "examples/no-arbitrage/compute-procurement-instrument.json",
+    "examples/no-arbitrage/compute-concentration-policy.json",
+    "examples/no-arbitrage/computational-verification-profile.json",
+    "examples/no-arbitrage/computational-verification-job.json",
+    "examples/no-arbitrage/computational-observation-a.json",
+    "examples/no-arbitrage/computational-observation-b.json",
+    "examples/no-arbitrage/computational-observations.json",
+    "examples/no-arbitrage/computational-research-certificate.json",
+    "examples/no-arbitrage/economic-compliance-certificate.json",
 ]
 
 EXAMPLE_SCHEMA_MAP = {
@@ -137,6 +189,23 @@ EXAMPLE_SCHEMA_MAP = {
     "protocol-success-estimates.json": "protocol-success-estimates.schema.json",
     "compute-savings-evidence.json": "compute-savings-evidence.schema.json",
     "impact-pool-authorization.json": "impact-pool-authorization.schema.json",
+    "sovereignty-bundle.json": "researcher-sovereignty-bundle.schema.json",
+    "portability-manifest.json": "researcher-portability-manifest.schema.json",
+    "residual-right.json": "researcher-residual-right.schema.json",
+    "economic-constitution.json": "economic-constitution.schema.json",
+    "verification-profile.json": "verification-profile.schema.json",
+    "evidence-graph-edge.json": "research-graph-edge.schema.json",
+    "upstream-allocation.json": "upstream-allocation.schema.json",
+    "knowledge-productivity.json": "knowledge-productivity-observation.schema.json",
+    "funding-receipt.json": "funding-receipt.schema.json",
+    "compute-procurement-instrument.json": "compute-procurement-instrument.schema.json",
+    "compute-concentration-policy.json": "compute-concentration-policy.schema.json",
+    "computational-verification-profile.json": "verification-profile.schema.json",
+    "computational-verification-job.json": "verification-job.schema.json",
+    "computational-observation-a.json": "reproduction-observation.schema.json",
+    "computational-observation-b.json": "reproduction-observation.schema.json",
+    "computational-research-certificate.json": "research-verification-certificate.schema.json",
+    "economic-compliance-certificate.json": "economic-compliance-certificate.schema.json",
 }
 
 NODE_EXAMPLE_SCHEMA_MAP = {
@@ -152,6 +221,11 @@ NODE_EXAMPLE_SCHEMA_MAP = {
     "credential-status.json": "credential-status-proof.schema.json",
     "credential-chain.json": "node-credential-chain.schema.json",
     "credential-revocation.json": "credential-revocation.schema.json",
+    "compute-cooperative.json": "research-compute-cooperative.schema.json",
+    "capture-dashboard.json": "capture-resistance-dashboard.schema.json",
+    "node-work-receipt.json": "node-work-receipt.schema.json",
+    "node-exposure-limit.json": "node-exposure-limit.schema.json",
+    "objective-misconduct.json": "objective-misconduct-record.schema.json",
 }
 
 
@@ -242,8 +316,8 @@ def validate_json_syntax_and_schemas() -> None:
             fail(f"eligible-nodes.json[{index}] invalid: {errors[0].message}")
 
     message_variants = schema_objects["xlmp-envelope.schema.json"]["properties"]["message"]["oneOf"]
-    if len(message_variants) != 25:
-        fail(f"expected exactly 25 XLMP/1 message variants, found {len(message_variants)}")
+    if len(message_variants) != 40:
+        fail(f"expected exactly 40 XLMP/1 message variants, found {len(message_variants)}")
 
     observation_schema = schema_objects["observation.schema.json"]
     observation_validator = schema_validator(observation_schema)
@@ -251,6 +325,13 @@ def validate_json_syntax_and_schemas() -> None:
         errors = list(observation_validator.iter_errors(observation))
         if errors:
             fail(f"observations.json[{index}] invalid: {errors[0].message}")
+
+    reproduction_schema = schema_objects["reproduction-observation.schema.json"]
+    reproduction_validator = schema_validator(reproduction_schema)
+    for index, observation in enumerate(load_json(EXAMPLE / "computational-observations.json")):
+        errors = list(reproduction_validator.iter_errors(observation))
+        if errors:
+            fail(f"computational-observations.json[{index}] invalid: {errors[0].message}")
 
     offer_schema = schema_objects["compute-offer.schema.json"]
     offer_validator = schema_validator(offer_schema)
@@ -296,6 +377,15 @@ def validate_toml() -> None:
         fail("raw legal identity must remain off protocol")
     if not config["identity"]["append_only_credentials_and_revocations"]:
         fail("credential and revocation records must remain append-only")
+    issuer_policy = config["identity"]["multi_issuer"]
+    if issuer_policy["minimum_distinct_issuers"] < 2:
+        fail("consensus identity must require multiple independent issuers")
+    if issuer_policy["maximum_issuer_attestation_share_bps"] >= 10_000:
+        fail("one credential issuer must not control all attestations")
+    if issuer_policy["single_company_issuer_allowed"]:
+        fail("one xLemma company must not be the sole credential issuer")
+    if not issuer_policy["selective_disclosure_required"] or not issuer_policy["public_revocation_roots_required"]:
+        fail("multi-issuer credentials require selective disclosure and public revocation roots")
     if not config["node_marketplace"]["append_only_history"]:
         fail("node marketplace history must remain append-only")
     if not config["node_marketplace"]["checked_integer_prices"]:
@@ -314,6 +404,47 @@ def validate_toml() -> None:
         fail("impact confidence multiplier must use the fixed-point basis-point field")
     if config["protocol_version"] != "XLMP/1":
         fail("the canonical protocol version must be XLMP/1")
+    sovereignty = config["sovereignty"]
+    if sovereignty["default_economic_mode"] != "commons":
+        fail("Commons must remain the default capsule economic mode")
+    if sovereignty["downstream_veto_allowed"] or sovereignty["recursive_revenue_charging_allowed"]:
+        fail("economic participation cannot create a downstream veto or recursive charge")
+    if sovereignty["minimum_artifact_storage_providers"] < 2 or sovereignty["minimum_event_log_providers"] < 2:
+        fail("portable recovery requires independent artifact and event-log providers")
+    verification_profiles = config["verification_profiles"]
+    required_profiles = {"formal", "computational", "statistical", "simulation", "empirical", "hybrid"}
+    if set(verification_profiles["enabled"]) != required_profiles:
+        fail("all six XLMP verification profiles must remain enabled")
+    if verification_profiles["producer_self_certification_allowed"]:
+        fail("a research producer cannot count as its own independent reproducer")
+    if verification_profiles["mixed_pass_fail_outcome"] != "divergent":
+        fail("mixed reproduction evidence must remain divergent")
+    compute_market = config["compute_market"]
+    if compute_market["canonical_generation_service"] != "research_prover_generation":
+        fail("canonical compute service names must remain provider-neutral")
+    if compute_market["transferable_derivatives_enabled"]:
+        fail("XLMP/1 compute procurement instruments must remain nontransferable")
+    if min(compute_market[key] for key in ["minimum_provider_clusters", "minimum_model_families", "minimum_regions"]) < 2:
+        fail("compute routes require provider, model, and region diversity")
+    capture = config["capture_dashboard"]
+    if set(capture["required_layers"]) != {"identity", "compute", "models", "verification", "storage", "settlement", "discovery", "governance"}:
+        fail("capture dashboard must publish all eight critical layers")
+    if not capture["beneficial_owner_clustering_required"] or not capture["effective_score_uses_weakest_layer"]:
+        fail("capture resistance must use beneficial control and the weakest layer")
+    node_economics = config["node_economics"]
+    if node_economics["pay_for_idle_existence"] or node_economics["honest_divergence_slashable"]:
+        fail("nodes earn for work and honest divergence is not slashable")
+    if not node_economics["work_evidence_required"] or not node_economics["external_settlement_evidence_required"]:
+        fail("node revenue requires work and external settlement evidence")
+    governance = config["governance"]
+    if set(governance["required_chambers"]) != {"researcher", "operator", "commons"}:
+        fail("material governance requires all three constituencies")
+    if governance["truth_vote_allowed"] or governance["material_timelock_seconds"] < 604800:
+        fail("governance cannot vote on truth and material changes require a seven-day timelock")
+    if set(config["funding"]["rails"]) != {"market", "commons", "assurance"}:
+        fail("market, commons, and assurance funding rails are all required")
+    if config["funding"]["unsettled_value_counts_as_funding"]:
+        fail("unsettled value cannot be represented as funding")
 
 
 def validate_yaml() -> None:

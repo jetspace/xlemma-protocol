@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/compute-concentration-policy.schema.json",
+  "title": "ComputeConcentrationPolicy",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "maximum_provider_share_bps": { "type": "integer", "minimum": 1, "maximum": 10000 },
+    "minimum_provider_clusters": { "type": "integer", "minimum": 2, "maximum": 65535 },
+    "minimum_regions": { "type": "integer", "minimum": 2, "maximum": 65535 },
+    "minimum_model_families": { "type": "integer", "minimum": 2, "maximum": 65535 },
+    "minimum_fallback_routes": { "type": "integer", "minimum": 1, "maximum": 65535 },
+    "require_confidential_delivery": { "type": "boolean" },
+    "maximum_total_spend": { "$ref": "common.schema.json#/$defs/amount" }
+  },
+  "required": ["maximum_provider_share_bps", "minimum_provider_clusters", "minimum_regions", "minimum_model_families", "minimum_fallback_routes", "require_confidential_delivery", "maximum_total_spend"]
+}

@@ -1,0 +1,15 @@
+{
+  "funding_receipt_id": "xlfunding:blake3:5555555555555555555555555555555555555555555555555555555555555555",
+  "rail": "commons",
+  "purpose": "foundational_research",
+  "payer": "institutional-grant-maker",
+  "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+  "destination_vault": "0x1111111111111111111111111111111111111111",
+  "settled_amount": {"units": 1000000000, "asset": "USDC", "decimals": 6},
+  "settlement_receipt_id": "xlr:blake3:5555555555555555555555555555555555555555555555555555555555555555",
+  "external_value_evidence_root": "blake3:institutional-bank-settlement",
+  "policy_id": "xlpolicy:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+  "related_party": false,
+  "settled_at": "2026-09-03T20:00:00Z",
+  "signature": "ed25519:funding-authority"
+}

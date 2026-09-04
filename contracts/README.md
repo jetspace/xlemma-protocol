@@ -11,6 +11,7 @@ These contracts implement the economic and registry projection of xLemma. They a
 | `ResearchVaultFactory.sol` | Creates researcher vaults | Self-registration; account-namespaced ResearcherIDs prevent cross-account slot squatting |
 | `PoIRCertificateRegistry.sol` | Economic finality for off-chain evidence certificates | Content-derived certificate ID; minimum challenge period; challenge/quarantine/reject; exact claim/artifact/policy query |
 | `ProofRegistry.sol` | Append-only proof/certificate roots | Content-derived record ID; challenge-gated finalization; correction by pre-linked child/supersession |
+| `ResearchCommitmentRegistry.sol` | Generic on-chain research-object projection | Commits researcher, claim, artifact, policy, committee, rights, contribution-split, and supersession roots without deciding truth |
 | `NodeBondRegistry.sol` | Neutral node collateral | Immutable operator cluster per NodeID; delayed unbond; stake is eligibility, not vote weight |
 | `BountyEscrow.sol` | Reverse-direction proof bounty | Content-derived bounty ID; commit-reveal; exact artifact certificate; delayed release/refund; finality recheck |
 | `RevenueRouter.sol` | Realized external revenue distribution | Payer-namespaced replay IDs; 10,000-bps conservation; exact transfers; atomic vault compounding |
@@ -43,6 +44,7 @@ Included tests cover:
 - PoIR content identity, challenge windows, and quarantine;
 - bounty content identity, commit-reveal, exact-artifact certificate dependence, and invalidation refund;
 - append-only proof records and supersession;
+- content-bound research, committee, rights, and contribution roots with explicit supersession;
 - factory registration authorization and ResearcherID namespace isolation;
 - immutable node operator clusters, unbond delay, and slashing;
 - nontransferable proof capsules and transferable license editions.
@@ -64,6 +66,9 @@ PoIR registry admin
 Proof registry admin
   ├── CERTIFIER_ROLE        PoIR finality adapter
   └── QUARANTINE_ROLE       security threshold
+
+Research commitment admin
+  └── COMMITTER_ROLE        threshold adapter for authenticated XLMP commitments
 
 Node bond admin
   └── SLASHER_ROLE          evidence-bound dispute outcome adapter

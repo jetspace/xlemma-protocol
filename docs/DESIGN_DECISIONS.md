@@ -55,7 +55,7 @@ interfaces display both statuses.
 ## ADR-012 — Evidence and economic graphs are separate
 
 Formal dependency edges describe use. Only explicit economic-policy edges can
-authorize a bounded payment from settled external revenue. Open Commons uses
+authorize a bounded payment from settled external revenue. Commons uses
 no mandatory per-use fee.
 
 ## ADR-013 — Protocol-calibrated service pricing

@@ -1,0 +1,16 @@
+{
+  "revenue_event_id": "xlrevenue:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "downstream_claim_id": "xlc:blake3:1117d892ad3a90b5c40d700b96fa1df96882dfc4a52dc23a00ebf1eefc5815f8",
+  "net_qualifying_revenue": {"units": 800000000, "asset": "USDC", "decimals": 6},
+  "upstream_pool": {"units": 40000000, "asset": "USDC", "decimals": 6},
+  "payouts": {
+    "xlc:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd": {"units": 24000000, "asset": "USDC", "decimals": 6},
+    "xlc:blake3:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee": {"units": 16000000, "asset": "USDC", "decimals": 6}
+  },
+  "selected_equivalence_clusters": {
+    "no-arbitrage-core": "xlc:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "market-assumptions": "xlc:blake3:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  },
+  "unallocated_remainder": {"units": 0, "asset": "USDC", "decimals": 6},
+  "non_recursive": true
+}

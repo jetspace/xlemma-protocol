@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/node-exposure-limit.schema.json",
+  "title": "NodeExposureLimit",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bond_id": { "type": "string", "pattern": "^xlbond:blake3:[0-9a-f]{64}$" },
+    "bond_amount": { "$ref": "common.schema.json#/$defs/amount" },
+    "coverage_multiplier_bps": { "type": "integer", "minimum": 1, "maximum": 65535 },
+    "maximum_certificate_exposure": { "$ref": "common.schema.json#/$defs/amount" },
+    "policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" }
+  },
+  "required": ["bond_id", "bond_amount", "coverage_multiplier_bps", "maximum_certificate_exposure", "policy_id"]
+}

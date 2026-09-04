@@ -48,8 +48,34 @@ authorize estimator signing keys under the referenced calibration policy; a
 self-certifying signature proves key control, not that the estimator is trusted.
 
 Compute reservations represent contractual future service, not stored compute
-inventory. The launch sequence is spot quotes, usage-capped jobs, reserved
-capacity, service-level forwards, and capacity options. Tradeable futures are a
-deferred layer requiring standardized service profiles and settlement history.
+inventory. `ComputeProcurementInstrument` encodes the launch sequence as spot
+quotes, maximum-cost authorizations, reserved capacity, domain-specific service
+forwards, and nontransferable capacity options. A reservation, forward, or
+option MUST bind a service profile, delivery interval, counterparty, maximum
+spend, settlement policy, and collateral or reservation root. An option MUST
+expire before delivery begins. XLMP/1 rejects transferable instruments;
+tradeable derivatives are deferred until services have genuine
+standardization, liquidity, and legally reviewed settlement history.
 
-Routing SHOULD expose spot, economy, deadline, reserved, and competitive multi-provider modes and SHOULD penalize correlated providers.
+The protocol MUST remain useful under three compute regimes:
+
+1. **scarce frontier compute**, where procurement pools, privacy, reservations,
+   spending caps, concentration limits, and fallbacks protect access;
+2. **cheap abundant compute**, where economics shifts toward question quality,
+   novelty, identity, curation, empirical grounding, and maintenance rather
+   than relying on persistent verification margins; and
+3. **heterogeneous agent economies**, where agents read exact certificate,
+   rights, dependency, and economic-policy records before composing or paying
+   for a research object.
+
+Canonical service names describe functions, not vendors. In particular,
+`research_prover_generation` may be fulfilled by ASTRA, an open model, a local
+model, or another adapter. Historical inputs using `astra_generation` may be
+accepted only as a compatibility alias and MUST serialize canonically as the
+provider-neutral service.
+
+Routing SHOULD expose spot, economy, deadline, reserved, and competitive
+multi-provider modes. A diversified route MUST enforce caps by independent
+provider cluster, require multiple model families and regions, include a
+fallback, honor confidential-delivery requirements, and remain under its
+maximum spend. Rotating offer IDs does not create diversity.

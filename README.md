@@ -1,9 +1,95 @@
 # xLemma Protocol
 
-**Proof-carrying infrastructure for financing, producing, formally verifying,
-attributing, licensing, and funding the reuse of research artifacts.**
+<p align="center">
+  <img
+    src="./xlemma-graph.PNG"
+    alt="xLemma connects people, compute, research, verification, and knowledge to build a fairer research future"
+    width="100%"
+  />
+</p>
+
+**Proof-carrying infrastructure for financing, producing, independently
+reproducing, attributing, licensing, and funding the reuse of research
+artifacts.**
 
 > Status: architectural reference implementation and prototype. The Rust, Lean, Solidity, payment, and cryptographic components have not been independently audited. Do not deploy with real funds until the missing production work in `ROADMAP.md` is complete.
+
+**Navigate:** [Why xLemma](#why-xlemma) · [What xLemma is](#what-xlemma-is) ·
+[XLMP/1](#xlmp1-is-the-protocol-boundary) ·
+[Node network](#first-class-node-network) ·
+[Researcher sovereignty](#researcher-sovereignty-and-portable-exit) ·
+[PoIR](#proof-of-independent-reproduction) ·
+[Economics](#research-credit-economics) · [Repository map](#repository-map) ·
+[Start here](#start-here)
+
+## Why xLemma
+
+Powerful models can make research production abundant. They do not, by
+themselves, make research trustworthy, attributable, portable, or economically
+fair. xLemma supplies the missing coordination layer: every consequential step
+produces an immutable object or signed receipt that another participant can
+inspect and reproduce.
+
+The protocol is built around four commitments:
+
+1. **Evidence before authority.** Mathematical validity comes from exact,
+   independently reproduced checker execution—not token voting, reputation, or
+   institutional status.
+2. **Researchers retain sovereignty.** Origin, attribution, artifact control,
+   bounded economic participation, license choice, governance consent, and
+   portable exit travel with the research object.
+3. **Economic claims conserve value.** Credits and payouts trace to backing or
+   settled external revenue. Dependency edges alone never manufacture debt.
+4. **Every powerful dependency is replaceable.** Provers, proof assistants,
+   payment systems, chains, storage networks, and model providers connect
+   through adapters. None defines xLemma's research state.
+
+### From people to durable knowledge
+
+The opening graph summarizes the xLemma loop:
+
+| Stage | What the protocol coordinates | Durable evidence |
+|---|---|---|
+| **People** | Sovereign researchers, supporters, reviewers, and accountable node operators | `ResearcherID`, credentials, contribution and rights manifests |
+| **Compute** | Quoted proof search, checking, simulation, storage, and review services | `ComputeQuote`, service order, assignment, and `ComputeReceipt` |
+| **Research** | Canonical claims, proofs, data, code, dependencies, and declared assumptions | `TheoryID`, `ClaimID`, `ProofID`, artifact and dependency roots |
+| **Verification** | Independent reproduction, statement alignment, challenges, and quarantine | observation commits/reveals, verification receipts, PoIR certificates |
+| **Knowledge** | Certified, addressable, licensed, and revalidatable research packages | immutable `LemmaCapsule`, publication record, lineage, and availability evidence |
+| **A fairer future** | Researcher income, public goods, verifier payment, and future research capacity | settled `RevenueEvent`, bounded routes, backed `ResearchCredit`, and vault records |
+
+```text
+people → backed funding → compute → research artifact → independent verification
+   ↑                                                        │
+   └── new research capacity ← settled value ← reusable knowledge
+```
+
+The loop is intentionally conservative: a failed or divergent result still
+creates useful evidence and still pays honest reproduction work, while only a
+policy-sufficient result advances toward certification.
+
+### Choose your path
+
+| If you are a… | Begin with… | Then inspect… |
+|---|---|---|
+| Researcher or collective | [`docs/RESEARCHER_USER_JOURNEYS.md`](docs/RESEARCHER_USER_JOURNEYS.md) | sovereignty, capsules, funding, reuse, and correction flows |
+| Node operator or verifier | [`docs/OPERATOR_RUNBOOK.md`](docs/OPERATOR_RUNBOOK.md) | credentials, advertisements, assignments, observations, bonds, and challenges |
+| Protocol implementer | [`spec/018-xlmp-wire-protocol.md`](spec/018-xlmp-wire-protocol.md) | canonical messages, lifecycle rules, schemas, and adapter contracts |
+| Security reviewer | [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md) | trust boundaries, capture risks, failure modes, and production gates |
+| Economist or governance designer | [`docs/GOVERNANCE_CONSTITUTION.md`](docs/GOVERNANCE_CONSTITUTION.md) | conservation laws, economic modes, rights, and chamber constraints |
+
+### Protocol at a glance
+
+| Plane | Native responsibility | Representative objects |
+|---|---|---|
+| Research graph | Identity, claims, proofs, dependencies, provenance, publication, and lineage | `ResearcherID`, `ClaimID`, `ProofID`, `LemmaCapsule`, `ContributionManifest` |
+| Node network | Discovery, service markets, assignments, sortition, bonding, multidimensional reputation, and PoIR | service advertisements, orders, committee records, observations, challenges |
+| Economics | Backed research credits, vault accounting, compute settlement, revenue routing, and bounded dividends | `ComputeQuote`, `ComputeReceipt`, `ResearchCredit`, `ResearchVault`, `RevenueEvent` |
+| Rights and sovereignty | Attribution, license declarations, residual rights, consent, and portable exit | `RightsManifest`, license, sovereignty bundle, portability manifest |
+| Adapter layer | Replaceable prover, verifier, payment, chain, transport, and storage implementations | `ResearchProver`, `VerifierAdapter`, `PaymentAdapter`, signed external-action receipts |
+
+Across every plane, XLMP separates what is often collapsed: validity is not
+authorship, authorship is not ownership, dependency is not a royalty, payment
+is not certification, and popularity is not truth.
 
 ## What xLemma is
 
@@ -13,13 +99,15 @@ xLemma lets an individual or collective operate as a **Decentralized Researcher 
 - a fully backed, closed-loop Research Credit token, `Rᵢ`;
 - a Research Vault, `Vᵢ`;
 - immutable Lemma Capsules for claims, proofs, papers, code, data, and rights;
+- content-derived Researcher Sovereignty Bundles and portable exit manifests;
 - provider-neutral proof production, with ASTRA as the reference adapter;
 - provider-neutral formal verification, with Lean as the default adapter;
 - Proof of Independent Reproduction (PoIR) node certificates;
 - separate human/domain statement-alignment receipts;
 - pluggable payment rails, including x402, research credits, stablecoins, grants, escrow, and invoicing;
 - revenue routing to contributors, bounded contractual pools, public goods, and future compute;
-- job-specific service pricing and conservative impact-pool allocation.
+- job-specific service pricing and conservative impact-pool allocation;
+- formal, computational, statistical, simulation, empirical, and hybrid verification profiles.
 
 Formally:
 
@@ -77,7 +165,13 @@ includes `XLMP_CLAIM`, `XLMP_COMMIT`, `XLMP_COMPUTE_QUOTE`,
 `XLMP_DISCOVERY_RESPONSE`, `XLMP_SERVICE_ORDER`, `XLMP_SERVICE_MATCH`,
 `XLMP_SORTITION_REQUEST`, `XLMP_COMMITTEE`, `XLMP_REPUTATION`, `XLMP_BOND`,
 `XLMP_USER_CREDENTIAL`, `XLMP_OPERATOR_CREDENTIAL`, `XLMP_NODE_CREDENTIAL`,
-and `XLMP_CREDENTIAL_REVOCATION`.
+`XLMP_CREDENTIAL_REVOCATION`, `XLMP_SOVEREIGNTY`, `XLMP_PORTABILITY`,
+`XLMP_RESIDUAL_RIGHT`, `XLMP_ECONOMIC_CONSTITUTION`,
+`XLMP_ECONOMIC_COMPLIANCE`, `XLMP_VERIFICATION_PROFILE`, `XLMP_REPRODUCTION_OBSERVATION`,
+`XLMP_RESEARCH_CERTIFICATE`, `XLMP_COMPUTE_COOPERATIVE`,
+`XLMP_CAPTURE_DASHBOARD`, `XLMP_NODE_WORK`, `XLMP_NODE_EXPOSURE`,
+`XLMP_MISCONDUCT`, `XLMP_GOVERNANCE_PROPOSAL`, and
+`XLMP_CREDENTIAL_EVIDENCE`.
 
 Its protocol lifecycle is:
 
@@ -123,6 +217,18 @@ reproduction, and deterministic sortition uses committed future randomness,
 unique VerifiedUserIDs, OperatorIDs, conservative OperatorClusterIDs, and
 required provider/region diversity. See
 [`spec/019-node-network.md`](spec/019-node-network.md).
+
+Individual researchers and researcher compute cooperatives can own nodes. A
+cooperative publishes member shares, nodes, capabilities, treasury,
+governance policy, and beneficial-control evidence, but always counts as one
+operator cluster on a job. Shared owners across cooperatives reduce their
+independence credit.
+
+Networks publish a capture-resistance dashboard across identity, compute,
+models, verification, storage, settlement, discovery, and governance. Each
+layer retains operator, beneficial-owner, provider, region, software, issuer,
+frontend, and coalition measurements. Effective decentralization is the
+weakest layer, not an average that can hide a captured subsystem.
 
 ## Constitutional identity and operator independence
 
@@ -251,6 +357,9 @@ LemmaCapsule
 ├── NoveltyReceipts
 ├── StatementAlignmentReceipts
 ├── RightsManifest
+├── ResearcherSovereigntyBundle
+├── ResearcherResidualRight
+├── PortabilityManifest
 ├── EconomicMode
 ├── RevenueRoute
 ├── ComputeHistory
@@ -273,7 +382,35 @@ The last rule creates two graphs. The evidence graph records
 `FORMALLY_DEPENDS_ON`; the economic graph records explicitly agreed obligations.
 The invariant is `FORMALLY_DEPENDS_ON != OWES_PAYMENT_TO`. An upstream payment
 requires settled revenue, an active economic policy, an eligible economic edge,
-a bounded pool, and non-recursive treatment of that revenue event.
+a bounded pool, a declared minimum-payout floor with explicit remainder, and
+non-recursive treatment of that revenue event.
+
+## Researcher sovereignty and portable exit
+
+A `ResearcherSovereigntyBundle` binds seven protections to the exact research
+object: origin, attribution, artifact control, economic participation, license
+control, governance consent, and portability/exit. Origin, attribution, and
+exit cannot be transferred or revoked by protocol governance. Challenges and
+corrections create append-only superseding records; they never erase history.
+
+A `ResearcherResidualRight` is narrower than ownership. It can participate only
+in named, qualifying, settled xLemma revenue under an explicit policy. Every
+right is nonexclusive, bounded per event and over its lifetime, depth-limited,
+nonrecursive, equivalent-claim clustered, and unable to block downstream use
+or publication. Assignment requires bilateral signed-agreement evidence; a
+token transfer cannot assign it.
+
+Portable exit is a protocol property, not a frontend promise. A signed,
+content-derived portability manifest links identity credentials, artifacts,
+contributions, verification receipts, economic policies, settlement
+commitments, event-log checkpoints, and at least two independent storage
+locations for each artifact. An independent client can reconstruct the
+researcher state if a company, indexer, chain adapter, or storage provider
+disappears. See
+[`spec/022-researcher-sovereignty.md`](spec/022-researcher-sovereignty.md).
+The on-chain `ResearchCommitmentRegistry` stores only the corresponding
+researcher, claim, artifact, policy, committee, rights, contributor-split, and
+supersession roots; research contents and validity remain off-chain.
 
 ## Proof of Independent Reproduction
 
@@ -334,20 +471,31 @@ It selects one mode:
 
 | Mode | Default economic behavior |
 |---|---|
-| Open Commons | No mandatory per-use protocol fee; eligible for grants, donations, and capped impact pools. |
-| Commercial Research | Controlled artifacts/services may use explicit, bounded license and upstream-pool terms. |
+| Commons | No mandatory per-use protocol fee; eligible for grants, donations, and separately authorized impact pools. |
+| Reciprocal | Qualifying monetized xLemma descendants route one bounded, nonrecursive upstream pool without a downstream veto. |
+| Commercial Artifact | Controlled artifacts/services may use explicit, bounded license and upstream-pool terms. The public claim stays open. |
 | Sponsored Challenge | Sponsor declares and funds acceptance, allocation, rights, deadline, and dispute terms before work. |
 
 Economic terms identify the payer, revenue source, calculation base, exclusions,
 duration, share, cap, transfer rules, policy root, and dispute process. Token
-ownership never substitutes for those terms. Open Commons is the default
+ownership never substitutes for those terms. Commons is the default
 configuration; its mandatory dependency pool is zero.
+
+## Verification profiles beyond formal proofs
+
+Lean-backed `FORMAL` verification is the initial/default profile. XLMP also
+defines `COMPUTATIONAL`, `STATISTICAL`, `SIMULATION`, `EMPIRICAL`, and `HYBRID`
+profiles with evidence appropriate to each class. Every profile names its
+required artifacts and verifier implementations, requires multiple independent
+operator domains, and retains a challenge window. These profiles extend the
+research object without making any model, proof assistant, container runtime,
+statistics package, or laboratory the protocol authority.
 
 ## Job-specific service curve
 
 xLemma tracks service-specific forward curves:
 
-- `Fᴬˢᵀᴿᴬ(d,T)` — model-assisted proof production;
+- `Fᵖʳᵒᵛᵉʳ(d,T)` — provider-neutral model-assisted proof production;
 - `Fᴸᵉᵃⁿ(T)` — build and deterministic verification;
 - `Fʳᵉᵛⁱᵉʷ(d,T)` — novelty and expert review;
 - `Fˢᵗᵒʳᵃᵍᵉ(T)` — replicated proof availability.
@@ -385,7 +533,7 @@ ASTRA is a pluggable `ResearchProver` adapter. It may:
 - explain verified results in LaTeX;
 - produce signed compute and generation receipts.
 
-ASTRA does not certify itself. Lean is the first-class/default verifier adapter. Final formal assurance comes from pinned builds, trusted challenge matching, axiom inspection, the official kernel, independently implemented checkers, sandboxing, and open challenge periods. XLMP remains prover-neutral so another formal system can implement the verifier contract without forking the research protocol.
+ASTRA does not certify itself. Lean is the first-class/default verifier adapter. Final formal assurance comes from pinned builds, trusted challenge matching, axiom inspection, the official kernel, independently implemented checkers, sandboxing, and open challenge periods. Computational, statistical, simulation, empirical, and hybrid jobs use the parallel `ReproductionAdapter`, content-derived observations, and multi-operator research certificates. XLMP remains prover-neutral so another formal system or reproduction backend can implement the relevant verifier contract without forking the research protocol.
 
 The model name is configuration-driven through `OPENAI_MODEL`; the default in this snapshot is `gpt-6-astra`.
 
@@ -396,7 +544,7 @@ x402 is one optional payment and paid-HTTP adapter. xLemma maps compatible resea
 | Service | Scheme |
 |---|---|
 | Fixed basic Lean check | `exact` |
-| Variable ASTRA proof search | `upto` |
+| Variable research-prover search | `upto` |
 | Metered repair session | `upto` |
 | Repeated proof-state calls | `batch-settlement` |
 | Certified artifact download | `exact` |
@@ -483,6 +631,15 @@ cargo run -p xlemma-cli -- --help
 # Reproduce canonical identity vectors
 cargo run -p xlemma-cli -- derive-id user-credential examples/node-network/user-credential.json
 cargo run -p xlemma-cli -- credential-chain-root examples/node-network/credential-chain.json
+cargo run -p xlemma-cli -- evaluate-reproduction \
+  examples/no-arbitrage/computational-verification-profile.json \
+  examples/no-arbitrage/computational-verification-job.json \
+  examples/no-arbitrage/computational-observations.json
+cargo run -p xlemma-cli -- verify-portability \
+  examples/no-arbitrage/portability-manifest.json
+cargo run -p xlemma-cli -- verify-economic-compliance \
+  examples/no-arbitrage/economic-constitution.json \
+  examples/no-arbitrage/economic-compliance-certificate.json
 ```
 
 Before starting the API, replace every security placeholder in `.env`.

@@ -301,9 +301,11 @@ exclusions, duration, share, cap, transfer rule, and dispute procedure.
 
 ### 5.5 Economic modes
 
-- **Open Commons** permits public reuse without mandatory per-use protocol
+- **Commons** permits public reuse without mandatory per-use protocol
   fees and may receive impact-pool, grant, donation, or sponsor funding.
-- **Commercial Research** licenses controlled artifacts or services with
+- **Reciprocal** routes one bounded, nonrecursive pool from named monetized
+  xLemma descendants without granting an upstream veto.
+- **Commercial Artifact** licenses controlled artifacts or services with
   explicit bounded terms.
 - **Sponsored Challenge** fixes funded acceptance, contribution/upstream
   allocation, result rights, and disputes before work.
@@ -1182,7 +1184,174 @@ Audited capsule and license tokens, jurisdiction-specific contracts, and separat
 
 ---
 
-## 26. Final protocol principle
+## 26. Researcher sovereignty and anti-capture completion
+
+The protocol is designed for an economy where compute, models, energy, data,
+and automated agents may be concentrated. Supplying machine intelligence must
+not automatically grant ownership of the work it helps create. xLemma instead
+turns attributable research contribution into portable, verifiable, and
+economically participatory knowledge capital.
+
+### 26.1 Sovereignty is a bundle, not ownership of truth
+
+Each protected research object can carry a content-derived
+`ResearcherSovereigntyBundle` with origin, attribution, artifact control,
+economic participation, license control, governance consent, and portable
+exit. Origin, attribution, and exit are nontransferable and cannot be revoked
+by governance. Origin remains challengeable; a correction appends a
+superseding object rather than erasing history.
+
+The bundle links the exact claim, origin receipt, verified-credential roots,
+controlled artifacts, contribution and rights manifests, economic policy,
+direct-custody vaults, and portability manifest. It records protocol evidence
+for rights actually held; it does not manufacture ownership of a theorem,
+fact, or third-party artifact.
+
+`ResearcherResidualRight` is correspondingly narrow. It is a nonexclusive,
+no-veto participation right over named, settled protocol revenue. It has
+per-event and lifetime caps, bounded dependency depth, decay, equivalent-claim
+clustering, one-charge semantics, and no recursion. Assignment requires
+bilateral signed-agreement evidence. A token transfer never assigns origin,
+validity, or the residual right.
+
+### 26.2 Evidence and economic causality are different graphs
+
+The evidence graph records formal dependency, extension, data/library use,
+citation, verification, provenance, and equivalence. Those edges describe what
+happened. The economic graph records explicitly authorized payment, upstream
+pool, bounty, and vault obligations. Those edges prescribe a settlement.
+
+```text
+FORMALLY_DEPENDS_ON != OWES_PAYMENT_TO
+```
+
+The upstream allocator therefore requires both final-use evidence and an
+active economic edge for the exact policy and revenue source. It consumes one
+externally settled, non-related-party revenue event once; applies a fixed pool,
+depth decay, ancestor and per-result caps, equivalence clustering, and a
+minor-unit minimum payout; and exposes all undistributed rounding or dust as a
+remainder. Bare citations, unused dependencies, independent external activity,
+and recursive distributions cannot create debt.
+
+Scientific impact remains separate. `KnowledgeProductivityObservation` is a
+revisable evidence-backed signal of independently verified downstream outcomes
+relative to attributable effort. It may inform ranking, grants, maintenance,
+and retrospective allocation, but it never creates a hard receivable from an
+uncertain counterfactual.
+
+### 26.3 Economic constitutions and funding rails
+
+Every capsule selects Commons, Reciprocal, Commercial Artifact, or Sponsored
+Challenge terms before monetization. Commons has no mandatory use payment.
+Reciprocal routes one bounded pool from participating monetized descendants.
+Commercial Artifact applies only to identified artifacts or services under
+supported rights. Sponsored Challenge precommits funding, acceptance,
+allocation, output rights, deadline, and dispute terms.
+
+`EconomicComplianceCertificate` reports performance of those declared
+obligations as compliant, noncompliant, or disputed. It is not a research
+certificate and cannot alter a failed, divergent, unchecked, or quarantined
+claim.
+
+Funding uses three parallel rails:
+
+- Market buys bounties, formalization, APIs, licensed artifacts, reserved
+  compute, implementations, and maintenance.
+- Commons supports foundational research, libraries, negative results,
+  benchmarks, tactics, open data, exposition, and retrospective impact.
+- Assurance funds bonds, challenge and revalidation reserves, optional
+  warranties, and reliance insurance.
+
+Every funding and node-work receipt binds settled external value. Protocol
+fees conserve 10,000 basis points and allocate nonzero support to Commons and
+Assurance. Idle existence, circular volume, expected revenue, and unrealized
+asset appreciation are not protocol income.
+
+### 26.4 Ownership-aware nodes and compute contestability
+
+The public control chain is NodeKey to OperatorID to a pseudonymous verified
+participant credential. An organization is represented by a verified
+participant carrying the organization claim and institutional tier; raw legal
+identity remains off-protocol. Independent issuer attestations support
+uniqueness-or-organization, operator eligibility, role qualification,
+conflict clearance, and non-revocation. Policies require plural issuers,
+selective disclosure, public revocation roots, and issuer-concentration caps.
+
+Twenty machines under one participant or beneficial owner still provide one
+independence domain. Research compute cooperatives can own shared GPU,
+open-model, prover, and checker capacity, but each cooperative counts as one
+cluster on a job. Overlapping beneficial ownership reduces independence
+credit.
+
+The compute market supports scarce, abundant, and heterogeneous-agent regimes.
+It progresses through spot quotes, maximum-cost authorizations, reserved
+capacity, domain-specific service forwards, and nontransferable capacity
+options. Routes bind audited protocol success calibration, total expected
+human and machine work, deadline risk, confidentiality, provider/model/region
+concentration limits, spending caps, and fallback capacity. XLMP/1 does not
+launch speculative compute derivatives or price scientific worth in GPU-hours.
+
+### 26.5 Capture measurement and constitutional governance
+
+`CaptureResistanceDashboard` publishes independently evidenced assessments for
+identity, compute, models, verification, storage, settlement, discovery, and
+governance. Each layer exposes operator and beneficial-owner shares, control
+domains, censorship/corruption coalition sizes, and relevant provider, region,
+software, issuer, and frontend concentration. Effective independence is the
+minimum layer score, so strength elsewhere cannot hide one captured layer.
+
+Governance has Researcher, Operator, and Commons chambers with capped
+per-operator influence. It may change credential policy, bounded economic
+parameters, treasury allocation, settlement adapters, software migrations,
+challenge windows, and insurance requirements. It can never vote on validity,
+origin, historical evidence, theorem acceptability, or a mandatory model
+provider.
+
+The constitutional commitment makes deterministic validity, independent
+reproduction, prover/verifier separation, backed credits, work-neutral
+verifier compensation, divergence quarantine, content-based formal identity,
+immutable history, open truth, graph separation, bounded participation,
+adapter neutrality, and portable exit invariant. Material changes require all
+three chambers, public simulation, a seven-day minimum timelock, and an active
+fork/exit plan preserving identity, artifacts, history, funds, and an open
+client.
+
+### 26.6 General research verification and authenticated ingress
+
+The same independent-reproduction plane supports Formal, Computational,
+Statistical, Simulation, Empirical, and Hybrid profiles. Each profile names
+the exact required evidence, accepted verifier implementations, reproduction
+threshold, independent-domain threshold, and challenge window.
+
+Generalized observations bind the exact job, claim, artifact, profile,
+evidence roots, implementation, participant, operator, cluster, node,
+credential chain, provider, region, verdict, execution trace, and timestamps.
+The node signs the observation, commits before revealing its salt, and sends
+both through authenticated XLMP ingress. A certificate can include only the
+exact prior authenticated observations. Producer self-certification and
+duplicate node, participant, operator, or cluster domains fail closed. Mixed
+PASS and FAIL observations are divergent even if one side has a majority.
+
+### 26.7 Portable state and the settlement projection
+
+A portability manifest exports identity commitments, artifacts, contribution
+records, verification receipts, economic policy, settlement commitments, and
+event-log checkpoints. Every artifact and event log has at least two named,
+independent storage providers with retrieval evidence. The export binds an
+open reconstruction client and funds-exit instructions, allowing recovery if
+a company, frontend, indexer, chain adapter, or storage provider disappears.
+
+Only roots, ordering, bonds, challenge state, and settled economics belong on
+the settlement layer. The reference `ResearchCommitmentRegistry` records the
+researcher, claim, artifact, policy, committee, rights, contribution split,
+and explicit supersession roots. Source, proof objects, dependency graphs,
+model traces, manuscripts, reviews, data, full credentials, and legal
+agreements remain content-addressed off-chain. Neither chain inclusion nor
+contract roles can decide research validity or legal ownership.
+
+---
+
+## 27. Final protocol principle
 
 A decentralized research network should not ask wealthy token holders what is mathematically true. It should let independent operators reproduce exact evidence, let formal checkers determine validity, let reviewers expose uncertainty around novelty and significance, let the ledger settle value, and let researchers continuously recycle real research revenue into future compute.
 

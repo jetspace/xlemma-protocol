@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/researcher-portability-manifest.schema.json",
+  "title": "ResearcherPortabilityManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "roots": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "common.schema.json#/$defs/hash" } },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider_id": { "type": "string", "minLength": 1 },
+        "location": { "type": "string", "minLength": 1 },
+        "retrieval_evidence_root": { "$ref": "common.schema.json#/$defs/hash" }
+      },
+      "required": ["provider_id", "location", "retrieval_evidence_root"]
+    }
+  },
+  "properties": {
+    "manifest_id": { "type": "string", "pattern": "^xlportability:blake3:[0-9a-f]{64}$" },
+    "researcher_id": { "type": "string", "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$" },
+    "protocol_version": { "type": "string", "minLength": 1 },
+    "identity_credential_roots": { "$ref": "#/$defs/roots" },
+    "artifact_roots": { "$ref": "#/$defs/roots" },
+    "contribution_manifest_roots": { "$ref": "#/$defs/roots" },
+    "verification_receipt_roots": { "$ref": "#/$defs/roots" },
+    "economic_policy_roots": { "$ref": "#/$defs/roots" },
+    "settlement_commitments": { "$ref": "#/$defs/roots" },
+    "event_log_checkpoints": { "$ref": "#/$defs/roots" },
+    "storage_locations": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 2,
+        "uniqueItems": true,
+        "items": { "$ref": "#/$defs/location" }
+      }
+    },
+    "event_log_locations": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/location" } },
+    "reconstruction_client": { "type": "string", "minLength": 1 },
+    "reconstruction_client_source_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "funds_exit_instructions_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "supersedes": { "type": ["string", "null"], "pattern": "^xlportability:blake3:[0-9a-f]{64}$" },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": ["manifest_id", "researcher_id", "protocol_version", "identity_credential_roots", "artifact_roots", "contribution_manifest_roots", "verification_receipt_roots", "economic_policy_roots", "settlement_commitments", "event_log_checkpoints", "storage_locations", "event_log_locations", "reconstruction_client", "reconstruction_client_source_root", "funds_exit_instructions_root", "created_at", "supersedes", "signature"]
+}

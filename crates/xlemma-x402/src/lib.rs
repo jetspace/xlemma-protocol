@@ -121,7 +121,7 @@ pub struct PaymentResponseEnvelope {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ResearchServiceKind {
     FixedLeanCheck,
-    VariableAstraSearch,
+    VariableResearchProverSearch,
     MeteredRepair,
     RepeatedProofState,
     CertifiedBundleDownload,
@@ -133,7 +133,7 @@ pub fn recommended_scheme(service: ResearchServiceKind) -> PaymentScheme {
         ResearchServiceKind::FixedLeanCheck | ResearchServiceKind::CertifiedBundleDownload => {
             PaymentScheme::Exact
         }
-        ResearchServiceKind::VariableAstraSearch | ResearchServiceKind::MeteredRepair => {
+        ResearchServiceKind::VariableResearchProverSearch | ResearchServiceKind::MeteredRepair => {
             PaymentScheme::Upto
         }
         ResearchServiceKind::RepeatedProofState

@@ -76,6 +76,67 @@ append_only_credentials_and_revocations = true
 user_operator_node_delegation_required = true
 maximum_status_proof_age_seconds = 3600
 
+[identity.multi_issuer]
+minimum_distinct_issuers = 3
+maximum_issuer_attestation_share_bps = 5000
+selective_disclosure_required = true
+public_revocation_roots_required = true
+single_company_issuer_allowed = false
+
+[sovereignty]
+bundle_required_for_protected_capsules = true
+durable_origin_attribution_exit_nontransferable = true
+default_economic_mode = "commons"
+downstream_veto_allowed = false
+recursive_revenue_charging_allowed = false
+minimum_artifact_storage_providers = 2
+minimum_event_log_providers = 2
+open_reconstruction_client_required = true
+funds_exit_instructions_required = true
+
+[verification_profiles]
+enabled = ["formal", "computational", "statistical", "simulation", "empirical", "hybrid"]
+minimum_reproductions = 2
+minimum_independent_operators = 2
+producer_self_certification_allowed = false
+mixed_pass_fail_outcome = "divergent"
+
+[compute_market]
+canonical_generation_service = "research_prover_generation"
+transferable_derivatives_enabled = false
+minimum_provider_clusters = 2
+minimum_model_families = 2
+minimum_regions = 2
+minimum_fallback_routes = 1
+confidential_routing_supported = true
+spending_caps_required = true
+
+[capture_dashboard]
+required_layers = ["identity", "compute", "models", "verification", "storage", "settlement", "discovery", "governance"]
+beneficial_owner_clustering_required = true
+effective_score_uses_weakest_layer = true
+
+[node_economics]
+pay_for_idle_existence = false
+work_evidence_required = true
+external_settlement_evidence_required = true
+bond_does_not_weight_validity = true
+honest_divergence_slashable = false
+
+[governance]
+required_chambers = ["researcher", "operator", "commons"]
+maximum_single_operator_influence_bps = 1000
+material_timelock_seconds = 604800
+public_simulation_required = true
+fork_exit_plan_required = true
+truth_vote_allowed = false
+
+[funding]
+rails = ["market", "commons", "assurance"]
+commons_fee_share_required = true
+assurance_fee_share_required = true
+unsettled_value_counts_as_funding = false
+
 [novelty]
 prior_probability = 0.20
 material_novelty_threshold = 0.80

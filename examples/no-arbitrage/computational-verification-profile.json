@@ -1,0 +1,10 @@
+{
+  "policy_id": "xlpolicy:blake3:8888888888888888888888888888888888888888888888888888888888888888",
+  "class": "computational",
+  "required_evidence": ["reproducible_source", "execution_environment", "dependency_lock", "deterministic_rerun"],
+  "verifier_implementations": ["container-runner:v1"],
+  "minimum_reproductions": 2,
+  "minimum_independent_operators": 2,
+  "challenge_window_seconds": 86400,
+  "policy_root": "blake3:computational-verification-profile"
+}

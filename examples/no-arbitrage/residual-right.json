@@ -1,0 +1,23 @@
+{
+  "right_id": "xlrrr:blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "origin_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+  "claim_id": "xlc:blake3:1117d892ad3a90b5c40d700b96fa1df96882dfc4a52dc23a00ebf1eefc5815f8",
+  "current_beneficiary": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+  "payee_vault": "0x1111111111111111111111111111111111111111",
+  "economic_policy_root": "blake3:economic-constitution-root",
+  "qualifying_revenue_sources": ["settled_xlmp_commercial_artifact_revenue"],
+  "share_bps": 500,
+  "per_event_cap": {"units": 100000000, "asset": "USDC", "decimals": 6},
+  "lifetime_cap": {"units": 10000000000, "asset": "USDC", "decimals": 6},
+  "max_dependency_depth": 4,
+  "depth_decay_bps": 5000,
+  "per_ancestor_cap_bps": 100,
+  "nonexclusive": true,
+  "no_downstream_veto": true,
+  "non_recursive": true,
+  "single_charge_per_revenue_event": true,
+  "equivalent_claim_clustering": true,
+  "assignment": null,
+  "issued_at": "2026-09-03T20:10:00Z",
+  "signature": "ed25519:researcher-signature"
+}

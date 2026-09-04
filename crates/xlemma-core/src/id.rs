@@ -99,6 +99,11 @@ protocol_id!(RevenueEventId, "xlrevenue:blake3:", "revenue-event-v1");
 protocol_id!(ComputeQuoteId, "xlquote:blake3:", "compute-quote-v1");
 protocol_id!(MessageId, "xlmessage:blake3:", "xlmp-message-v1");
 protocol_id!(CertificateId, "xlcert:blake3:", "poir-certificate-v1");
+protocol_id!(
+    ResearchCertificateId,
+    "xlresearchcert:blake3:",
+    "research-verification-certificate-v1"
+);
 protocol_id!(ChallengeId, "xlchallenge:blake3:", "challenge-v1");
 protocol_id!(QuarantineId, "xlquarantine:blake3:", "quarantine-v1");
 protocol_id!(CreditId, "xlcredit:blake3:", "research-credit-v1");
@@ -126,6 +131,63 @@ protocol_id!(
     CredentialRevocationId,
     "xlrevocation:blake3:",
     "credential-revocation-v1"
+);
+protocol_id!(
+    SovereigntyBundleId,
+    "xlsovereignty:blake3:",
+    "researcher-sovereignty-bundle-v1"
+);
+protocol_id!(
+    ResidualRightId,
+    "xlrrr:blake3:",
+    "researcher-residual-right-v1"
+);
+protocol_id!(
+    PortabilityManifestId,
+    "xlportability:blake3:",
+    "researcher-portability-manifest-v1"
+);
+protocol_id!(
+    ComputeCooperativeId,
+    "xlcoop:blake3:",
+    "research-compute-cooperative-v1"
+);
+protocol_id!(
+    CaptureDashboardId,
+    "xlcapture:blake3:",
+    "capture-resistance-dashboard-v1"
+);
+protocol_id!(NodeWorkReceiptId, "xlwork:blake3:", "node-work-receipt-v1");
+protocol_id!(
+    MisconductRecordId,
+    "xlmisconduct:blake3:",
+    "objective-misconduct-record-v1"
+);
+protocol_id!(
+    GovernanceProposalId,
+    "xlgov:blake3:",
+    "governance-proposal-v1"
+);
+protocol_id!(
+    ConstitutionalCommitmentId,
+    "xlconstitution:blake3:",
+    "constitutional-commitment-v1"
+);
+protocol_id!(ForkExitPlanId, "xlfork:blake3:", "fork-exit-plan-v1");
+protocol_id!(
+    IssuerAttestationId,
+    "xlissuerattest:blake3:",
+    "credential-issuer-attestation-v1"
+);
+protocol_id!(
+    FundingReceiptId,
+    "xlfunding:blake3:",
+    "research-funding-receipt-v1"
+);
+protocol_id!(
+    EconomicComplianceCertificateId,
+    "xleconcert:blake3:",
+    "economic-compliance-certificate-v1"
 );
 
 impl ClaimId {
@@ -206,6 +268,17 @@ mod tests {
         assert_ne!(user.as_str(), operator.as_str());
         assert_ne!(operator.as_str(), node.as_str());
         assert_ne!(user.as_str(), node.as_str());
+    }
+
+    #[test]
+    fn sovereignty_objects_have_distinct_identity_domains() {
+        let value = json!({"same": "researcher protection"});
+        let bundle = SovereigntyBundleId::derive(&value).unwrap();
+        let residual = ResidualRightId::derive(&value).unwrap();
+        let portability = PortabilityManifestId::derive(&value).unwrap();
+        assert_ne!(bundle.as_str(), residual.as_str());
+        assert_ne!(residual.as_str(), portability.as_str());
+        assert_ne!(bundle.as_str(), portability.as_str());
     }
 
     #[test]

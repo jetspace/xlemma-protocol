@@ -1,6 +1,6 @@
 {
   "units": {
-    "astra_generation": 500000,
+    "research_prover_generation": 500000,
     "lean_build": 1,
     "official_kernel_check": 2,
     "independent_check": 1,

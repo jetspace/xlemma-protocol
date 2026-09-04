@@ -5,6 +5,8 @@
 //! content-addressed objects rather than mutable database identifiers.
 
 pub mod canonical;
+pub mod capture;
+pub mod governance;
 pub mod id;
 pub mod identity;
 pub mod manifest;
@@ -12,9 +14,12 @@ pub mod money;
 pub mod network;
 pub mod protocol;
 pub mod receipt;
+pub mod sovereignty;
 pub mod state;
 
 pub use canonical::{canonical_json_bytes, canonical_json_hash, CanonicalizationError};
+pub use capture::*;
+pub use governance::*;
 pub use id::*;
 pub use identity::*;
 pub use manifest::*;
@@ -22,6 +27,7 @@ pub use money::*;
 pub use network::*;
 pub use protocol::*;
 pub use receipt::*;
+pub use sovereignty::*;
 pub use state::*;
 
 /// Canonical name and version of the xLemma wire protocol.

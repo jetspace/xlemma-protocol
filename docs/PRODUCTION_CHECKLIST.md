@@ -96,6 +96,19 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] Unrealized token price is excluded from revenue.
 - [ ] Public/profit-linked token layer legally and technically separated.
 
+## Researcher sovereignty and constitutional exit
+
+- [x] Reference sovereignty, residual-right, economic-constitution, portability, and economic-compliance records are content-derived and fail closed.
+- [x] Reference portability validation requires two independent artifact and event-log providers plus open-client and funds-exit roots.
+- [ ] Bundle and assignment signatures are verified through production key resolution rather than structural placeholders.
+- [ ] Origin, attribution, and exit remain nontransferable and non-revocable in every deployed registry and frontend.
+- [ ] Full state reconstruction succeeds from exported manifests after primary API, database, indexer, and storage loss.
+- [ ] Direct-custody vault redemption and chain/facilitator migration are exercised under an outage drill.
+- [ ] Economic compliance and research validity are displayed, indexed, and challenged as separate certificate planes.
+- [ ] Three-chamber governance, influence caps, public simulation, material timelock, and fork/exit activation are independently audited.
+- [ ] Capture dashboards use independently measured beneficial-control, issuer, provider, region, software, and frontend evidence.
+- [ ] Research compute cooperative ownership overlap is measured and challenged without manufacturing consensus independence.
+
 ## Revenue and impact pools
 
 - [ ] Gross-to-net revenue definition is explicit and auditable.
@@ -109,7 +122,7 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] Quote and impact payment arithmetic is fixed-point, checked, and deterministically rounded.
 - [ ] Dividends are capped by realized downstream net revenue.
 - [ ] Evidence graph edges cannot execute payments without an eligible economic-policy edge.
-- [ ] Open Commons paths impose no mandatory per-use or dependency fee.
+- [ ] Commons paths impose no mandatory per-use or dependency fee.
 - [ ] Impact allocations bind one settled event and one bounded pool, and settlement atomically consumes authorization and non-recursion state.
 - [ ] Measurement disputes and corrections are append-only.
 
@@ -128,6 +141,7 @@ Every box is a release gate. The reference repository intentionally leaves many 
 ## Smart contracts
 
 - [x] Included Foundry unit, fuzz, and invariant tests pass with the pinned reference dependencies.
+- [x] Generic on-chain research projection binds claim, artifact, policy, committee, rights, contribution, and supersession roots without deciding validity.
 - [ ] Static analysis and symbolic execution reviewed.
 - [ ] Two independent audits completed.
 - [ ] Public security contest completed for material value.
@@ -159,7 +173,7 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] Rights clearance covers employer, university, sponsor, grant, and collaborator claims.
 - [ ] AI/human contribution record is accurate.
 - [ ] Commercial licenses bind actual rights and jurisdictions.
-- [ ] Every capsule declares Open Commons, Commercial Research, or Sponsored Challenge mode and exposes all bounded economic terms.
+- [ ] Every capsule declares Commons, Reciprocal, Commercial Artifact, or Sponsored Challenge mode and exposes all bounded economic terms.
 - [ ] Negative results have an honest status and funding route.
 - [ ] Marketing claims report denominators, uncertainty, and policy versions.
 

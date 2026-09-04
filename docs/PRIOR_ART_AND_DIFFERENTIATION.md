@@ -44,7 +44,7 @@ BFT protocols, generalized quorums, and cryptographic sortition provide mechanis
 9. **Statement alignment:** domain review separately binds the formal ClaimID to the informal claim, presentation, assumptions, and limitations.
 10. **Quality-Adjusted Certification Cost:** compares routes using independently calibrated cost per accepted result rather than provider claims or unit price alone.
 11. **Separate evidence and economic graphs:** formal use never creates debt without an explicit bounded economic-policy edge.
-12. **Three capsule modes:** Open Commons, Commercial Research, and Sponsored Challenge expose different economic terms without privatizing truth.
+12. **Four capsule modes:** Commons, Reciprocal, Commercial Artifact, and Sponsored Challenge expose different economic terms without privatizing truth.
 13. **Impact-pool allocation:** compute savings are one conservative signal for a bounded pool funded by actual settled value.
 14. **Portable architecture:** existing chains, model providers, storage systems, and checkers are adapters rather than permanent sovereign dependencies.
 

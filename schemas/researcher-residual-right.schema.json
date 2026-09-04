@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/researcher-residual-right.schema.json",
+  "title": "ResearcherResidualRight",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "right_id": { "type": "string", "pattern": "^xlrrr:blake3:[0-9a-f]{64}$" },
+    "origin_researcher_id": { "type": "string", "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$" },
+    "claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "current_beneficiary": { "type": "string", "minLength": 1 },
+    "payee_vault": { "type": "string", "minLength": 1 },
+    "economic_policy_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "qualifying_revenue_sources": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "share_bps": { "type": "integer", "minimum": 1, "maximum": 10000 },
+    "per_event_cap": { "$ref": "common.schema.json#/$defs/amount" },
+    "lifetime_cap": { "$ref": "common.schema.json#/$defs/amount" },
+    "max_dependency_depth": { "type": "integer", "minimum": 1, "maximum": 65535 },
+    "depth_decay_bps": { "type": "integer", "minimum": 0, "maximum": 10000 },
+    "per_ancestor_cap_bps": { "type": "integer", "minimum": 1, "maximum": 10000 },
+    "nonexclusive": { "const": true },
+    "no_downstream_veto": { "const": true },
+    "non_recursive": { "const": true },
+    "single_charge_per_revenue_event": { "const": true },
+    "equivalent_claim_clustering": { "const": true },
+    "assignment": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "from_beneficiary": { "type": "string", "minLength": 1 },
+            "to_beneficiary": { "type": "string", "minLength": 1 },
+            "signed_agreement_root": { "$ref": "common.schema.json#/$defs/hash" },
+            "effective_at": { "type": "string", "format": "date-time" },
+            "signatures": { "type": "array", "minItems": 2, "items": { "$ref": "common.schema.json#/$defs/signature" } }
+          },
+          "required": ["from_beneficiary", "to_beneficiary", "signed_agreement_root", "effective_at", "signatures"]
+        }
+      ]
+    },
+    "issued_at": { "type": "string", "format": "date-time" },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": ["right_id", "origin_researcher_id", "claim_id", "current_beneficiary", "payee_vault", "economic_policy_root", "qualifying_revenue_sources", "share_bps", "per_event_cap", "lifetime_cap", "max_dependency_depth", "depth_decay_bps", "per_ancestor_cap_bps", "nonexclusive", "no_downstream_veto", "non_recursive", "single_charge_per_revenue_event", "equivalent_claim_clustering", "issued_at", "signature"]
+}

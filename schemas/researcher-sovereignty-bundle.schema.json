@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/researcher-sovereignty-bundle.schema.json",
+  "title": "ResearcherSovereigntyBundle",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "right": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "evidence_root": { "$ref": "common.schema.json#/$defs/hash" },
+        "transferable": { "type": "boolean" },
+        "revocable_by_protocol": { "type": "boolean" },
+        "challengeable": { "type": "boolean" },
+        "limitations": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["evidence_root", "transferable", "revocable_by_protocol", "challengeable", "limitations"]
+    },
+    "durableRight": {
+      "allOf": [
+        { "$ref": "#/$defs/right" },
+        { "properties": { "transferable": { "const": false }, "revocable_by_protocol": { "const": false } } }
+      ]
+    }
+  },
+  "properties": {
+    "bundle_id": { "type": "string", "pattern": "^xlsovereignty:blake3:[0-9a-f]{64}$" },
+    "researcher_id": { "type": "string", "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$" },
+    "claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "origin_receipt_id": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
+    "holder_credential_roots": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "common.schema.json#/$defs/hash" } },
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "origin": { "allOf": [{ "$ref": "#/$defs/durableRight" }, { "properties": { "challengeable": { "const": true } } }] },
+        "attribution": { "$ref": "#/$defs/durableRight" },
+        "artifact_control": { "$ref": "#/$defs/right" },
+        "economic_participation": { "$ref": "#/$defs/right" },
+        "license_control": { "$ref": "#/$defs/right" },
+        "governance_consent": { "$ref": "#/$defs/right" },
+        "portability_exit": { "$ref": "#/$defs/durableRight" }
+      },
+      "required": ["origin", "attribution", "artifact_control", "economic_participation", "license_control", "governance_consent", "portability_exit"]
+    },
+    "controlled_artifact_roots": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "common.schema.json#/$defs/hash" } },
+    "contribution_manifest_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "rights_manifest_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "economic_policy_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "direct_custody_vaults": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "portability_manifest_id": { "type": "string", "pattern": "^xlportability:blake3:[0-9a-f]{64}$" },
+    "supersedes": { "type": ["string", "null"], "pattern": "^xlsovereignty:blake3:[0-9a-f]{64}$" },
+    "issued_at": { "type": "string", "format": "date-time" },
+    "signatures": { "type": "array", "minItems": 1, "items": { "$ref": "common.schema.json#/$defs/signature" } }
+  },
+  "required": ["bundle_id", "researcher_id", "claim_id", "origin_receipt_id", "holder_credential_roots", "rights", "controlled_artifact_roots", "contribution_manifest_root", "rights_manifest_root", "economic_policy_root", "direct_custody_vaults", "portability_manifest_id", "issued_at", "signatures"]
+}

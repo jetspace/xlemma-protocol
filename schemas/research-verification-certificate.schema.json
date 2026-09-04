@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/research-verification-certificate.schema.json",
+  "title": "ResearchVerificationCertificate",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "certificate_id": { "type": "string", "pattern": "^xlresearchcert:blake3:[0-9a-f]{64}$" },
+    "job_id": { "type": "string", "pattern": "^xljob:blake3:[0-9a-f]{64}$" },
+    "claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "candidate_proof_id": { "anyOf": [{ "type": "string", "pattern": "^xlp:blake3:[0-9a-f]{64}$" }, { "type": "null" }] },
+    "verification_policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "verification_profile_class": { "type": "string", "enum": ["formal", "computational", "statistical", "simulation", "empirical", "hybrid"] },
+    "observation_receipt_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" } },
+    "operator_cluster_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^xloperator:blake3:[0-9a-f]{64}$" } },
+    "verifier_implementations": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "evidence_bundle_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "status": { "type": "string", "enum": ["certified", "failed", "divergent", "inconclusive"] },
+    "issued_at": { "type": "string", "format": "date-time" },
+    "challenge_window_ends_at": { "type": "string", "format": "date-time" },
+    "aggregate_signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": ["certificate_id", "job_id", "claim_id", "candidate_proof_id", "verification_policy_id", "verification_profile_class", "observation_receipt_ids", "operator_cluster_ids", "verifier_implementations", "evidence_bundle_root", "status", "issued_at", "challenge_window_ends_at", "aggregate_signature"]
+}

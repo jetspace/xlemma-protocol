@@ -1,0 +1,7 @@
+{
+  "bond_id": "xlbond:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "bond_amount": {"units": 1000000000, "asset": "USDC", "decimals": 6},
+  "coverage_multiplier_bps": 15000,
+  "maximum_certificate_exposure": {"units": 1500000000, "asset": "USDC", "decimals": 6},
+  "policy_id": "xlpolicy:blake3:9999999999999999999999999999999999999999999999999999999999999999"
+}

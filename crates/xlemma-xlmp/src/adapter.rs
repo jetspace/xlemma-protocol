@@ -9,7 +9,7 @@ use thiserror::Error;
 use xlemma_core::{
     Amount, ArtifactId, ArtifactManifest, AvailabilityReceipt, ClaimId, ComputeQuoteId,
     ComputeReceipt, JobId, ObservationReceipt, PaymentReceipt, PolicyId, ProofId, ReceiptId,
-    TheoryId, TransportReceipt, VerificationJob,
+    ReproductionObservation, TheoryId, TransportReceipt, VerificationJob, VerificationProfile,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]
@@ -69,6 +69,26 @@ pub trait VerifierAdapter: Send + Sync {
     fn family(&self) -> &str;
     async fn reproduce(&self, request: VerifierRequest)
         -> Result<ObservationReceipt, AdapterError>;
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReproductionRequest {
+    pub job: VerificationJob,
+    pub profile: VerificationProfile,
+    pub exact_input_root: String,
+}
+
+/// Computational, statistical, simulation, empirical, and hybrid backends use
+/// this provider-neutral boundary. The returned receipt remains untrusted
+/// until its content identity, signature, profile evidence, and operator
+/// independence are checked.
+#[async_trait]
+pub trait ReproductionAdapter: Send + Sync {
+    fn implementation(&self) -> &str;
+    async fn reproduce(
+        &self,
+        request: ReproductionRequest,
+    ) -> Result<ReproductionObservation, AdapterError>;
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

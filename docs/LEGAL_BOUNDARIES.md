@@ -64,9 +64,11 @@ The V1 researcher token is a fully backed restricted service credit. A freely tr
 
 ## Capsule modes
 
-- **Open Commons** permits public reuse without mandatory per-use protocol
+- **Commons** permits public reuse without mandatory per-use protocol
   fees and may receive grants, donations, sponsorship, or impact-pool funding.
-- **Commercial Research** licenses only controlled artifacts or services under
+- **Reciprocal** applies a bounded, nonrecursive upstream pool to named xLemma
+  economic flows without creating a downstream veto or ownership of truth.
+- **Commercial Artifact** licenses only controlled artifacts or services under
   bounded, explicit terms.
 - **Sponsored Challenge** declares funded acceptance, allocation, result
   rights, and disputes before work begins.

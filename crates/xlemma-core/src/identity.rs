@@ -5,13 +5,13 @@
 //! passport, street-address, or other raw identity fields.
 
 use crate::{
-    canonical_json_hash, CredentialRevocationId, IdError, NodeCredentialId, NodeId, NodeRole,
-    OperatorClusterId, OperatorCredentialId, OperatorId, ResearcherId, UserCredentialId,
-    VerifiedUserId,
+    canonical_json_hash, CredentialRevocationId, IdError, IssuerAttestationId, NodeCredentialId,
+    NodeId, NodeRole, OperatorClusterId, OperatorCredentialId, OperatorId, PolicyId, ResearcherId,
+    UserCredentialId, VerifiedUserId,
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use thiserror::Error;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -440,6 +440,229 @@ impl NodeCredentialChain {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CredentialClaimKind {
+    Uniqueness,
+    Organization,
+    OperatorEligibility,
+    RoleQualification,
+    ConflictClearance,
+    NonRevocation,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CredentialClaimRequirement {
+    /// At least one claim in this set must be supplied by the required number
+    /// of independent issuers. This supports uniqueness OR organization rules.
+    pub any_of: BTreeSet<CredentialClaimKind>,
+    pub minimum_distinct_issuers: u16,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CredentialIssuerPolicy {
+    pub policy_id: PolicyId,
+    /// Each issuer maps to the claim kinds it is authorized to attest.
+    pub approved_issuers: BTreeMap<String, BTreeSet<CredentialClaimKind>>,
+    pub requirements: Vec<CredentialClaimRequirement>,
+    pub minimum_distinct_issuers: u16,
+    pub maximum_issuer_attestation_share_bps: u16,
+    pub revocation_transparency_roots: BTreeSet<String>,
+    pub valid_from: DateTime<Utc>,
+    pub valid_until: DateTime<Utc>,
+    pub signatures: Vec<String>,
+}
+
+#[derive(Serialize)]
+struct IssuerPolicyIdentity<'a> {
+    approved_issuers: &'a BTreeMap<String, BTreeSet<CredentialClaimKind>>,
+    requirements: &'a [CredentialClaimRequirement],
+    minimum_distinct_issuers: u16,
+    maximum_issuer_attestation_share_bps: u16,
+    revocation_transparency_roots: &'a BTreeSet<String>,
+    valid_from: DateTime<Utc>,
+    valid_until: DateTime<Utc>,
+}
+
+impl CredentialIssuerPolicy {
+    pub fn derive_policy_id(&self) -> Result<PolicyId, IdError> {
+        PolicyId::derive(&IssuerPolicyIdentity {
+            approved_issuers: &self.approved_issuers,
+            requirements: &self.requirements,
+            minimum_distinct_issuers: self.minimum_distinct_issuers,
+            maximum_issuer_attestation_share_bps: self.maximum_issuer_attestation_share_bps,
+            revocation_transparency_roots: &self.revocation_transparency_roots,
+            valid_from: self.valid_from,
+            valid_until: self.valid_until,
+        })
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), CredentialError> {
+        self.policy_id.validate()?;
+        if self.policy_id != self.derive_policy_id()? {
+            return Err(CredentialError::IdentityMismatch);
+        }
+        if self.approved_issuers.len() < 2
+            || self.minimum_distinct_issuers < 2
+            || usize::from(self.minimum_distinct_issuers) > self.approved_issuers.len()
+            || self.maximum_issuer_attestation_share_bps == 0
+            || self.maximum_issuer_attestation_share_bps >= 10_000
+            || self.valid_from >= self.valid_until
+            || self.requirements.is_empty()
+            || self.requirements.iter().any(|requirement| {
+                requirement.any_of.is_empty()
+                    || requirement.minimum_distinct_issuers == 0
+                    || requirement.minimum_distinct_issuers > self.minimum_distinct_issuers
+            })
+            || self
+                .approved_issuers
+                .iter()
+                .any(|(issuer, claims)| issuer.trim().is_empty() || claims.is_empty())
+            || self.revocation_transparency_roots.is_empty()
+            || self
+                .revocation_transparency_roots
+                .iter()
+                .any(|root| root.trim().is_empty())
+            || self.signatures.is_empty()
+            || self.signatures.iter().any(|value| value.trim().is_empty())
+        {
+            return Err(CredentialError::InvalidIssuerPolicy);
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct IndependentCredentialAttestation {
+    pub attestation_id: IssuerAttestationId,
+    pub subject: VerifiedUserId,
+    pub issuer: String,
+    pub claims: BTreeSet<CredentialClaimKind>,
+    pub qualifications: BTreeSet<String>,
+    pub selective_disclosure_proof: String,
+    pub status_registry_root: String,
+    pub non_revocation_proof: String,
+    pub evidence_root: String,
+    pub issued_at: DateTime<Utc>,
+    pub expires_at: DateTime<Utc>,
+    pub issuer_signature: String,
+}
+
+#[derive(Serialize)]
+struct IssuerAttestationIdentity<'a> {
+    subject: &'a VerifiedUserId,
+    issuer: &'a str,
+    claims: &'a BTreeSet<CredentialClaimKind>,
+    qualifications: &'a BTreeSet<String>,
+    selective_disclosure_proof: &'a str,
+    status_registry_root: &'a str,
+    non_revocation_proof: &'a str,
+    evidence_root: &'a str,
+    issued_at: DateTime<Utc>,
+    expires_at: DateTime<Utc>,
+}
+
+impl IndependentCredentialAttestation {
+    pub fn derive_attestation_id(&self) -> Result<IssuerAttestationId, IdError> {
+        IssuerAttestationId::derive(&IssuerAttestationIdentity {
+            subject: &self.subject,
+            issuer: &self.issuer,
+            claims: &self.claims,
+            qualifications: &self.qualifications,
+            selective_disclosure_proof: &self.selective_disclosure_proof,
+            status_registry_root: &self.status_registry_root,
+            non_revocation_proof: &self.non_revocation_proof,
+            evidence_root: &self.evidence_root,
+            issued_at: self.issued_at,
+            expires_at: self.expires_at,
+        })
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), CredentialError> {
+        self.attestation_id.validate()?;
+        self.subject.validate()?;
+        if self.attestation_id != self.derive_attestation_id()? {
+            return Err(CredentialError::IdentityMismatch);
+        }
+        if self.issuer.trim().is_empty()
+            || self.claims.is_empty()
+            || self.selective_disclosure_proof.trim().is_empty()
+            || self.status_registry_root.trim().is_empty()
+            || self.non_revocation_proof.trim().is_empty()
+            || self.evidence_root.trim().is_empty()
+            || self.issuer_signature.trim().is_empty()
+            || self.issued_at >= self.expires_at
+            || (self
+                .claims
+                .contains(&CredentialClaimKind::RoleQualification)
+                && self.qualifications.is_empty())
+        {
+            return Err(CredentialError::MissingEvidence);
+        }
+        Ok(())
+    }
+}
+
+pub fn validate_independent_credential_set(
+    policy: &CredentialIssuerPolicy,
+    subject: &VerifiedUserId,
+    attestations: &[IndependentCredentialAttestation],
+    at: DateTime<Utc>,
+) -> Result<(), CredentialError> {
+    policy.validate_integrity()?;
+    subject.validate()?;
+    if at < policy.valid_from || at >= policy.valid_until || attestations.is_empty() {
+        return Err(CredentialError::ExpiredOrNotYetValid);
+    }
+    let mut attestation_ids = BTreeSet::new();
+    let mut issuer_counts = BTreeMap::<String, u32>::new();
+    for attestation in attestations {
+        attestation.validate_integrity()?;
+        if &attestation.subject != subject
+            || attestation.issued_at > at
+            || attestation.expires_at <= at
+            || !attestation_ids.insert(attestation.attestation_id.clone())
+        {
+            return Err(CredentialError::InvalidIssuerAttestation);
+        }
+        let authorized_claims = policy
+            .approved_issuers
+            .get(&attestation.issuer)
+            .ok_or(CredentialError::UnapprovedIssuer)?;
+        if !attestation.claims.is_subset(authorized_claims) {
+            return Err(CredentialError::UnapprovedIssuer);
+        }
+        *issuer_counts.entry(attestation.issuer.clone()).or_default() += 1;
+    }
+    if issuer_counts.len() < usize::from(policy.minimum_distinct_issuers) {
+        return Err(CredentialError::IssuerConcentration);
+    }
+    let total =
+        u64::try_from(attestations.len()).map_err(|_| CredentialError::IssuerConcentration)?;
+    for count in issuer_counts.values() {
+        let count = u64::from(*count);
+        let share_bps = count
+            .checked_mul(10_000)
+            .and_then(|scaled| scaled.checked_add(total - 1))
+            .ok_or(CredentialError::IssuerConcentration)?
+            / total;
+        if share_bps > u64::from(policy.maximum_issuer_attestation_share_bps) {
+            return Err(CredentialError::IssuerConcentration);
+        }
+    }
+    for requirement in &policy.requirements {
+        let issuers = attestations
+            .iter()
+            .filter(|attestation| !attestation.claims.is_disjoint(&requirement.any_of))
+            .map(|attestation| attestation.issuer.as_str())
+            .collect::<BTreeSet<_>>();
+        if issuers.len() < usize::from(requirement.minimum_distinct_issuers) {
+            return Err(CredentialError::MissingRequiredClaim);
+        }
+    }
+    Ok(())
+}
+
 #[derive(Debug, Error)]
 pub enum CredentialError {
     #[error("credential content does not match its content-derived identifier")]
@@ -456,6 +679,16 @@ pub enum CredentialError {
     UnauthorizedRoleOrQualification,
     #[error("credential evidence, delegation, non-revocation proof, or signature is absent")]
     MissingEvidence,
+    #[error("credential issuer policy is concentrated, incomplete, or invalid")]
+    InvalidIssuerPolicy,
+    #[error("credential attestation is duplicated, expired, or bound to another subject")]
+    InvalidIssuerAttestation,
+    #[error("credential attestation was issued outside its authorized claim scope")]
+    UnapprovedIssuer,
+    #[error("credential evidence depends on too few independent issuers")]
+    IssuerConcentration,
+    #[error("credential set does not satisfy a required independent claim group")]
+    MissingRequiredClaim,
     #[error(transparent)]
     Identifier(#[from] IdError),
 }
@@ -571,5 +804,101 @@ mod tests {
             ),
             Err(CredentialError::InsufficientTier)
         ));
+    }
+
+    #[test]
+    fn gold_eligibility_can_require_multiple_selective_disclosure_issuers() {
+        let now = Utc::now();
+        let subject = VerifiedUserId::derive(&"pseudonymous-gold-operator").unwrap();
+        let issuer_claims = [
+            (
+                "did:web:uniqueness.example",
+                BTreeSet::from([
+                    CredentialClaimKind::Uniqueness,
+                    CredentialClaimKind::NonRevocation,
+                ]),
+            ),
+            (
+                "did:web:operator.example",
+                BTreeSet::from([
+                    CredentialClaimKind::OperatorEligibility,
+                    CredentialClaimKind::ConflictClearance,
+                ]),
+            ),
+            (
+                "did:web:qualification.example",
+                BTreeSet::from([CredentialClaimKind::RoleQualification]),
+            ),
+        ];
+        let mut policy = CredentialIssuerPolicy {
+            policy_id: PolicyId::derive(&"placeholder").unwrap(),
+            approved_issuers: issuer_claims
+                .iter()
+                .map(|(issuer, claims)| ((*issuer).into(), claims.clone()))
+                .collect(),
+            requirements: vec![
+                CredentialClaimRequirement {
+                    any_of: BTreeSet::from([
+                        CredentialClaimKind::Uniqueness,
+                        CredentialClaimKind::Organization,
+                    ]),
+                    minimum_distinct_issuers: 1,
+                },
+                CredentialClaimRequirement {
+                    any_of: BTreeSet::from([CredentialClaimKind::OperatorEligibility]),
+                    minimum_distinct_issuers: 1,
+                },
+                CredentialClaimRequirement {
+                    any_of: BTreeSet::from([CredentialClaimKind::RoleQualification]),
+                    minimum_distinct_issuers: 1,
+                },
+                CredentialClaimRequirement {
+                    any_of: BTreeSet::from([CredentialClaimKind::ConflictClearance]),
+                    minimum_distinct_issuers: 1,
+                },
+            ],
+            minimum_distinct_issuers: 3,
+            maximum_issuer_attestation_share_bps: 3_334,
+            revocation_transparency_roots: BTreeSet::from(["blake3:public-revocation-root".into()]),
+            valid_from: now - Duration::days(1),
+            valid_until: now + Duration::days(30),
+            signatures: vec!["policy-signature".into()],
+        };
+        policy.policy_id = policy.derive_policy_id().unwrap();
+
+        let attestations = issuer_claims
+            .into_iter()
+            .map(|(issuer, claims)| {
+                let mut attestation = IndependentCredentialAttestation {
+                    attestation_id: IssuerAttestationId::derive(&"placeholder").unwrap(),
+                    subject: subject.clone(),
+                    issuer: issuer.into(),
+                    qualifications: claims
+                        .contains(&CredentialClaimKind::RoleQualification)
+                        .then(|| BTreeSet::from(["lean-kernel".into()]))
+                        .unwrap_or_default(),
+                    claims,
+                    selective_disclosure_proof: "zk:selective-disclosure".into(),
+                    status_registry_root: "blake3:issuer-status".into(),
+                    non_revocation_proof: "accumulator:non-revocation".into(),
+                    evidence_root: "blake3:issuer-private-evidence".into(),
+                    issued_at: now - Duration::hours(1),
+                    expires_at: now + Duration::days(7),
+                    issuer_signature: "issuer-signature".into(),
+                };
+                attestation.attestation_id = attestation.derive_attestation_id().unwrap();
+                attestation
+            })
+            .collect::<Vec<_>>();
+
+        validate_independent_credential_set(&policy, &subject, &attestations, now).unwrap();
+        assert!(matches!(
+            validate_independent_credential_set(&policy, &subject, &attestations[..1], now),
+            Err(CredentialError::IssuerConcentration)
+        ));
+        let public = serde_json::to_string(&attestations).unwrap();
+        for forbidden in ["legal_name", "passport", "street_address", "biometric"] {
+            assert!(!public.contains(forbidden));
+        }
     }
 }

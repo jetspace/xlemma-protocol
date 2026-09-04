@@ -98,6 +98,23 @@ Never resolve divergence by counting votes.
 - update compute curves with the lost capacity and observed failure rate;
 - avoid sending private context to a substitute provider without explicit authorization.
 
+### Company-disappearance and frontend-loss recovery
+
+Researchers do not need an xLemma-operated database or frontend to recover a
+portable record:
+
+1. obtain the latest signed `ResearcherPortabilityManifest` from either event-log provider;
+2. run `xlemma verify-portability <manifest.json>` and reject an invalid content identity, wrong protocol version, single-provider artifact, or missing open-client/funds-exit root;
+3. retrieve every artifact and event-log segment from at least one declared provider and verify it against its content root;
+4. rebuild identity links, contributions, verification receipts, economic policies, and settlement commitments with the source-committed reconstruction client;
+5. follow the referenced settlement adapter's funds-exit instructions using researcher-controlled keys; and
+6. publish any new location or client revision as a superseding manifest without deleting the old one.
+
+A successful data reconstruction does not authorize a custodian to move funds.
+If both independent copies are unavailable, mark the portability guarantee
+degraded and use the storage incident process; never fabricate a replacement
+root.
+
 ## 6. Payment/facilitator outage
 
 - preserve unpaid job state without marking verification complete economically;

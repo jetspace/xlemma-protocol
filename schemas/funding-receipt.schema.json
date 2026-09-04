@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/funding-receipt.schema.json",
+  "title": "FundingReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "funding_receipt_id": { "type": "string", "pattern": "^xlfunding:blake3:[0-9a-f]{64}$" },
+    "rail": { "type": "string", "enum": ["market", "commons", "assurance"] },
+    "purpose": { "type": "string", "enum": ["bounty", "formalization_contract", "proof_api", "commercial_license", "certified_implementation", "reserved_compute", "maintenance_agreement", "foundational_research", "formal_library", "negative_result", "benchmark_suite", "proof_tactic", "open_dataset", "exposition", "retrospective_impact", "verification_bond_reserve", "challenge_reserve", "revalidation_reserve", "certificate_warranty", "reliance_insurance"] },
+    "payer": { "type": "string", "minLength": 1 },
+    "beneficiary_researcher_id": { "type": ["string", "null"], "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$" },
+    "destination_vault": { "type": "string", "minLength": 1 },
+    "settled_amount": { "$ref": "common.schema.json#/$defs/amount" },
+    "settlement_receipt_id": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
+    "external_value_evidence_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "related_party": { "type": "boolean" },
+    "settled_at": { "type": "string", "format": "date-time" },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": ["funding_receipt_id", "rail", "purpose", "payer", "beneficiary_researcher_id", "destination_vault", "settled_amount", "settlement_receipt_id", "external_value_evidence_root", "policy_id", "related_party", "settled_at", "signature"]
+}

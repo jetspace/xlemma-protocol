@@ -1,0 +1,10 @@
+{
+  "policy_id": "xlpolicy:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+  "class": "formal",
+  "required_evidence": ["formal_statement", "proof_object", "pinned_toolchain", "axiom_inventory"],
+  "verifier_implementations": ["lean-kernel:4.19.0", "nanoda:independent-snapshot"],
+  "minimum_reproductions": 3,
+  "minimum_independent_operators": 3,
+  "challenge_window_seconds": 86400,
+  "policy_root": "blake3:formal-verification-profile"
+}

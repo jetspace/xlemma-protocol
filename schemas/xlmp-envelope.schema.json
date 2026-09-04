@@ -39,7 +39,22 @@
         { "$ref": "#/$defs/userCredentialMessage" },
         { "$ref": "#/$defs/operatorCredentialMessage" },
         { "$ref": "#/$defs/nodeCredentialMessage" },
-        { "$ref": "#/$defs/credentialRevocationMessage" }
+        { "$ref": "#/$defs/credentialRevocationMessage" },
+        { "$ref": "#/$defs/sovereigntyMessage" },
+        { "$ref": "#/$defs/portabilityMessage" },
+        { "$ref": "#/$defs/residualRightMessage" },
+        { "$ref": "#/$defs/economicConstitutionMessage" },
+        { "$ref": "#/$defs/economicComplianceMessage" },
+        { "$ref": "#/$defs/verificationProfileMessage" },
+        { "$ref": "#/$defs/reproductionObservationMessage" },
+        { "$ref": "#/$defs/researchCertificateMessage" },
+        { "$ref": "#/$defs/computeCooperativeMessage" },
+        { "$ref": "#/$defs/captureDashboardMessage" },
+        { "$ref": "#/$defs/nodeWorkMessage" },
+        { "$ref": "#/$defs/nodeExposureMessage" },
+        { "$ref": "#/$defs/misconductMessage" },
+        { "$ref": "#/$defs/governanceProposalMessage" },
+        { "$ref": "#/$defs/credentialEvidenceMessage" }
       ]
     },
     "signature": { "$ref": "common.schema.json#/$defs/signature" }
@@ -406,6 +421,210 @@
           "type": "object", "additionalProperties": false,
           "properties": { "revocation": { "$ref": "credential-revocation.schema.json" } },
           "required": ["revocation"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "sovereigntyMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_SOVEREIGNTY" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "bundle": { "$ref": "researcher-sovereignty-bundle.schema.json" } },
+          "required": ["bundle"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "portabilityMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_PORTABILITY" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "manifest": { "$ref": "researcher-portability-manifest.schema.json" } },
+          "required": ["manifest"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "residualRightMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_RESIDUAL_RIGHT" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "right": { "$ref": "researcher-residual-right.schema.json" } },
+          "required": ["right"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "economicConstitutionMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_ECONOMIC_CONSTITUTION" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "constitution": { "$ref": "economic-constitution.schema.json" } },
+          "required": ["constitution"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "economicComplianceMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_ECONOMIC_COMPLIANCE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "constitution": { "$ref": "economic-constitution.schema.json" },
+            "certificate": { "$ref": "economic-compliance-certificate.schema.json" }
+          },
+          "required": ["constitution", "certificate"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "verificationProfileMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_VERIFICATION_PROFILE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "profile": { "$ref": "verification-profile.schema.json" } },
+          "required": ["profile"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "reproductionObservationMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_REPRODUCTION_OBSERVATION" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "job": { "$ref": "verification-job.schema.json" },
+            "profile": { "$ref": "verification-profile.schema.json" },
+            "observation": { "$ref": "reproduction-observation.schema.json" }
+          },
+          "required": ["job", "profile", "observation"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "researchCertificateMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_RESEARCH_CERTIFICATE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "job": { "$ref": "verification-job.schema.json" },
+            "profile": { "$ref": "verification-profile.schema.json" },
+            "observations": { "type": "array", "minItems": 1, "items": { "$ref": "reproduction-observation.schema.json" } },
+            "certificate": { "$ref": "research-verification-certificate.schema.json" }
+          },
+          "required": ["job", "profile", "observations", "certificate"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "computeCooperativeMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_COMPUTE_COOPERATIVE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "cooperative": { "$ref": "research-compute-cooperative.schema.json" } },
+          "required": ["cooperative"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "captureDashboardMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_CAPTURE_DASHBOARD" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "dashboard": { "$ref": "capture-resistance-dashboard.schema.json" } },
+          "required": ["dashboard"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "nodeWorkMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_NODE_WORK" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "receipt": { "$ref": "node-work-receipt.schema.json" } },
+          "required": ["receipt"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "nodeExposureMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_NODE_EXPOSURE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "limit": { "$ref": "node-exposure-limit.schema.json" } },
+          "required": ["limit"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "misconductMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_MISCONDUCT" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "record": { "$ref": "objective-misconduct-record.schema.json" },
+            "active_bond_amount": { "$ref": "common.schema.json#/$defs/amount" }
+          },
+          "required": ["record", "active_bond_amount"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "governanceProposalMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_GOVERNANCE_PROPOSAL" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "proposal": { "$ref": "governance-proposal.schema.json" },
+            "constitution": { "$ref": "constitutional-commitment.schema.json" },
+            "fork_exit_plan": { "$ref": "fork-exit-plan.schema.json" }
+          },
+          "required": ["proposal", "constitution", "fork_exit_plan"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "credentialEvidenceMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_CREDENTIAL_EVIDENCE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "subject": { "$ref": "identity-common.schema.json#/$defs/verifiedUserId" },
+            "policy": { "$ref": "credential-issuer-policy.schema.json" },
+            "attestations": { "type": "array", "minItems": 1, "items": { "$ref": "independent-credential-attestation.schema.json" } },
+            "evaluated_at": { "type": "string", "format": "date-time" }
+          },
+          "required": ["subject", "policy", "attestations", "evaluated_at"]
         }
       },
       "required": ["type", "payload"]

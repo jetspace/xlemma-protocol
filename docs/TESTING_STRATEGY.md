@@ -46,10 +46,12 @@ Required properties include:
 - formal certification cannot manufacture or mutate a statement-alignment verdict;
 - changing the informal claim, presentation, assumptions, definitions, or reviewer set changes the alignment ReceiptID;
 - a formal dependency without an active eligible economic-policy edge never creates payment;
-- Open Commons rejects hidden economic participation terms and defaults mandatory upstream allocation to zero;
+- Commons rejects hidden economic participation terms and defaults mandatory upstream allocation to zero;
 - a compute offer without an independent protocol success estimate cannot enter quality-adjusted routing;
 - no floating-point value determines a quote or impact-pool payment; fixed-point overflow fails closed;
 - one settled revenue event cannot be recursively allocated through an upstream or impact pool.
+- a payout below the declared minimum remains in the explicit unallocated remainder;
+- generalized reproduction cannot reveal before commit, substitute a credential/control domain, or enter a certificate without authenticated ingress;
 
 ### Integration tests
 
@@ -181,7 +183,7 @@ Payment success must never set formal status by itself.
 
 ## 7. XLMP transport and downgrade testing
 
-- all twenty-five XLMP/1 message discriminators validate against the canonical schema;
+- all forty XLMP/1 message discriminators validate against the canonical schema;
 - unsupported protocol names and major versions fail closed;
 - unknown required fields fail schema validation;
 - MessageID mutation, sender substitution, correlation substitution, and replay are rejected;

@@ -17,14 +17,21 @@ Every major concept requested or developed in the design is mapped to its primar
 | Verified participant → operator → node identity | `spec/020-identity-credentials.md` | `xlemma-core::identity`, credential schemas and vectors |
 | Append-only credentials and revocation | same | `xlemma-node::CredentialRegistry`, `CredentialProofVerifier` |
 | Pseudonymous public identity / issuer-private evidence | same, `spec/016-privacy.md` | `UserCredential`, absence of raw legal-identity fields |
+| Plural credential issuers and selective disclosure | `spec/020-identity-credentials.md` | `CredentialIssuerPolicy`, `IndependentCredentialAttestation`, concentration and claim-group validation |
 | User/operator/cluster committee independence | same, `spec/019-node-network.md` | deterministic sortition uniqueness sets |
 | Credential tiers and role qualifications | same | `CredentialTier`, `NodeCredentialChain::validate_for` |
 | Operator-primary reputation with node subrecords | same | `NodeReputationSnapshot.operator_id`, eight-dimensional vector |
+| Research compute cooperative ownership | `spec/019-node-network.md` | `ResearchComputeCooperative`, ownership-overlap and independence-credit functions |
+| Eight-layer capture-resistance dashboard | same, `docs/THREAT_MODEL.md` | `CaptureResistanceDashboard::effective_independence_bps`, schema and example |
+| Work-backed node revenue | same | `NodeWorkReceipt::validate_integrity`, external-value and settlement bindings |
+| Bond-to-certificate exposure cap | same | `NodeExposureLimit::is_covered` |
+| Objective misconduct only | same | `ObjectiveMisconductKind`, `ObjectiveMisconductRecord`; no divergence offense |
 | Protocol lifecycle | `spec/018-xlmp-wire-protocol.md`, `spec/014-api-protocol.md` | `ResearchLifecycleState`, `ensure_lifecycle_transition` |
 | Research prover neutrality | `spec/007-astra-lean.md` | `ResearchProver`; ASTRA reference adapter |
 | Formal-system neutrality | same | `VerifierAdapter`; Lean default adapter |
 | Payment neutrality | `spec/008-x402-transport.md` | `PaymentAdapter`; x402 optional adapter |
 | Transport neutrality | `spec/018-xlmp-wire-protocol.md` | `TransportAdapter`; HTTP XLMP ingress |
+| Sovereignty and anti-capture wire interoperability | `spec/018-xlmp-wire-protocol.md`, `spec/022-researcher-sovereignty.md` | fifteen native XLMP message variants with integrity validation and schemas |
 | Chain/finality neutrality | `spec/017-deployment-operations.md` | `FinalityAdapter` and chain reference contracts |
 | Storage neutrality | `spec/015-storage-availability.md` | `StorageAdapter`, `xlemma-storage` |
 | Decentralized researcher as target user | `FULL_DESIGN.md` §§1, 5–7 | `xlemma-core::ResearcherNodeManifest` |
@@ -44,9 +51,20 @@ Every major concept requested or developed in the design is mapped to its primar
 | Content-derived alignment evidence | same | `StatementAlignmentReceipt::validate_integrity` |
 | Rights manifest | `spec/002-proof-rights-capsule.md` | `RightsManifest`, `rights.schema.json` |
 | Origin, artifact rights, and economic participation separation | `spec/021-alignment-rights-and-impact.md`, `docs/LEGAL_BOUNDARIES.md` | `CapsuleEconomicMode`, `EconomicParticipationTerms` |
-| Open Commons / Commercial Research / Sponsored Challenge | same | `LemmaCapsule.economic_mode`, license and capsule schemas |
+| Researcher Sovereignty Bundle | `spec/022-researcher-sovereignty.md` | `ResearcherSovereigntyBundle::validate_integrity`, schema and example vector |
+| Permanent origin, attribution, and exit rights | same | `SovereigntyRightKind`, durable-right fail-closed guards |
+| Researcher Residual Right | same | `ResearcherResidualRight::validate_integrity`, bounded assignment schema |
+| Commons / Reciprocal / Commercial Artifact / Sponsored Challenge | same | `EconomicConstitution::validate`, `LemmaCapsule.economic_mode`, schemas |
+| Certified economic compliance remains separate from validity | same | `EconomicComplianceCertificate::validate_against`, `affects_research_validity == false`, wire/schema vector |
+| Evidence graph is not the economic graph | `spec/021-alignment-rights-and-impact.md`, `spec/022-researcher-sovereignty.md` | `EvidenceGraphEdge::authorizes_payment`, `EconomicGraphEdge::validate` |
+| Portable reconstruction and company-disappearance exit | `spec/022-researcher-sovereignty.md` | `ResearcherPortabilityManifest::validate_reconstructable`, redundant storage schema |
+| Provider-independent artifacts/event logs and open recovery client | same, `docs/OPERATOR_RUNBOOK.md` | `PortableStorageLocation`, distinct-provider gates, client-source/funds-exit roots, `xlemma verify-portability` |
+| Formal / computational / statistical / simulation / empirical / hybrid profiles | same | `VerificationProfile::validate`, required-evidence matrix and schema |
+| Generalized independent research reproduction | `spec/018-xlmp-wire-protocol.md`, `spec/022-researcher-sovereignty.md` | `ReproductionObservation`, `evaluate_reproduction`, `ResearchVerificationCertificate`, `ReproductionAdapter`, wire messages and schemas |
+| Non-formal divergence never resolved by majority | same | fail-closed mixed PASS/FAIL test in `xlemma-core::protocol` |
 | Employment/university/grant clearance | `docs/LEGAL_BOUNDARIES.md` | `RightsManifest.employer_university_grant_clearance` |
 | Immutable object graph | `spec/001-identifiers.md` | `xlemma-core`, `ProofRegistry.sol` |
+| Minimal on-chain research projection | `spec/022-researcher-sovereignty.md` | `ResearchCommitmentRegistry.sol`; roots only, with full evidence off-chain |
 | TheoryID | `spec/001-identifiers.md` | `TheoryId`, `theory.schema.json` |
 | ClaimID from elaborated Lean type | `spec/001-identifiers.md` | `ClaimId::from_canonical_elaborated_type`, `ClaimManifest::derive_claim_id`, Lean exporter boundary |
 | ProofID from proof object | `spec/001-identifiers.md` | `ProofId::from_canonical_proof_object`, `ProofManifest::derive_proof_id` |
@@ -100,6 +118,10 @@ Every major concept requested or developed in the design is mapped to its primar
 | Payment idempotency | same | `payment_identifier` |
 | Reverse-direction bounty | `spec/012-bounties-and-support.md` | `BountyEscrow.sol` |
 | Compute spot/forward offers | `spec/005-compute-curve.md` | `ServiceOffer` |
+| Provider-neutral proof-generation service | same | `ResearchService::ResearchProverGeneration`; ASTRA is a compatibility adapter, not a canonical service kind |
+| Staged nontransferable compute procurement | same | `ComputeProcurementInstrument::validate`, schema and example vector |
+| Provider/model/region/fallback concentration gates | same | `validate_diversified_route`, `ComputeConcentrationPolicy` |
+| Scarce / abundant / agent compute regimes | same | `ComputeRegime` and regime-independent economics requirements |
 | Quality-Adjusted Certification Cost | same | `quote_quality_adjusted_certification_cost` |
 | Protocol-calibrated success estimates | same, `spec/021-alignment-rights-and-impact.md` | `ProtocolSuccessEstimates`; provider offers carry no routing probability |
 | Model migration spread | same | `migration_spread` |
@@ -110,6 +132,11 @@ Every major concept requested or developed in the design is mapped to its primar
 | Evidence/economic graph separation | `spec/021-alignment-rights-and-impact.md` | `ImpactPoolAuthorization`, `DependencyDividend` guards |
 | Final dependency requirement | `spec/006-revenue-and-dividends.md` | impact-allocation guard |
 | Revenue and pool caps / no recursive explosion | same | `ComputeSavingsPolicy`, evidence-bound `ImpactPoolAuthorization` |
+| Deterministic bounded Reciprocal upstream allocation | `spec/006-revenue-and-dividends.md`, `spec/022-researcher-sovereignty.md` | `allocate_upstream_pool`, equivalence clustering, depth decay, payout floor/remainder, one-event consumption tests |
+| Content-derived revenue and wash-activity disclosure | `docs/ECONOMICS.md`, `spec/018-xlmp-wire-protocol.md` | `RevenueEvent::validate_integrity`, related-party exclusion and property tests |
+| Knowledge productivity is revisable impact, not debt | same | `KnowledgeProductivityObservation::score_millionths`, `creates_payment_debt == false` |
+| Market / commons / assurance funding rails | `docs/ECONOMICS.md`, `spec/022-researcher-sovereignty.md` | `FundingReceipt::validate_integrity`, `FundingPurpose::rail`, schema and example vector |
+| Protocol fees fund commons and assurance without inflation | `docs/ECONOMICS.md` | `allocate_protocol_fee`, exact-conservation tests |
 | Bounties/grants/pre-purchase/co-development | `spec/012-bounties-and-support.md` | manifests and bounty contract |
 | Negative-result funding | same | open-research pool design |
 | Optional ERC-1155 proof capsule | `spec/011-tokenization.md` | `LemmaCapsule1155.sol` |
@@ -128,6 +155,8 @@ Every major concept requested or developed in the design is mapped to its primar
 | Architecture and trust diagrams | `docs/ARCHITECTURE_DIAGRAMS.md` | Mermaid system, sequence, state, graph and deployment views |
 | Researcher/supporter/node workflows | `docs/RESEARCHER_USER_JOURNEYS.md` | End-to-end operational journeys |
 | Governance limits and emergency powers | `docs/GOVERNANCE_CONSTITUTION.md` | Constitutional protocol constraints |
+| Multi-constituency constitutional activation | `docs/GOVERNANCE_CONSTITUTION.md` | `GovernanceProposal::validate_for_activation`, all-chamber approvals, seven-day timelock, public simulation |
+| Fork/exit with identity, artifacts, history, and funds | same, `spec/022-researcher-sovereignty.md` | `ForkExitPlan::validate_integrity`, proposal activation binding |
 | Point-in-time data and telemetry | `docs/DATA_AND_TELEMETRY.md` | Event envelope, compute observations, learning loop |
 | Production service topology | `docs/DEPLOYMENT_ARCHITECTURE.md` | Trust zones, stores, sandbox, HA and key hierarchy |
 | Operator procedures and incidents | `docs/OPERATOR_RUNBOOK.md` | Daily preflight, divergence, solvency, compromise, recovery |

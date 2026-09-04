@@ -24,8 +24,24 @@ itself block publication or reuse.
 
 Automatic upstream rewards MUST draw from a fixed pool or explicit budget
 declared before monetization. Unbounded transitive royalties are prohibited.
-Open Commons capsules MUST default this pool to zero and MAY instead receive
+Commons capsules MUST default this pool to zero and MAY instead receive
 retrospective impact-pool allocations.
+
+For Reciprocal, Commercial Artifact, and Sponsored Challenge constitutions,
+the reference allocator consumes one qualifying settled `RevenueEvent` at
+most once. It requires a signed economic edge for the exact downstream claim,
+policy, revenue source, and effective interval plus final-artifact use
+evidence. It multiplies declared use and evidence-quality weights, applies
+depth decay, selects at most one claim per equivalence cluster, caps ancestor
+count and each payout, and rounds down. Payouts plus the unallocated remainder
+MUST equal the fixed event-level upstream pool. An upstream distribution MUST
+NOT seed another upstream pool.
+
+`KnowledgeProductivityObservation` measures independently verified downstream
+outcomes per attributable effort as a confidence-qualified, append-only,
+revisable signal. It MAY inform public-goods allocation, reputation, search,
+maintenance funding, compute credits, or upstream weights. It is not a debt or
+legally enforceable royalty calculation.
 
 ## Compute-savings impact allocation
 

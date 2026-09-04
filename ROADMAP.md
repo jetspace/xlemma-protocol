@@ -7,6 +7,7 @@
 - Add reproducible bundle builder and deterministic test vectors.
 - Establish trust-policy registry and axiom profiles.
 - Publish cross-implementation `StatementAlignmentReceipt`, capsule economic-mode, and evidence/economic-graph vectors.
+- Freeze the implemented sovereignty, residual-right, portability, economic-constitution/compliance, generalized-verification, funding, capture, and governance schemas after independent implementation review.
 
 ## Phase 1 — independent verification network
 
@@ -16,6 +17,7 @@
 - Integrate Lean `comparator`, official kernel replay and independent checkers.
 - Deploy PoIR commit-reveal committees with verified-user, OperatorID, and operator-cluster controls.
 - Add watcher, dispute, quarantine and revalidation services.
+- Replace the reference API's in-memory XLMP history and commit stores with a durable transactional event log, preserving the implemented authenticated-observation certificate gate.
 
 ## Phase 2 — researcher credits and x402
 
@@ -31,6 +33,7 @@
 - Add public bounties, grants, certified proof services, encrypted delivery, and license manifests.
 - Qualify ASTRA and alternative implementations in the provider-neutral research-prover marketplace.
 - Add calibrated novelty-review committees and formal equivalence graphing.
+- Deploy user-owned compute cooperatives and independently measured eight-layer capture dashboards through multiple frontends.
 
 ## Phase 4 — compute economics
 
@@ -38,12 +41,14 @@
 - Train independent protocol success estimators on proof-state, model, domain and checker telemetry; provider self-estimates do not control routing.
 - Introduce conservative compute-impact signals with randomized holdout re-proving and separately authorized bounded impact pools.
 - Add public-goods and negative-result funding.
+- Deploy the implemented market, commons, and assurance rails with independently reconciled external settlement.
 - Defer tradeable compute futures until service profiles and settlement history are standardized and liquid.
 
 ## Phase 5 — optional rights wrappers
 
 - Add audited ERC-1155 capsule and license editions.
 - Add jurisdiction-specific contractual rights vaults.
+- Audit and deploy the append-only `ResearchCommitmentRegistry` projection of policy, committee, rights, contribution, and supersession roots.
 - Keep public profit-sharing or tokenized-vault interests outside the protocol core and subject to separate legal design.
 - Keep per-lemma speculative tokens, universal mandatory royalties, and universal research-value units outside the protocol core.
 
@@ -55,3 +60,4 @@
 - Economic conservation and insolvency proofs.
 - Privacy, sanctions, identity, tax and jurisdictional review.
 - Incident response, key rotation, disaster recovery and monitoring.
+- Independent clean-room reconstruction from portability manifests and an exercised constitutional fork/funds-exit path.

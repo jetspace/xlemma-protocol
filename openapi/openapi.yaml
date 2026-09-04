@@ -7,7 +7,8 @@ info:
     decentralized researcher identities, proof-production jobs, independent
     verification, node discovery and service orders, auditable committee
     sortition, PoIR observations, compute quotes, optional x402 payments,
-    novelty review, and lemma capsules.
+    novelty review, researcher sovereignty and portability, generalized
+    verification profiles, economic compliance, and lemma capsules.
 servers:
   - url: http://localhost:8080
 security:
@@ -33,6 +34,13 @@ paths:
     post:
       operationId: acceptXlmpMessage
       summary: Verify an authorized Ed25519 signature and append an XLMP/1 message
+      description: >-
+        Canonical ingress for all XLMP/1 object families, including sovereignty,
+        portability, economic constitutions and compliance, generalized
+        verification profiles, committed reproduction observations, research
+        certificates, node economics, capture dashboards, and constitutional
+        governance. Observation reveals require a prior node-bound commit;
+        certificates may use only observations already authenticated here.
       requestBody:
         required: true
         content:

@@ -1,0 +1,16 @@
+{
+  "cooperative_id": "xlcoop:blake3:1111111111111111111111111111111111111111111111111111111111111111",
+  "members": {
+    "xluser:blake3:602890a8caaf8bd42a1490bda7d57f6355e52e49a9a0d92bb40656f6ab7c1dce": 6000,
+    "xluser:blake3:9621602b583cb460d0cadc5ec7d14e05358b60139f298d2a01efa6eb37935d9f": 4000
+  },
+  "operator_cluster_id": "xloperator:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "node_ids": ["xlnode:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"],
+  "capability_classes": ["formal_verification", "shared_gpu_compute"],
+  "shared_treasury": "vault:researcher-cooperative-one",
+  "governance_policy_id": "xlpolicy:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+  "beneficial_control_evidence_root": "blake3:cooperative-beneficial-control",
+  "created_at": "2026-09-03T20:00:00Z",
+  "supersedes": null,
+  "signatures": ["ed25519:member-one", "ed25519:member-two"]
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/research-graph-edge.schema.json",
+  "title": "ResearchGraphEdge",
+  "oneOf": [
+    {
+      "title": "EvidenceGraphEdge",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "downstream_claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+        "upstream_claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+        "kind": { "type": "string", "enum": ["formally_depends_on", "extends", "uses_dataset", "uses_library", "cites", "equivalent_to"] },
+        "used_in_final_artifact": { "type": "boolean" },
+        "evidence_root": { "$ref": "common.schema.json#/$defs/hash" }
+      },
+      "required": ["downstream_claim_id", "upstream_claim_id", "kind", "used_in_final_artifact", "evidence_root"]
+    },
+    {
+      "title": "EconomicGraphEdge",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "downstream_claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+        "upstream_claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+        "kind": { "type": "string", "enum": ["pays_to", "contributes_to_upstream_pool", "allocates_bounty_to"] },
+        "policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+        "qualifying_revenue_source": { "type": "string", "minLength": 1 },
+        "cap_bps": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "authorization_root": { "$ref": "common.schema.json#/$defs/hash" },
+        "valid_from": { "type": "string", "format": "date-time" },
+        "valid_until": { "type": "string", "format": "date-time" },
+        "signatures": { "type": "array", "minItems": 1, "items": { "$ref": "common.schema.json#/$defs/signature" } }
+      },
+      "required": ["downstream_claim_id", "upstream_claim_id", "kind", "policy_id", "qualifying_revenue_source", "cap_bps", "authorization_root", "valid_from", "valid_until", "signatures"]
+    }
+  ]
+}

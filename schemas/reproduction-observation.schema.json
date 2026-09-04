@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/reproduction-observation.schema.json",
+  "title": "ReproductionObservation",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "receipt_id": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
+    "job_id": { "type": "string", "pattern": "^xljob:blake3:[0-9a-f]{64}$" },
+    "claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "verification_profile_class": { "type": "string", "enum": ["formal", "computational", "statistical", "simulation", "empirical", "hybrid"] },
+    "verifier_node_id": { "type": "string", "pattern": "^xlnode:blake3:[0-9a-f]{64}$" },
+    "verified_user_id": { "$ref": "identity-common.schema.json#/$defs/verifiedUserId" },
+    "operator_id": { "$ref": "identity-common.schema.json#/$defs/operatorId" },
+    "operator_cluster_id": { "type": "string", "pattern": "^xloperator:blake3:[0-9a-f]{64}$" },
+    "user_credential_id": { "$ref": "identity-common.schema.json#/$defs/userCredentialId" },
+    "operator_credential_id": { "$ref": "identity-common.schema.json#/$defs/operatorCredentialId" },
+    "node_credential_id": { "$ref": "identity-common.schema.json#/$defs/nodeCredentialId" },
+    "credential_chain_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "verifier_implementation": { "type": "string", "minLength": 1 },
+    "infrastructure_provider": { "type": "string", "minLength": 1 },
+    "region": { "type": "string", "minLength": 1 },
+    "input_artifact_id": { "type": "string", "pattern": "^xla:blake3:[0-9a-f]{64}$" },
+    "exact_input_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "evidence_roots": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "enum": ["formal_statement", "proof_object", "pinned_toolchain", "axiom_inventory", "reproducible_source", "execution_environment", "dependency_lock", "deterministic_rerun", "dataset_provenance", "analysis_plan", "uncertainty_report", "robustness_checks", "model_definition", "random_seeds", "parameter_ranges", "convergence_analysis", "sensitivity_analysis", "protocol_registration", "instrument_manifest", "data_lineage", "independent_replication"] },
+      "additionalProperties": { "$ref": "common.schema.json#/$defs/hash" }
+    },
+    "verdict": { "type": "string", "enum": ["pass", "fail", "error", "abstain"] },
+    "execution_trace_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "observation_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "commitment": { "$ref": "common.schema.json#/$defs/hash" },
+    "reveal_salt": { "type": "string", "minLength": 1 },
+    "committed_at": { "type": "string", "format": "date-time" },
+    "reproduced_at": { "type": "string", "format": "date-time" },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": ["receipt_id", "job_id", "claim_id", "verification_profile_class", "verifier_node_id", "verified_user_id", "operator_id", "operator_cluster_id", "user_credential_id", "operator_credential_id", "node_credential_id", "credential_chain_root", "verifier_implementation", "infrastructure_provider", "region", "input_artifact_id", "exact_input_root", "evidence_roots", "verdict", "execution_trace_root", "observation_root", "commitment", "reveal_salt", "committed_at", "reproduced_at", "signature"]
+}

@@ -1,0 +1,9 @@
+{
+  "maximum_provider_share_bps": 6000,
+  "minimum_provider_clusters": 2,
+  "minimum_regions": 2,
+  "minimum_model_families": 2,
+  "minimum_fallback_routes": 1,
+  "require_confidential_delivery": true,
+  "maximum_total_spend": {"units": 1000000000, "asset": "USDC", "decimals": 6}
+}

@@ -1,0 +1,12 @@
+{
+  "record_id": "xlmisconduct:blake3:4444444444444444444444444444444444444444444444444444444444444444",
+  "node_id": "xlnode:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "operator_id": "xlop:blake3:e7e8b7222bc5e3d3781ab251f5cf130fd879d9478162b65d012007deeb7c2e3b",
+  "bond_id": "xlbond:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "kind": "equivocation",
+  "evidence_roots": ["blake3:conflicting-signed-observation-one", "blake3:conflicting-signed-observation-two"],
+  "adjudication_policy_id": "xlpolicy:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+  "slash_amount": {"units": 100000000, "asset": "USDC", "decimals": 6},
+  "observed_at": "2026-09-03T20:00:00Z",
+  "signatures": ["ed25519:adjudicator-signature"]
+}

@@ -1,0 +1,7 @@
+{
+  "downstream_claim_id": "xlc:blake3:1117d892ad3a90b5c40d700b96fa1df96882dfc4a52dc23a00ebf1eefc5815f8",
+  "upstream_claim_id": "xlc:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "kind": "formally_depends_on",
+  "used_in_final_artifact": true,
+  "evidence_root": "blake3:final-proof-dependency-root"
+}

@@ -1,0 +1,25 @@
+{
+  "bundle_id": "xlsovereignty:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+  "claim_id": "xlc:blake3:1117d892ad3a90b5c40d700b96fa1df96882dfc4a52dc23a00ebf1eefc5815f8",
+  "origin_receipt_id": "xlr:blake3:5555555555555555555555555555555555555555555555555555555555555555",
+  "holder_credential_roots": ["blake3:credential-holder-commitment"],
+  "rights": {
+    "origin": {"evidence_root": "blake3:origin-evidence", "transferable": false, "revocable_by_protocol": false, "challengeable": true, "limitations": []},
+    "attribution": {"evidence_root": "blake3:attribution-evidence", "transferable": false, "revocable_by_protocol": false, "challengeable": true, "limitations": []},
+    "artifact_control": {"evidence_root": "blake3:artifact-rights-evidence", "transferable": true, "revocable_by_protocol": false, "challengeable": true, "limitations": ["subject to demonstrated legal rights"]},
+    "economic_participation": {"evidence_root": "blake3:economic-policy-evidence", "transferable": false, "revocable_by_protocol": false, "challengeable": true, "limitations": ["qualifying settled XLMP revenue only"]},
+    "license_control": {"evidence_root": "blake3:license-authority-evidence", "transferable": true, "revocable_by_protocol": false, "challengeable": true, "limitations": ["controlled artifacts only"]},
+    "governance_consent": {"evidence_root": "blake3:consent-policy-evidence", "transferable": false, "revocable_by_protocol": false, "challengeable": true, "limitations": []},
+    "portability_exit": {"evidence_root": "blake3:portability-evidence", "transferable": false, "revocable_by_protocol": false, "challengeable": true, "limitations": []}
+  },
+  "controlled_artifact_roots": ["blake3:artifact-bundle-root"],
+  "contribution_manifest_root": "blake3:contribution-manifest-root",
+  "rights_manifest_root": "blake3:rights-manifest-root",
+  "economic_policy_root": "blake3:economic-constitution-root",
+  "direct_custody_vaults": ["0x1111111111111111111111111111111111111111"],
+  "portability_manifest_id": "xlportability:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "supersedes": null,
+  "issued_at": "2026-09-03T20:10:00Z",
+  "signatures": ["ed25519:researcher-signature"]
+}

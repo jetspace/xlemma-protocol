@@ -10,12 +10,18 @@ use xlemma_consensus::{
     eligible_set_root, evaluate_formal_consensus, randomness_commitment, FormalConsensusPolicy,
 };
 use xlemma_core::{
-    Amount, ArtifactId, ClaimManifest, CredentialRevocation, EligibleNode, NodeCredential,
-    NodeCredentialChain, NodeServiceAdvertisement, ObservationReceipt, OperatorCredential,
-    PolicyId, ProofManifest, TheoryId, UserCredential,
+    evaluate_reproduction, observation_commitment, Amount, ArtifactId, CaptureResistanceDashboard,
+    ClaimManifest, ConstitutionalCommitment, CredentialRevocation, EconomicComplianceCertificate,
+    EconomicConstitution, EligibleNode, ForkExitPlan, GovernanceProposal,
+    IndependentCredentialAttestation, NodeCredential, NodeCredentialChain,
+    NodeServiceAdvertisement, NodeWorkReceipt, ObjectiveMisconductRecord, ObservationReceipt,
+    OperatorCredential, PolicyId, ProofManifest, ReproductionObservation,
+    ResearchComputeCooperative, ResearchVerificationCertificate, ResearcherPortabilityManifest,
+    ResearcherResidualRight, ResearcherSovereigntyBundle, TheoryId, UserCredential,
+    VerificationJob, VerificationProfile,
 };
 use xlemma_economics::{
-    compute_impact_pool_allocation, ComputeSavingsEvidence, ComputeSavingsPolicy,
+    compute_impact_pool_allocation, ComputeSavingsEvidence, ComputeSavingsPolicy, FundingReceipt,
     ImpactPoolAuthorization,
 };
 use xlemma_storage::{build_bundle_manifest, BundleInput};
@@ -41,6 +47,21 @@ enum Command {
         policy: PathBuf,
         observations: PathBuf,
     },
+    /// Evaluate profile-bound reproduction without voting away divergence.
+    EvaluateReproduction {
+        profile: PathBuf,
+        job: PathBuf,
+        observations: PathBuf,
+    },
+    /// Verify that an export is independently reconstructable without a company database.
+    VerifyPortability { manifest: PathBuf },
+    /// Verify explicit economic obligations without treating payment as research validity.
+    VerifyEconomicCompliance {
+        constitution: PathBuf,
+        certificate: PathBuf,
+    },
+    /// Derive an observation root, commit-reveal binding, and ReceiptID for a draft receipt.
+    PrepareReproductionObservation { observation: PathBuf },
     /// Commit a public randomness reveal for a future sortition request.
     CommitteeRandomness {
         #[arg(long)]
@@ -101,6 +122,21 @@ enum IdKind {
     OperatorCredential,
     NodeCredential,
     CredentialRevocation,
+    SovereigntyBundle,
+    PortabilityManifest,
+    ResidualRight,
+    ComputeCooperative,
+    CaptureDashboard,
+    NodeWorkReceipt,
+    ObjectiveMisconduct,
+    ConstitutionalCommitment,
+    ForkExitPlan,
+    GovernanceProposal,
+    IssuerAttestation,
+    FundingReceipt,
+    ReproductionObservation,
+    ResearchCertificate,
+    EconomicComplianceCertificate,
 }
 
 fn main() -> Result<()> {
@@ -134,6 +170,71 @@ fn main() -> Result<()> {
                         .derive_revocation_id()?
                         .to_string()
                 }
+                IdKind::SovereigntyBundle => {
+                    serde_json::from_value::<ResearcherSovereigntyBundle>(value)?
+                        .derive_bundle_id()?
+                        .to_string()
+                }
+                IdKind::PortabilityManifest => {
+                    serde_json::from_value::<ResearcherPortabilityManifest>(value)?
+                        .derive_manifest_id()?
+                        .to_string()
+                }
+                IdKind::ResidualRight => serde_json::from_value::<ResearcherResidualRight>(value)?
+                    .derive_right_id()?
+                    .to_string(),
+                IdKind::ComputeCooperative => {
+                    serde_json::from_value::<ResearchComputeCooperative>(value)?
+                        .derive_cooperative_id()?
+                        .to_string()
+                }
+                IdKind::CaptureDashboard => {
+                    serde_json::from_value::<CaptureResistanceDashboard>(value)?
+                        .derive_dashboard_id()?
+                        .to_string()
+                }
+                IdKind::NodeWorkReceipt => serde_json::from_value::<NodeWorkReceipt>(value)?
+                    .derive_receipt_id()?
+                    .to_string(),
+                IdKind::ObjectiveMisconduct => {
+                    serde_json::from_value::<ObjectiveMisconductRecord>(value)?
+                        .derive_record_id()?
+                        .to_string()
+                }
+                IdKind::ConstitutionalCommitment => {
+                    serde_json::from_value::<ConstitutionalCommitment>(value)?
+                        .derive_commitment_id()?
+                        .to_string()
+                }
+                IdKind::ForkExitPlan => serde_json::from_value::<ForkExitPlan>(value)?
+                    .derive_plan_id()?
+                    .to_string(),
+                IdKind::GovernanceProposal => serde_json::from_value::<GovernanceProposal>(value)?
+                    .derive_proposal_id()?
+                    .to_string(),
+                IdKind::IssuerAttestation => {
+                    serde_json::from_value::<IndependentCredentialAttestation>(value)?
+                        .derive_attestation_id()?
+                        .to_string()
+                }
+                IdKind::FundingReceipt => serde_json::from_value::<FundingReceipt>(value)?
+                    .derive_funding_receipt_id()?
+                    .to_string(),
+                IdKind::ReproductionObservation => {
+                    serde_json::from_value::<ReproductionObservation>(value)?
+                        .derive_receipt_id()?
+                        .to_string()
+                }
+                IdKind::ResearchCertificate => {
+                    serde_json::from_value::<ResearchVerificationCertificate>(value)?
+                        .derive_certificate_id()?
+                        .to_string()
+                }
+                IdKind::EconomicComplianceCertificate => {
+                    serde_json::from_value::<EconomicComplianceCertificate>(value)?
+                        .derive_certificate_id()?
+                        .to_string()
+                }
             };
             println!("{id}");
         }
@@ -144,6 +245,42 @@ fn main() -> Result<()> {
             let policy: FormalConsensusPolicy = read_json(policy)?;
             let observations: Vec<ObservationReceipt> = read_json(observations)?;
             print_json(&evaluate_formal_consensus(&policy, &observations)?)?;
+        }
+        Command::EvaluateReproduction {
+            profile,
+            job,
+            observations,
+        } => {
+            let profile: VerificationProfile = read_json(profile)?;
+            let job: VerificationJob = read_json(job)?;
+            let observations: Vec<ReproductionObservation> = read_json(observations)?;
+            print_json(&evaluate_reproduction(&job, &profile, &observations)?)?;
+        }
+        Command::VerifyPortability { manifest } => {
+            let manifest: ResearcherPortabilityManifest = read_json(manifest)?;
+            manifest.validate_reconstructable()?;
+            println!("{}", manifest.manifest_id);
+        }
+        Command::VerifyEconomicCompliance {
+            constitution,
+            certificate,
+        } => {
+            let constitution: EconomicConstitution = read_json(constitution)?;
+            let certificate: EconomicComplianceCertificate = read_json(certificate)?;
+            certificate.validate_against(&constitution)?;
+            println!("{}", certificate.certificate_id);
+        }
+        Command::PrepareReproductionObservation { observation } => {
+            let mut observation: ReproductionObservation = read_json(observation)?;
+            observation.observation_root = observation.expected_observation_root()?;
+            observation.commitment = observation_commitment(
+                &observation.job_id,
+                observation.verdict,
+                &observation.observation_root,
+                observation.reveal_salt.as_bytes(),
+            );
+            observation.receipt_id = observation.derive_receipt_id()?;
+            print_json(&observation)?;
         }
         Command::CommitteeRandomness { revealed_seed } => {
             println!("{}", randomness_commitment(revealed_seed.as_bytes()));

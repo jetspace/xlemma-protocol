@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/upstream-allocation.schema.json",
+  "title": "UpstreamAllocation",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "revenue_event_id": { "type": "string", "pattern": "^xlrevenue:blake3:[0-9a-f]{64}$" },
+    "downstream_claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "net_qualifying_revenue": { "$ref": "common.schema.json#/$defs/amount" },
+    "upstream_pool": { "$ref": "common.schema.json#/$defs/amount" },
+    "payouts": {
+      "type": "object",
+      "propertyNames": { "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+      "additionalProperties": { "$ref": "common.schema.json#/$defs/amount" }
+    },
+    "selected_equivalence_clusters": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" }
+    },
+    "unallocated_remainder": { "$ref": "common.schema.json#/$defs/amount" },
+    "non_recursive": { "const": true }
+  },
+  "required": ["revenue_event_id", "downstream_claim_id", "net_qualifying_revenue", "upstream_pool", "payouts", "selected_equivalence_clusters", "unallocated_remainder", "non_recursive"],
+  "$comment": "Payouts plus unallocated remainder MUST equal the one event-level upstream pool."
+}

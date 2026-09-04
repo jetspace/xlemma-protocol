@@ -123,8 +123,10 @@ Controls: the XLMP protocol name, major version, MessageID, signer, policy roots
 Controls: mandatory API bearer authentication outside `/health`, an explicit
 Ed25519 sender allowlist, a NodeID-to-signer map, domain-separated signing
 bytes, cryptographically verified inner observation signatures, prior signed
-commit lookup, job-specific committee-roster matching, body/concurrency limits,
-and append-only MessageID storage. The reference nonce and state stores remain
+commit lookup, job-specific committee-roster matching, and rejection of formal
+or generalized certificates whose observations did not previously pass
+authenticated XLMP ingress. Body/concurrency limits and append-only MessageID
+storage bound the HTTP surface. The reference nonce and state stores remain
 in-memory and must be replaced by durable transactional stores before HA use.
 
 ### Revenue fabrication
@@ -148,7 +150,7 @@ Controls: evidence and economic graphs are separate; a final proof-term
 dependency is necessary evidence but never sufficient authorization. Payment
 also requires settled external revenue, an active economic policy, an eligible
 economic edge, a fixed pool, a per-result cap, equivalence clustering,
-graph-cycle analysis, and non-recursive event treatment. Open Commons has no
+graph-cycle analysis, and non-recursive event treatment. Commons has no
 mandatory dependency pool. Impact authorization binds the exact revenue event
 and content-derived impact evidence; settlement atomically consumes it to
 prevent replay. Fixed-point checked arithmetic prevents floating-point drift or
@@ -169,6 +171,37 @@ Controls: client-side encryption, minimal public commitments, wrapped key delive
 ### Governance capture
 
 Controls: immutable historical objects, policy-version IDs, timelocks, narrowly scoped emergency quarantine, no governance power to alter checker evidence, and forkable open specifications.
+
+### Company or frontend disappearance
+
+Controls: content-derived researcher portability manifests, open event-log
+checkpoints, independent reconstruction clients, direct-custody vaults, and at
+least two independent storage locations for every exported artifact. Origin,
+contribution, verification, rights, and economic-policy records do not depend
+on one proprietary database.
+
+### Cross-layer capture hidden by aggregate branding
+
+Controls: an eight-layer `CaptureResistanceDashboard` reports largest operator
+and beneficial-owner shares, control-domain and coalition sizes, and relevant
+provider, region, software, issuer, and frontend concentration. Effective
+decentralization is the minimum layer score. Evidence roots and append-only
+dashboard IDs prevent a coordinator from silently revising the measurement.
+
+### Cooperative independence inflation
+
+Controls: every research compute cooperative counts as one operator cluster
+for a job. Member-share overlap between cooperatives reduces independence
+credit, and undisclosed shared beneficial control is objectively challengeable
+and slashable under the declared policy.
+
+### Inflation-funded idle nodes
+
+Controls: `NodeWorkReceipt` requires completed-work evidence, external settled
+value, and a settlement receipt. Eligible revenue kinds are execution,
+reserved capacity, availability, specialization, successful challenge, and
+maintenance. Bond coverage caps certificate exposure; bond size is never
+mathematical voting power.
 
 ## Slashing standard
 

@@ -40,4 +40,7 @@ a universal unit of scientific value.
 22. Every withdrawable reward MUST trace to settled value from an external payer and an explicit economic policy.
 23. Compute-savings estimates MUST be treated as uncertain impact signals, not precise invoices or self-executing debts.
 24. Provider-advertised success probability MUST NOT control quality-adjusted service routing.
-25. Open Commons capsules MUST NOT impose mandatory per-use protocol fees.
+25. Origin, attribution, direct custody, and portable exit MUST survive the failure or capture of any xLemma company or adapter.
+26. A descriptive evidence edge MUST NOT authorize payment; only a bounded signed economic edge may do so.
+27. Researcher economic participation MUST be nonexclusive, nonrecursive, nonblocking, and limited to explicit qualifying settled revenue.
+28. Commons capsules MUST NOT impose mandatory per-use protocol fees.

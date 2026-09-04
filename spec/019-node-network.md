@@ -31,6 +31,21 @@ evidence class, confidence, issuer concentration, limitations, and challenge
 path. Multiple credential issuers SHOULD be supported so one issuer cannot
 unilaterally define all consensus eligibility.
 
+### 1.1 User-owned compute cooperatives
+
+`ResearchComputeCooperative` is the native collective-ownership record. It
+binds at least two verified members, ownership/governance shares totaling
+10,000 basis points, shared nodes and capability classes, one treasury, one
+governance policy, and beneficial-control evidence. All of its machines count
+as one `OperatorClusterID` for the same job. Internal membership never
+manufactures committee independence.
+
+Where two cooperatives share members, implementations MUST calculate the
+conservative ownership-overlap score as the sum of the smaller share held by
+each common member. Independence credit is `10,000 - overlap_bps`; cluster
+policy MAY reduce it further when non-member beneficial owners, financing, or
+control agreements overlap.
+
 ## 2. Native records
 
 ### 2.1 NodeServiceAdvertisement
@@ -112,6 +127,23 @@ Slashing is limited to objective evidence such as equivocation, fabricated
 execution, false artifact/custody binding, unauthorized key use, or a missed
 reveal after commitment. Checker divergence, a valid `FAIL`, or an unpopular
 novelty assessment is not itself slashable.
+
+`NodeExposureLimit` binds maximum certificate exposure to the active bond:
+
+```text
+MaximumCertificateExposure <= coverage_multiplier × active bond
+```
+
+The calculation uses compatible settlement assets and checked integer
+arithmetic. `ObjectiveMisconductRecord` has a closed misconduct-kind enum,
+content-derived identity, evidence roots, adjudication policy, bounded slash
+amount, and signatures. Checker-family divergence and honest `FAIL` receipts
+are intentionally absent from that enum.
+
+Node revenue is earned from execution, reserved capacity, availability,
+specialization, successful challenge, or maintenance. Every `NodeWorkReceipt`
+MUST bind completed-work evidence, a settlement receipt, and independently
+valued payer evidence. Emissions for merely existing are not node revenue.
 
 ## 5. Committee sortition
 
@@ -204,7 +236,22 @@ return reproducible results for the same snapshot and constraints. Censorship
 resistance requires multiple discovery/index providers; no discovery server is
 a consensus authority.
 
-## 8. Conformance
+## 8. Capture-resistance dashboard
+
+Every production network SHOULD publish a content-derived
+`CaptureResistanceDashboard` for identity, compute, models, verification,
+storage, settlement, discovery, and governance. Each layer discloses the
+largest operator and beneficial-owner shares, independent control-domain
+count, minimum censorship and corruption coalitions, and applicable provider,
+region, software-family, issuer, and frontend concentration.
+
+The reference independence score is the minimum of beneficial-owner
+dispersion, censorship-coalition fraction, and corruption-coalition fraction.
+Effective network decentralization is the minimum score across all eight
+layers. Strong verification decentralization therefore cannot conceal capture
+of identity, discovery, or settlement.
+
+## 9. Conformance
 
 A conforming node-network implementation MUST:
 
@@ -221,3 +268,9 @@ A conforming node-network implementation MUST:
    separate state transitions and receipts.
 9. validate credential chains under XLIP-020 and ensure one verified
    participant cannot gain independence by operating additional machines.
+10. count every cooperative as one cluster and reduce cross-cooperative
+    independence for overlapping ownership.
+11. require work and settled external value before node revenue, cap exposure
+    against bonds, and slash only enumerated objective misconduct.
+12. publish all eight capture layers without replacing their metrics with one
+    governance-controlled popularity score.

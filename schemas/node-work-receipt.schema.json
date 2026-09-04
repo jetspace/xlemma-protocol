@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/node-work-receipt.schema.json",
+  "title": "NodeWorkReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "receipt_id": { "type": "string", "pattern": "^xlwork:blake3:[0-9a-f]{64}$" },
+    "node_id": { "type": "string", "pattern": "^xlnode:blake3:[0-9a-f]{64}$" },
+    "operator_id": { "type": "string", "pattern": "^xlop:blake3:[0-9a-f]{64}$" },
+    "job_id": { "type": ["string", "null"], "pattern": "^xljob:blake3:[0-9a-f]{64}$" },
+    "service": { "type": "string", "enum": ["formalization", "proof_search", "proof_repair", "explanation", "formal_build", "official_verification", "independent_verification", "novelty_review", "significance_review", "human_expert_review", "storage", "indexing", "challenge_monitoring", "certificate_finalization", "revalidation"] },
+    "revenue_kind": { "type": "string", "enum": ["execution", "reserved_capacity", "availability", "specialization", "successful_challenge", "maintenance"] },
+    "settled_amount": { "$ref": "common.schema.json#/$defs/amount" },
+    "settlement_receipt_id": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
+    "work_evidence_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "external_value_evidence_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "completed_at": { "type": "string", "format": "date-time" },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": ["receipt_id", "node_id", "operator_id", "job_id", "service", "revenue_kind", "settled_amount", "settlement_receipt_id", "work_evidence_root", "external_value_evidence_root", "completed_at", "signature"]
+}

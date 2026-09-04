@@ -4,13 +4,19 @@ use ed25519_dalek::{Signature, VerifyingKey};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use xlemma_core::{
-    canonical_json_bytes, derive_eligible_set_root, ArtifactId, CanonicalizationError,
-    CertificateId, Challenge, ClaimId, ClaimManifest, CommitteeSelection,
-    CommitteeSortitionRequest, ComputeQuoteReceipt, CredentialRevocation, EligibleNode, IdError,
-    JobId, MessageId, NodeBond, NodeCredential, NodeDiscoveryRequest, NodeDiscoveryResult, NodeId,
-    NodeReputationSnapshot, NodeServiceAdvertisement, ObservationReceipt, OperatorClusterId,
-    OperatorCredential, OperatorId, PoIRCertificate, PolicyId, ProofId, ProofManifest, ReceiptId,
-    ResearcherId, RevenueEvent, ServiceMatch, ServiceOrder, UserCredential, VerificationJob,
+    canonical_json_bytes, derive_eligible_set_root, validate_independent_credential_set,
+    ArtifactId, CanonicalizationError, CaptureResistanceDashboard, CertificateId, Challenge,
+    ClaimId, ClaimManifest, CommitteeSelection, CommitteeSortitionRequest, ComputeQuoteReceipt,
+    ConstitutionalCommitment, CredentialIssuerPolicy, CredentialRevocation,
+    EconomicComplianceCertificate, EconomicConstitution, EligibleNode, ForkExitPlan,
+    GovernanceProposal, IdError, IndependentCredentialAttestation, JobId, MessageId, NodeBond,
+    NodeCredential, NodeDiscoveryRequest, NodeDiscoveryResult, NodeExposureLimit, NodeId,
+    NodeReputationSnapshot, NodeServiceAdvertisement, NodeWorkReceipt, ObjectiveMisconductRecord,
+    ObservationReceipt, OperatorClusterId, OperatorCredential, OperatorId, PoIRCertificate,
+    PolicyId, ProofId, ProofManifest, ReceiptId, ReproductionObservation,
+    ResearchComputeCooperative, ResearchVerificationCertificate, ResearcherId,
+    ResearcherPortabilityManifest, ResearcherResidualRight, ResearcherSovereigntyBundle,
+    RevenueEvent, ServiceMatch, ServiceOrder, UserCredential, VerificationJob, VerificationProfile,
     VerifiedUserId, XLMP_MAJOR_VERSION, XLMP_PROTOCOL,
 };
 
@@ -68,6 +74,36 @@ pub enum MessageKind {
     NodeCredential,
     #[serde(rename = "XLMP_CREDENTIAL_REVOCATION")]
     CredentialRevocation,
+    #[serde(rename = "XLMP_SOVEREIGNTY")]
+    Sovereignty,
+    #[serde(rename = "XLMP_PORTABILITY")]
+    Portability,
+    #[serde(rename = "XLMP_RESIDUAL_RIGHT")]
+    ResidualRight,
+    #[serde(rename = "XLMP_ECONOMIC_CONSTITUTION")]
+    EconomicConstitution,
+    #[serde(rename = "XLMP_ECONOMIC_COMPLIANCE")]
+    EconomicCompliance,
+    #[serde(rename = "XLMP_VERIFICATION_PROFILE")]
+    VerificationProfile,
+    #[serde(rename = "XLMP_REPRODUCTION_OBSERVATION")]
+    ReproductionObservation,
+    #[serde(rename = "XLMP_RESEARCH_CERTIFICATE")]
+    ResearchCertificate,
+    #[serde(rename = "XLMP_COMPUTE_COOPERATIVE")]
+    ComputeCooperative,
+    #[serde(rename = "XLMP_CAPTURE_DASHBOARD")]
+    CaptureDashboard,
+    #[serde(rename = "XLMP_NODE_WORK")]
+    NodeWork,
+    #[serde(rename = "XLMP_NODE_EXPOSURE")]
+    NodeExposure,
+    #[serde(rename = "XLMP_MISCONDUCT")]
+    Misconduct,
+    #[serde(rename = "XLMP_GOVERNANCE_PROPOSAL")]
+    GovernanceProposal,
+    #[serde(rename = "XLMP_CREDENTIAL_EVIDENCE")]
+    CredentialEvidence,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -231,6 +267,94 @@ pub struct CredentialRevocationMessage {
     pub revocation: CredentialRevocation,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SovereigntyMessage {
+    pub bundle: ResearcherSovereigntyBundle,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PortabilityMessage {
+    pub manifest: ResearcherPortabilityManifest,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ResidualRightMessage {
+    pub right: ResearcherResidualRight,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EconomicConstitutionMessage {
+    pub constitution: EconomicConstitution,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EconomicComplianceMessage {
+    pub constitution: EconomicConstitution,
+    pub certificate: EconomicComplianceCertificate,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct VerificationProfileMessage {
+    pub profile: VerificationProfile,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReproductionObservationMessage {
+    pub job: VerificationJob,
+    pub profile: VerificationProfile,
+    pub observation: ReproductionObservation,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ResearchCertificateMessage {
+    pub job: VerificationJob,
+    pub profile: VerificationProfile,
+    pub observations: Vec<ReproductionObservation>,
+    pub certificate: ResearchVerificationCertificate,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ComputeCooperativeMessage {
+    pub cooperative: ResearchComputeCooperative,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CaptureDashboardMessage {
+    pub dashboard: CaptureResistanceDashboard,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NodeWorkMessage {
+    pub receipt: NodeWorkReceipt,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NodeExposureMessage {
+    pub limit: NodeExposureLimit,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MisconductMessage {
+    pub record: ObjectiveMisconductRecord,
+    /// Bond snapshot against which the bounded slash is evaluated.
+    pub active_bond_amount: xlemma_core::Amount,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GovernanceProposalMessage {
+    pub proposal: GovernanceProposal,
+    pub constitution: ConstitutionalCommitment,
+    pub fork_exit_plan: ForkExitPlan,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CredentialEvidenceMessage {
+    pub subject: VerifiedUserId,
+    pub policy: CredentialIssuerPolicy,
+    pub attestations: Vec<IndependentCredentialAttestation>,
+    pub evaluated_at: DateTime<Utc>,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", content = "payload")]
 pub enum XlmpMessage {
@@ -284,6 +408,36 @@ pub enum XlmpMessage {
     NodeCredential(NodeCredentialMessage),
     #[serde(rename = "XLMP_CREDENTIAL_REVOCATION")]
     CredentialRevocation(CredentialRevocationMessage),
+    #[serde(rename = "XLMP_SOVEREIGNTY")]
+    Sovereignty(SovereigntyMessage),
+    #[serde(rename = "XLMP_PORTABILITY")]
+    Portability(PortabilityMessage),
+    #[serde(rename = "XLMP_RESIDUAL_RIGHT")]
+    ResidualRight(ResidualRightMessage),
+    #[serde(rename = "XLMP_ECONOMIC_CONSTITUTION")]
+    EconomicConstitution(EconomicConstitutionMessage),
+    #[serde(rename = "XLMP_ECONOMIC_COMPLIANCE")]
+    EconomicCompliance(EconomicComplianceMessage),
+    #[serde(rename = "XLMP_VERIFICATION_PROFILE")]
+    VerificationProfile(VerificationProfileMessage),
+    #[serde(rename = "XLMP_REPRODUCTION_OBSERVATION")]
+    ReproductionObservation(ReproductionObservationMessage),
+    #[serde(rename = "XLMP_RESEARCH_CERTIFICATE")]
+    ResearchCertificate(ResearchCertificateMessage),
+    #[serde(rename = "XLMP_COMPUTE_COOPERATIVE")]
+    ComputeCooperative(ComputeCooperativeMessage),
+    #[serde(rename = "XLMP_CAPTURE_DASHBOARD")]
+    CaptureDashboard(CaptureDashboardMessage),
+    #[serde(rename = "XLMP_NODE_WORK")]
+    NodeWork(NodeWorkMessage),
+    #[serde(rename = "XLMP_NODE_EXPOSURE")]
+    NodeExposure(NodeExposureMessage),
+    #[serde(rename = "XLMP_MISCONDUCT")]
+    Misconduct(MisconductMessage),
+    #[serde(rename = "XLMP_GOVERNANCE_PROPOSAL")]
+    GovernanceProposal(GovernanceProposalMessage),
+    #[serde(rename = "XLMP_CREDENTIAL_EVIDENCE")]
+    CredentialEvidence(CredentialEvidenceMessage),
 }
 
 impl XlmpMessage {
@@ -314,6 +468,21 @@ impl XlmpMessage {
             Self::OperatorCredential(_) => MessageKind::OperatorCredential,
             Self::NodeCredential(_) => MessageKind::NodeCredential,
             Self::CredentialRevocation(_) => MessageKind::CredentialRevocation,
+            Self::Sovereignty(_) => MessageKind::Sovereignty,
+            Self::Portability(_) => MessageKind::Portability,
+            Self::ResidualRight(_) => MessageKind::ResidualRight,
+            Self::EconomicConstitution(_) => MessageKind::EconomicConstitution,
+            Self::EconomicCompliance(_) => MessageKind::EconomicCompliance,
+            Self::VerificationProfile(_) => MessageKind::VerificationProfile,
+            Self::ReproductionObservation(_) => MessageKind::ReproductionObservation,
+            Self::ResearchCertificate(_) => MessageKind::ResearchCertificate,
+            Self::ComputeCooperative(_) => MessageKind::ComputeCooperative,
+            Self::CaptureDashboard(_) => MessageKind::CaptureDashboard,
+            Self::NodeWork(_) => MessageKind::NodeWork,
+            Self::NodeExposure(_) => MessageKind::NodeExposure,
+            Self::Misconduct(_) => MessageKind::Misconduct,
+            Self::GovernanceProposal(_) => MessageKind::GovernanceProposal,
+            Self::CredentialEvidence(_) => MessageKind::CredentialEvidence,
         }
     }
 
@@ -497,6 +666,79 @@ impl XlmpMessage {
                 message.credential.operator_cluster_id.validate()
             }
             Self::CredentialRevocation(message) => message.revocation.revocation_id.validate(),
+            Self::Sovereignty(message) => {
+                message.bundle.bundle_id.validate()?;
+                message.bundle.researcher_id.validate()?;
+                message.bundle.claim_id.validate()?;
+                message.bundle.origin_receipt_id.validate()?;
+                message.bundle.portability_manifest_id.validate()
+            }
+            Self::Portability(message) => {
+                message.manifest.manifest_id.validate()?;
+                message.manifest.researcher_id.validate()
+            }
+            Self::ResidualRight(message) => {
+                message.right.right_id.validate()?;
+                message.right.origin_researcher_id.validate()?;
+                message.right.claim_id.validate()
+            }
+            Self::EconomicConstitution(message) => message.constitution.policy_id.validate(),
+            Self::EconomicCompliance(message) => {
+                message.constitution.policy_id.validate()?;
+                message.certificate.certificate_id.validate()
+            }
+            Self::VerificationProfile(message) => message.profile.policy_id.validate(),
+            Self::ReproductionObservation(message) => {
+                message.job.job_id.validate()?;
+                message.profile.policy_id.validate()?;
+                message.observation.receipt_id.validate()
+            }
+            Self::ResearchCertificate(message) => {
+                message.job.job_id.validate()?;
+                message.profile.policy_id.validate()?;
+                message.certificate.certificate_id.validate()
+            }
+            Self::ComputeCooperative(message) => {
+                message.cooperative.cooperative_id.validate()?;
+                message.cooperative.operator_cluster_id.validate()?;
+                message.cooperative.governance_policy_id.validate()
+            }
+            Self::CaptureDashboard(message) => {
+                message.dashboard.dashboard_id.validate()?;
+                message.dashboard.policy_id.validate()
+            }
+            Self::NodeWork(message) => {
+                message.receipt.receipt_id.validate()?;
+                message.receipt.node_id.validate()?;
+                message.receipt.operator_id.validate()?;
+                message.receipt.settlement_receipt_id.validate()
+            }
+            Self::NodeExposure(message) => {
+                message.limit.bond_id.validate()?;
+                message.limit.policy_id.validate()
+            }
+            Self::Misconduct(message) => {
+                message.record.record_id.validate()?;
+                message.record.node_id.validate()?;
+                message.record.operator_id.validate()?;
+                message.record.bond_id.validate()?;
+                message.record.adjudication_policy_id.validate()
+            }
+            Self::GovernanceProposal(message) => {
+                message.proposal.proposal_id.validate()?;
+                message.proposal.policy_id.validate()?;
+                message.constitution.commitment_id.validate()?;
+                message.fork_exit_plan.plan_id.validate()
+            }
+            Self::CredentialEvidence(message) => {
+                message.subject.validate()?;
+                message.policy.policy_id.validate()?;
+                for attestation in &message.attestations {
+                    attestation.attestation_id.validate()?;
+                    attestation.subject.validate()?;
+                }
+                Ok(())
+            }
         }
     }
 }
@@ -562,6 +804,18 @@ pub enum XlmpError {
     CredentialIntegrity,
     #[error("XLMP observation lacks its credential-chain binding")]
     ObservationIdentity,
+    #[error("XLMP researcher-sovereignty object failed protocol validation")]
+    SovereigntyIntegrity,
+    #[error("XLMP generalized research-reproduction evidence failed protocol validation")]
+    ResearchVerificationIntegrity,
+    #[error("XLMP economic event lacks content-bound realized settlement evidence")]
+    EconomicIntegrity,
+    #[error("XLMP capture-resistance or node-economics object failed protocol validation")]
+    CaptureIntegrity,
+    #[error("XLMP governance proposal crossed a constitutional or exit-safety boundary")]
+    GovernanceIntegrity,
+    #[error("XLMP credential evidence is expired, concentrated, or unauthorized")]
+    CredentialEvidenceIntegrity,
     #[error(transparent)]
     Canonicalization(#[from] CanonicalizationError),
     #[error(transparent)]
@@ -704,6 +958,76 @@ impl XlmpEnvelope {
                 .observation
                 .validate_integrity()
                 .map_err(|error| XlmpError::ObservationIntegrity(error.to_string()))?,
+            XlmpMessage::Sovereignty(message) => message
+                .bundle
+                .validate_integrity()
+                .map_err(|_| XlmpError::SovereigntyIntegrity)?,
+            XlmpMessage::Portability(message) => message
+                .manifest
+                .validate_reconstructable()
+                .map_err(|_| XlmpError::SovereigntyIntegrity)?,
+            XlmpMessage::ResidualRight(message) => message
+                .right
+                .validate_integrity()
+                .map_err(|_| XlmpError::SovereigntyIntegrity)?,
+            XlmpMessage::EconomicConstitution(message) => message
+                .constitution
+                .validate()
+                .map_err(|_| XlmpError::SovereigntyIntegrity)?,
+            XlmpMessage::EconomicCompliance(message) => message
+                .certificate
+                .validate_against(&message.constitution)
+                .map_err(|_| XlmpError::EconomicIntegrity)?,
+            XlmpMessage::VerificationProfile(message) => message
+                .profile
+                .validate()
+                .map_err(|_| XlmpError::SovereigntyIntegrity)?,
+            XlmpMessage::ReproductionObservation(message) => message
+                .observation
+                .validate_against(&message.job, &message.profile)
+                .map_err(|_| XlmpError::ResearchVerificationIntegrity)?,
+            XlmpMessage::ResearchCertificate(message) => message
+                .certificate
+                .validate_against(&message.job, &message.profile, &message.observations)
+                .map_err(|_| XlmpError::ResearchVerificationIntegrity)?,
+            XlmpMessage::Revenue(message) => message
+                .event
+                .validate_integrity()
+                .map_err(|_| XlmpError::EconomicIntegrity)?,
+            XlmpMessage::ComputeCooperative(message) => message
+                .cooperative
+                .validate_integrity()
+                .map_err(|_| XlmpError::CaptureIntegrity)?,
+            XlmpMessage::CaptureDashboard(message) => message
+                .dashboard
+                .validate_integrity()
+                .map_err(|_| XlmpError::CaptureIntegrity)?,
+            XlmpMessage::NodeWork(message) => message
+                .receipt
+                .validate_integrity()
+                .map_err(|_| XlmpError::CaptureIntegrity)?,
+            XlmpMessage::NodeExposure(message) if !message.limit.is_covered() => {
+                return Err(XlmpError::CaptureIntegrity)
+            }
+            XlmpMessage::Misconduct(message) => message
+                .record
+                .validate(&message.active_bond_amount)
+                .map_err(|_| XlmpError::CaptureIntegrity)?,
+            XlmpMessage::GovernanceProposal(message) => message
+                .proposal
+                .validate_for_activation(
+                    &message.constitution,
+                    &message.fork_exit_plan,
+                    message.proposal.activation_at,
+                )
+                .map_err(|_| XlmpError::GovernanceIntegrity)?,
+            XlmpMessage::CredentialEvidence(message) => validate_independent_credential_set(
+                &message.policy,
+                &message.subject,
+                &message.attestations,
+                message.evaluated_at,
+            )
+            .map_err(|_| XlmpError::CredentialEvidenceIntegrity)?,
             _ => {}
         }
         match &self.message {
@@ -837,6 +1161,33 @@ pub fn verify_observation_commit_reveal(
         && revealed.revealed_at >= committed.committed_at
         && !revealed.reveal_salt.is_empty()
         && xlemma_core::verify_observation_reveal(revealed, revealed.reveal_salt.as_bytes());
+    same_binding
+        .then_some(())
+        .ok_or(XlmpError::ObservationCommitMismatch)
+}
+
+pub fn verify_reproduction_commit_reveal(
+    committed: &ObservationCommitMessage,
+    revealed: &ReproductionObservation,
+    job: &VerificationJob,
+    profile: &VerificationProfile,
+) -> Result<(), XlmpError> {
+    revealed
+        .validate_against(job, profile)
+        .map_err(|_| XlmpError::ResearchVerificationIntegrity)?;
+    let same_binding = committed.job_id == revealed.job_id
+        && committed.receipt_id == revealed.receipt_id
+        && committed.node_id == revealed.verifier_node_id
+        && committed.verified_user_id == revealed.verified_user_id
+        && committed.operator_id == revealed.operator_id
+        && committed.operator_cluster_id == revealed.operator_cluster_id
+        && committed.user_credential_id == revealed.user_credential_id
+        && committed.operator_credential_id == revealed.operator_credential_id
+        && committed.node_credential_id == revealed.node_credential_id
+        && committed.credential_chain_root == revealed.credential_chain_root
+        && committed.commitment == revealed.commitment
+        && committed.committed_at == revealed.committed_at
+        && revealed.reproduced_at >= committed.committed_at;
     same_binding
         .then_some(())
         .ok_or(XlmpError::ObservationCommitMismatch)
@@ -1010,6 +1361,123 @@ mod tests {
     }
 
     #[test]
+    fn sovereignty_message_enforces_durable_rights() {
+        let mut bundle: ResearcherSovereigntyBundle = serde_json::from_str(include_str!(
+            "../../../examples/no-arbitrage/sovereignty-bundle.json"
+        ))
+        .unwrap();
+        bundle.bundle_id = bundle.derive_bundle_id().unwrap();
+        let envelope = XlmpEnvelope::new(
+            None,
+            "did:key:researcher",
+            Utc::now(),
+            XlmpMessage::Sovereignty(SovereigntyMessage {
+                bundle: bundle.clone(),
+            }),
+            "signature",
+        )
+        .unwrap();
+        assert_eq!(envelope.kind(), MessageKind::Sovereignty);
+
+        bundle
+            .rights
+            .get_mut(&xlemma_core::SovereigntyRightKind::Origin)
+            .unwrap()
+            .transferable = true;
+        bundle.bundle_id = bundle.derive_bundle_id().unwrap();
+        assert!(matches!(
+            XlmpEnvelope::new(
+                None,
+                "did:key:researcher",
+                Utc::now(),
+                XlmpMessage::Sovereignty(SovereigntyMessage { bundle }),
+                "signature",
+            ),
+            Err(XlmpError::SovereigntyIntegrity)
+        ));
+    }
+
+    #[test]
+    fn generalized_reproduction_messages_validate_exact_published_vectors() {
+        let profile: VerificationProfile = serde_json::from_str(include_str!(
+            "../../../examples/no-arbitrage/computational-verification-profile.json"
+        ))
+        .unwrap();
+        let job: VerificationJob = serde_json::from_str(include_str!(
+            "../../../examples/no-arbitrage/computational-verification-job.json"
+        ))
+        .unwrap();
+        let observations: Vec<ReproductionObservation> = serde_json::from_str(include_str!(
+            "../../../examples/no-arbitrage/computational-observations.json"
+        ))
+        .unwrap();
+        let certificate: ResearchVerificationCertificate = serde_json::from_str(include_str!(
+            "../../../examples/no-arbitrage/computational-research-certificate.json"
+        ))
+        .unwrap();
+
+        let observation_envelope = XlmpEnvelope::new(
+            None,
+            "did:key:computational-verifier-a",
+            Utc::now(),
+            XlmpMessage::ReproductionObservation(ReproductionObservationMessage {
+                job: job.clone(),
+                profile: profile.clone(),
+                observation: observations[0].clone(),
+            }),
+            "signature",
+        )
+        .unwrap();
+        assert_eq!(
+            observation_envelope.kind(),
+            MessageKind::ReproductionObservation
+        );
+
+        let certificate_envelope = XlmpEnvelope::new(
+            None,
+            "did:key:certificate-finalizer",
+            Utc::now(),
+            XlmpMessage::ResearchCertificate(ResearchCertificateMessage {
+                job,
+                profile,
+                observations,
+                certificate,
+            }),
+            "signature",
+        )
+        .unwrap();
+        assert_eq!(
+            certificate_envelope.kind(),
+            MessageKind::ResearchCertificate
+        );
+    }
+
+    #[test]
+    fn economic_compliance_message_cannot_substitute_for_research_validity() {
+        let constitution: EconomicConstitution = serde_json::from_str(include_str!(
+            "../../../examples/no-arbitrage/economic-constitution.json"
+        ))
+        .unwrap();
+        let certificate: EconomicComplianceCertificate = serde_json::from_str(include_str!(
+            "../../../examples/no-arbitrage/economic-compliance-certificate.json"
+        ))
+        .unwrap();
+        assert!(!certificate.affects_research_validity());
+        let envelope = XlmpEnvelope::new(
+            None,
+            "did:key:economic-auditor",
+            Utc::now(),
+            XlmpMessage::EconomicCompliance(EconomicComplianceMessage {
+                constitution,
+                certificate,
+            }),
+            "signature",
+        )
+        .unwrap();
+        assert_eq!(envelope.kind(), MessageKind::EconomicCompliance);
+    }
+
+    #[test]
     fn required_message_discriminators_are_stable() {
         let kinds = [
             MessageKind::Claim,
@@ -1037,6 +1505,21 @@ mod tests {
             MessageKind::OperatorCredential,
             MessageKind::NodeCredential,
             MessageKind::CredentialRevocation,
+            MessageKind::Sovereignty,
+            MessageKind::Portability,
+            MessageKind::ResidualRight,
+            MessageKind::EconomicConstitution,
+            MessageKind::EconomicCompliance,
+            MessageKind::VerificationProfile,
+            MessageKind::ReproductionObservation,
+            MessageKind::ResearchCertificate,
+            MessageKind::ComputeCooperative,
+            MessageKind::CaptureDashboard,
+            MessageKind::NodeWork,
+            MessageKind::NodeExposure,
+            MessageKind::Misconduct,
+            MessageKind::GovernanceProposal,
+            MessageKind::CredentialEvidence,
         ];
         let expected = [
             "XLMP_CLAIM",
@@ -1064,6 +1547,21 @@ mod tests {
             "XLMP_OPERATOR_CREDENTIAL",
             "XLMP_NODE_CREDENTIAL",
             "XLMP_CREDENTIAL_REVOCATION",
+            "XLMP_SOVEREIGNTY",
+            "XLMP_PORTABILITY",
+            "XLMP_RESIDUAL_RIGHT",
+            "XLMP_ECONOMIC_CONSTITUTION",
+            "XLMP_ECONOMIC_COMPLIANCE",
+            "XLMP_VERIFICATION_PROFILE",
+            "XLMP_REPRODUCTION_OBSERVATION",
+            "XLMP_RESEARCH_CERTIFICATE",
+            "XLMP_COMPUTE_COOPERATIVE",
+            "XLMP_CAPTURE_DASHBOARD",
+            "XLMP_NODE_WORK",
+            "XLMP_NODE_EXPOSURE",
+            "XLMP_MISCONDUCT",
+            "XLMP_GOVERNANCE_PROPOSAL",
+            "XLMP_CREDENTIAL_EVIDENCE",
         ];
         for (kind, expected) in kinds.into_iter().zip(expected) {
             assert_eq!(serde_json::to_value(kind).unwrap(), expected);

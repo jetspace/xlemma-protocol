@@ -36,7 +36,7 @@ Schemas are part of the conformance surface.
 | Evidence graph | `ResearcherID`, `TheoryID`, `ClaimID`, `ProofID`, `LemmaCapsule`, `ContributionManifest`, `StatementAlignmentReceipt` |
 | Identity | `VerifiedUserID`, `OperatorID`, `XLMP_UserCredential`, `XLMP_OperatorCredential`, `XLMP_NodeCredential`, `CredentialRevocation` |
 | Node network | `NodeServiceAdvertisement`, `NodeDiscoveryRequest`, `ServiceOrder`, `ServiceMatch`, `NodeReputationSnapshot`, `NodeBond`, `CommitteeSortitionRequest`, `CommitteeSelection` |
-| Verification | `VerificationJob`, `ObservationReceipt`, `PoIRCertificate`, `Challenge`, `QuarantineRecord` |
+| Verification | `VerificationJob`, `VerificationProfile`, `ObservationReceipt`, `ReproductionObservation`, `PoIRCertificate`, `ResearchVerificationCertificate`, `Challenge`, `QuarantineRecord` |
 | Economic graph | `ComputeQuote`, `ComputeReceipt`, `ResearchCredit`, `ResearchVault`, `RevenueEvent`, `ImpactPoolAuthorization`, `DependencyDividend` |
 | Rights/publication | `RightsManifest`, `License`, `PublicationRecord` |
 
@@ -109,6 +109,21 @@ XLMP/1 defines these message discriminators:
 | `XLMP_OPERATOR_CREDENTIAL` | Delegate accountable roles from a verified participant to an operator |
 | `XLMP_NODE_CREDENTIAL` | Delegate exact roles and a public key from an operator to a node |
 | `XLMP_CREDENTIAL_REVOCATION` | Append an effective revocation for an exact credential |
+| `XLMP_SOVEREIGNTY` | Publish a content-derived Researcher Sovereignty Bundle with all seven protections |
+| `XLMP_PORTABILITY` | Publish an independently reconstructable researcher export and storage map |
+| `XLMP_RESIDUAL_RIGHT` | Publish bounded, nonexclusive economic participation in named settled revenue |
+| `XLMP_ECONOMIC_CONSTITUTION` | Select Commons, Reciprocal, Commercial Artifact, or Sponsored Challenge rules |
+| `XLMP_ECONOMIC_COMPLIANCE` | Publish a content-derived status for explicit obligations and settlement without changing research validity |
+| `XLMP_VERIFICATION_PROFILE` | Publish required evidence and independent-reproduction policy for one verification class |
+| `XLMP_REPRODUCTION_OBSERVATION` | Reveal a node-signed, credential-bound non-formal or hybrid reproduction receipt after its exact `XLMP_OBSERVATION_COMMIT` |
+| `XLMP_RESEARCH_CERTIFICATE` | Publish the deterministic multi-operator reproduction outcome for any verification profile |
+| `XLMP_COMPUTE_COOPERATIVE` | Publish user-owned cooperative membership, nodes, treasury, and control evidence |
+| `XLMP_CAPTURE_DASHBOARD` | Publish eight-layer concentration and capture-resistance evidence |
+| `XLMP_NODE_WORK` | Publish completed work and externally settled node revenue evidence |
+| `XLMP_NODE_EXPOSURE` | Bind maximum certificate exposure to active bond coverage |
+| `XLMP_MISCONDUCT` | Publish objectively provable misconduct and a bounded slash against a bond snapshot |
+| `XLMP_GOVERNANCE_PROPOSAL` | Publish an approved three-chamber proposal with immutable constitution, simulation, timelock, and fork/exit plan |
+| `XLMP_CREDENTIAL_EVIDENCE` | Publish a selectively disclosed, non-revoked, multi-issuer eligibility evidence set |
 
 Proof candidates MUST be labeled as candidates. `XLMP_CERTIFICATE` MUST NOT be
 emitted solely from a prover response. `XLMP_OBSERVATION_REVEAL` MUST bind the
@@ -116,7 +131,8 @@ same job, receipt, node, operator cluster, commitment, and commit time as its
 corresponding `XLMP_OBSERVATION_COMMIT`.
 
 Node-network messages are specified further in XLIP-019 and identity messages
-in XLIP-020. Price, bond size, credential tier, and
+in XLIP-020. Sovereignty, residual rights, portability, and verification
+profiles are specified in XLIP-022. Price, bond size, credential tier, and
 reputation MUST remain service-routing and eligibility inputs; none is formal
 vote weight and none can override checker evidence.
 
@@ -170,8 +186,11 @@ is untrusted until independently reproduced and MUST carry a provider-neutral
 
 ### 6.2 Verifier
 
-A `VerifierAdapter` reproduces an exact `VerificationJob` and produces an
-`ObservationReceipt`. Lean is the default XLMP/1 formal backend. Coq, Rocq,
+A `VerifierAdapter` reproduces an exact formal `VerificationJob` and produces
+an `ObservationReceipt`. A `ReproductionAdapter` performs the equivalent
+profile-bound operation for computational, statistical, simulation, empirical,
+and hybrid evidence and returns a `ReproductionObservation`. Lean is the
+default XLMP/1 formal backend. Coq, Rocq,
 Isabelle, HOL, Agda, future proof systems, and independent checker families MAY
 implement the interface under explicit theory and policy identifiers.
 
@@ -216,11 +235,15 @@ not be lower than issued credit units. Expected revenue, an unverified lemma,
 or unrealized token appreciation is not backing.
 
 An `XLMP_REVENUE` event MUST reference finalized external settlement evidence.
+Its content-derived identity binds the related-party disclosure, settlement
+receipt, amounts, deductions, realization time, and evidence root. The
+reference upstream allocator rejects related-party events; they remain visible
+for audit rather than being misrepresented as arm's-length demand.
 A `DependencyDividend` MUST reference a dependency used by the final proof,
 conservative compute-savings evidence, realized downstream net revenue, a
 prescriptive economic-policy root, an eligible economic edge, a fixed pool,
 and an explicit cap. A formal dependency alone MUST NOT create payment.
-Recursive or uncapped royalties are non-conforming. Open Commons capsules MUST
+Recursive or uncapped royalties are non-conforming. Commons capsules MUST
 default mandatory upstream payments to zero; compute savings are an impact
 signal rather than a precise invoice.
 
@@ -231,7 +254,12 @@ formal validity, contribution history, or a rights manifest. A `License` grants
 only the scope supported by its referenced rights manifest and legal context.
 A capsule MUST distinguish its nontransferable origin, rights in actual
 artifacts/contracts, and any explicitly bounded economic participation. It MUST
-select one of `open_commons`, `commercial_research`, or `sponsored_challenge`.
+select one of `commons`, `reciprocal`, `commercial_artifact`, or
+`sponsored_challenge`.
+Economic compliance is a separate certificate plane. A compliant payment
+record MUST NOT change a failed, divergent, unchecked, or quarantined research
+status; a mathematically valid claim MUST NOT erase an unsatisfied economic
+obligation.
 A `StatementAlignmentReceipt` is independent of formal status and MUST bind the
 formal claim to the reviewed informal claim and presentation.
 A `PublicationRecord` binds a specific claim, proof, certificate, artifact,

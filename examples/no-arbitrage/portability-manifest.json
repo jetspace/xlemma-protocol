@@ -1,0 +1,28 @@
+{
+  "manifest_id": "xlportability:blake3:b976fde00450e85f1102d845348cec708496e889d8dae201000a0f00e7eb6905",
+  "researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+  "protocol_version": "XLMP/1",
+  "identity_credential_roots": ["blake3:credential-holder-commitment"],
+  "artifact_roots": ["blake3:artifact-bundle-root"],
+  "contribution_manifest_roots": ["blake3:contribution-manifest-root"],
+  "verification_receipt_roots": ["blake3:poir-receipt-set-root"],
+  "economic_policy_roots": ["blake3:economic-constitution-root"],
+  "settlement_commitments": ["base:0xsettlement-commitment"],
+  "event_log_checkpoints": ["blake3:xlmp-event-log-checkpoint"],
+  "storage_locations": {
+    "blake3:artifact-bundle-root": [
+      {"provider_id": "ipfs-cooperative", "location": "ipfs://bafy-example", "retrieval_evidence_root": "blake3:ipfs-retrieval"},
+      {"provider_id": "arweave-archive", "location": "ar://example-transaction", "retrieval_evidence_root": "blake3:arweave-retrieval"}
+    ]
+  },
+  "event_log_locations": [
+    {"provider_id": "ipfs-cooperative", "location": "ipfs://bafy-event-log", "retrieval_evidence_root": "blake3:ipfs-event-log-retrieval"},
+    {"provider_id": "arweave-archive", "location": "ar://event-log-transaction", "retrieval_evidence_root": "blake3:arweave-event-log-retrieval"}
+  ],
+  "reconstruction_client": "xlemma-cli/0.2.0",
+  "reconstruction_client_source_root": "blake3:open-xlemma-client-source",
+  "funds_exit_instructions_root": "blake3:researcher-funds-exit-instructions",
+  "created_at": "2026-09-03T20:10:00Z",
+  "supersedes": null,
+  "signature": "ed25519:researcher-signature"
+}

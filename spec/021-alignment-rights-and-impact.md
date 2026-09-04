@@ -105,7 +105,7 @@ be charged at most once.
 
 Every `LemmaCapsule` MUST select exactly one mode:
 
-### Open Commons
+### Commons
 
 - public formal artifacts are usable without mandatory per-use protocol fees;
 - attribution remains visible;
@@ -115,7 +115,16 @@ Every `LemmaCapsule` MUST select exactly one mode:
 
 This is the default mode for foundational and open research.
 
-### Commercial Research
+### Reciprocal
+
+- qualifying monetized xLemma descendants contribute one bounded upstream
+  pool;
+- bare citations and independently created external claims do not qualify;
+- depth decay, ancestor caps, equivalent-claim clustering, and one charge per
+  revenue event prevent an anticommons;
+- upstream participants receive no veto over publication, use, or licensing.
+
+### Commercial Artifact
 
 - the formal claim MAY remain public;
 - controlled artifacts or services MAY be licensed under explicit scope;

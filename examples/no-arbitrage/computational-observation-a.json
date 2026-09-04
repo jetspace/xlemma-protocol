@@ -1,0 +1,33 @@
+{
+  "receipt_id": "xlr:blake3:25caeca3c8677910e86fa72f577c46a0b61203919b215b76791d67c6e20a2fa8",
+  "job_id": "xljob:blake3:8888888888888888888888888888888888888888888888888888888888888888",
+  "claim_id": "xlc:blake3:1117d892ad3a90b5c40d700b96fa1df96882dfc4a52dc23a00ebf1eefc5815f8",
+  "verification_profile_class": "computational",
+  "verifier_node_id": "xlnode:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "verified_user_id": "xluser:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "operator_id": "xlop:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "operator_cluster_id": "xloperator:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "user_credential_id": "xlusercred:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "operator_credential_id": "xloperatorcred:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "node_credential_id": "xlnodecred:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "credential_chain_root": "blake3:computational-credential-chain-a",
+  "verifier_implementation": "container-runner:v1",
+  "infrastructure_provider": "provider-a",
+  "region": "region-a",
+  "input_artifact_id": "xla:blake3:4444444444444444444444444444444444444444444444444444444444444444",
+  "exact_input_root": "blake3:exact-benchmark-input",
+  "evidence_roots": {
+    "reproducible_source": "blake3:benchmark-source",
+    "execution_environment": "blake3:benchmark-container",
+    "dependency_lock": "blake3:benchmark-lock",
+    "deterministic_rerun": "blake3:benchmark-rerun-protocol"
+  },
+  "verdict": "pass",
+  "execution_trace_root": "blake3:benchmark-trace-a",
+  "observation_root": "blake3:c71ce2bc67ac7855ed8f75bf75558aa12a5ef78ac8693719828c23a1681a0204",
+  "commitment": "blake3:4d3c069d9046a734c3e76859304c8b49c8bb0a16b09b43cc7bed65260aed620e",
+  "reveal_salt": "computational-observation-salt-a",
+  "committed_at": "2026-09-03T20:45:00Z",
+  "reproduced_at": "2026-09-03T21:00:00Z",
+  "signature": "ed25519:observation-a"
+}

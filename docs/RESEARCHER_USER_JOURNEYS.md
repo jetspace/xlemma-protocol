@@ -11,7 +11,7 @@ This document defines the expected end-to-end experience for the protocol's targ
 5. Deposit backing or receive a grant allocation; mint no more research credits than backing received.
 6. Configure default ASTRA budget, Lean trust policy, novelty policy, storage policy, revenue waterfall, and auto-compound rate.
 7. Register public disclosures for institutional, university, employment, sponsor, and grant-related rights restrictions.
-8. Select Open Commons, Commercial Research, or Sponsored Challenge as the default capsule economic mode.
+8. Select Commons, Reciprocal, Commercial Artifact, or Sponsored Challenge as the capsule economic constitution.
 9. Run a local proof-validation dry run before purchasing independent assurance.
 
 The protocol supports pseudonymity, but economic counterparties, jurisdictions, and regulated service providers may impose separate identity or screening requirements.

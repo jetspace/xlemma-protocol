@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/economic-compliance-certificate.schema.json",
+  "title": "EconomicComplianceCertificate",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "certificate_id": { "type": "string", "pattern": "^xleconcert:blake3:[0-9a-f]{64}$" },
+    "claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "economic_policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "required_obligation_roots": { "type": "array", "uniqueItems": true, "items": { "$ref": "common.schema.json#/$defs/hash" } },
+    "satisfied_obligation_roots": { "type": "array", "uniqueItems": true, "items": { "$ref": "common.schema.json#/$defs/hash" } },
+    "revenue_event_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^xlrevenue:blake3:[0-9a-f]{64}$" } },
+    "settlement_receipt_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" } },
+    "status": { "type": "string", "enum": ["compliant", "noncompliant", "disputed"] },
+    "evaluation_evidence_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "evaluator_operator_cluster_id": { "type": "string", "pattern": "^xloperator:blake3:[0-9a-f]{64}$" },
+    "evaluated_at": { "type": "string", "format": "date-time" },
+    "supersedes": { "anyOf": [{ "type": "string", "pattern": "^xleconcert:blake3:[0-9a-f]{64}$" }, { "type": "null" }] },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": ["certificate_id", "claim_id", "economic_policy_id", "required_obligation_roots", "satisfied_obligation_roots", "revenue_event_ids", "settlement_receipt_ids", "status", "evaluation_evidence_root", "evaluator_operator_cluster_id", "evaluated_at", "supersedes", "signature"]
+}

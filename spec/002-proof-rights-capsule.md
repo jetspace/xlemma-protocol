@@ -43,9 +43,10 @@ and alignment statuses MUST be displayed separately.
 
 ## Economic mode
 
-Every capsule selects `open_commons`, `commercial_research`, or
-`sponsored_challenge` under XLIP-021. Open Commons MUST NOT contain mandatory
-per-use fees. Commercial and sponsored modes require explicit, bounded terms.
+Every capsule selects `commons`, `reciprocal`, `commercial_artifact`, or
+`sponsored_challenge` under XLIP-021 and XLIP-022. Commons MUST NOT contain
+mandatory per-use fees. Reciprocal, commercial, and sponsored modes require
+explicit, bounded, nonrecursive, nonblocking terms.
 
 ## Presentation
 

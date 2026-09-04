@@ -1,0 +1,15 @@
+{
+  "certificate_id": "xleconcert:blake3:997b8355143179545152d2c5f344a03dafad33a9ee425fd650d94928ff7deef0",
+  "claim_id": "xlc:blake3:1117d892ad3a90b5c40d700b96fa1df96882dfc4a52dc23a00ebf1eefc5815f8",
+  "economic_policy_id": "xlpolicy:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+  "required_obligation_roots": ["blake3:bounded-upstream-pool-obligation"],
+  "satisfied_obligation_roots": ["blake3:bounded-upstream-pool-obligation"],
+  "revenue_event_ids": ["xlrevenue:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"],
+  "settlement_receipt_ids": ["xlr:blake3:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"],
+  "status": "compliant",
+  "evaluation_evidence_root": "blake3:economic-compliance-evidence",
+  "evaluator_operator_cluster_id": "xloperator:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "evaluated_at": "2026-09-04T23:00:00Z",
+  "supersedes": null,
+  "signature": "ed25519:economic-auditor"
+}

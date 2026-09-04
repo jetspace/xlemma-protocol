@@ -9,7 +9,8 @@ use xlemma_core::{Amount, PolicyId};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ResearchService {
-    AstraGeneration,
+    #[serde(alias = "astra_generation")]
+    ResearchProverGeneration,
     LeanBuild,
     OfficialKernelCheck,
     IndependentCheck,
@@ -38,6 +39,196 @@ pub struct ServiceOffer {
     pub quote_asset: String,
     pub quote_decimals: u8,
     pub expires_at: DateTime<Utc>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ComputeMarketStage {
+    SpotQuote,
+    MaximumCostAuthorization,
+    ReservedServiceCapacity,
+    DomainServiceForward,
+    CapacityOption,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ComputeRegime {
+    ScarceFrontier,
+    CheapAbundant,
+    HeterogeneousAgentEconomy,
+}
+
+/// Service contract, not a universal scientific-value unit or speculative
+/// compute token. Transferable derivatives are deliberately outside XLMP/1.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ComputeProcurementInstrument {
+    pub instrument_id: String,
+    pub stage: ComputeMarketStage,
+    pub buyer: String,
+    pub provider_id: String,
+    pub service: ResearchService,
+    pub domain: String,
+    pub service_profile_root: String,
+    pub minimum_units: u64,
+    pub maximum_units: u64,
+    pub maximum_spend: Amount,
+    pub delivery_start: DateTime<Utc>,
+    pub delivery_end: DateTime<Utc>,
+    pub exercise_deadline: Option<DateTime<Utc>>,
+    pub reservation_or_collateral_root: Option<String>,
+    pub settlement_policy_id: PolicyId,
+    pub transferable: bool,
+    pub signatures: Vec<String>,
+}
+
+impl ComputeProcurementInstrument {
+    pub fn validate(&self) -> Result<(), CurveError> {
+        self.settlement_policy_id
+            .validate()
+            .map_err(|_| CurveError::InvalidInput)?;
+        if self.instrument_id.trim().is_empty()
+            || self.buyer.trim().is_empty()
+            || self.provider_id.trim().is_empty()
+            || self.domain.trim().is_empty()
+            || self.service_profile_root.trim().is_empty()
+            || self.minimum_units == 0
+            || self.minimum_units > self.maximum_units
+            || self.maximum_spend.units == 0
+            || self.maximum_spend.asset.trim().is_empty()
+            || self.delivery_start >= self.delivery_end
+            || self.transferable
+            || self.signatures.is_empty()
+            || self.signatures.iter().any(|value| value.trim().is_empty())
+        {
+            return Err(CurveError::InvalidInput);
+        }
+        let requires_reservation = matches!(
+            self.stage,
+            ComputeMarketStage::ReservedServiceCapacity
+                | ComputeMarketStage::DomainServiceForward
+                | ComputeMarketStage::CapacityOption
+        );
+        if requires_reservation
+            != self
+                .reservation_or_collateral_root
+                .as_ref()
+                .is_some_and(|root| !root.trim().is_empty())
+        {
+            return Err(CurveError::InvalidInput);
+        }
+        match self.stage {
+            ComputeMarketStage::CapacityOption => {
+                let deadline = self.exercise_deadline.ok_or(CurveError::InvalidInput)?;
+                if deadline >= self.delivery_start {
+                    return Err(CurveError::InvalidInput);
+                }
+            }
+            _ if self.exercise_deadline.is_some() => return Err(CurveError::InvalidInput),
+            _ => {}
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RouteAllocation {
+    pub offer_id: String,
+    pub provider_cluster: String,
+    pub region: String,
+    pub model_family: String,
+    pub allocated_cost: Amount,
+    pub fallback: bool,
+    pub confidential_delivery: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ComputeConcentrationPolicy {
+    pub maximum_provider_share_bps: u16,
+    pub minimum_provider_clusters: u16,
+    pub minimum_regions: u16,
+    pub minimum_model_families: u16,
+    pub minimum_fallback_routes: u16,
+    pub require_confidential_delivery: bool,
+    pub maximum_total_spend: Amount,
+}
+
+/// Applies concentration and fallback gates after quality-adjusted candidate
+/// pricing. No provider can satisfy diversity by rotating offer IDs.
+pub fn validate_diversified_route(
+    route: &[RouteAllocation],
+    policy: &ComputeConcentrationPolicy,
+) -> Result<(), CurveError> {
+    if route.is_empty()
+        || policy.maximum_provider_share_bps == 0
+        || policy.maximum_provider_share_bps > 10_000
+        || policy.minimum_provider_clusters < 2
+        || policy.minimum_regions < 2
+        || policy.minimum_model_families < 2
+        || policy.minimum_fallback_routes == 0
+        || policy.maximum_total_spend.units == 0
+        || policy.maximum_total_spend.asset.trim().is_empty()
+    {
+        return Err(CurveError::InvalidInput);
+    }
+    let mut offer_ids = BTreeSet::new();
+    let mut providers = BTreeSet::new();
+    let mut regions = BTreeSet::new();
+    let mut models = BTreeSet::new();
+    let mut provider_costs = BTreeMap::<&str, u128>::new();
+    let mut total = 0u128;
+    let mut fallback_count = 0u16;
+    for allocation in route {
+        policy
+            .maximum_total_spend
+            .ensure_compatible(&allocation.allocated_cost)
+            .map_err(|_| CurveError::IncompatibleAssets)?;
+        if !offer_ids.insert(allocation.offer_id.as_str())
+            || allocation.provider_cluster.trim().is_empty()
+            || allocation.region.trim().is_empty()
+            || allocation.model_family.trim().is_empty()
+            || allocation.allocated_cost.units == 0
+            || (policy.require_confidential_delivery && !allocation.confidential_delivery)
+        {
+            return Err(CurveError::InvalidInput);
+        }
+        providers.insert(allocation.provider_cluster.as_str());
+        regions.insert(allocation.region.as_str());
+        models.insert(allocation.model_family.as_str());
+        *provider_costs
+            .entry(allocation.provider_cluster.as_str())
+            .or_default() = provider_costs
+            .get(allocation.provider_cluster.as_str())
+            .copied()
+            .unwrap_or_default()
+            .checked_add(allocation.allocated_cost.units)
+            .ok_or(CurveError::Overflow)?;
+        total = total
+            .checked_add(allocation.allocated_cost.units)
+            .ok_or(CurveError::Overflow)?;
+        fallback_count = fallback_count
+            .checked_add(u16::from(allocation.fallback))
+            .ok_or(CurveError::Overflow)?;
+    }
+    if total > policy.maximum_total_spend.units
+        || providers.len() < usize::from(policy.minimum_provider_clusters)
+        || regions.len() < usize::from(policy.minimum_regions)
+        || models.len() < usize::from(policy.minimum_model_families)
+        || fallback_count < policy.minimum_fallback_routes
+    {
+        return Err(CurveError::ConcentratedRoute);
+    }
+    for provider_cost in provider_costs.values() {
+        let share_bps = provider_cost
+            .checked_mul(10_000)
+            .and_then(|value| value.checked_add(total - 1))
+            .ok_or(CurveError::Overflow)?
+            / total;
+        if share_bps > u128::from(policy.maximum_provider_share_bps) {
+            return Err(CurveError::ConcentratedRoute);
+        }
+    }
+    Ok(())
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -160,6 +351,8 @@ pub enum CurveError {
     UnauthorizedEstimator,
     #[error("cost overflow")]
     Overflow,
+    #[error("compute route violates provider, model, region, fallback, privacy, or spend limits")]
+    ConcentratedRoute,
 }
 
 /// Selects the lowest quality-adjusted offer for each required service.
@@ -469,17 +662,22 @@ mod tests {
     fn quote_uses_quality_adjusted_cost_and_joint_success() {
         let now = Utc::now();
         let mut units = BTreeMap::new();
-        let _ = units.insert(ResearchService::AstraGeneration, 200);
+        let _ = units.insert(ResearchService::ResearchProverGeneration, 200);
         let _ = units.insert(ResearchService::OfficialKernelCheck, 100);
         let work = ExpectedWork { units };
         let offers = vec![
             offer(
                 "cheap-unreliable",
-                ResearchService::AstraGeneration,
+                ResearchService::ResearchProverGeneration,
                 100,
                 now,
             ),
-            offer("reliable", ResearchService::AstraGeneration, 200, now),
+            offer(
+                "reliable",
+                ResearchService::ResearchProverGeneration,
+                200,
+                now,
+            ),
             offer("kernel", ResearchService::OfficialKernelCheck, 50, now),
         ];
         let estimates = estimates(
@@ -513,12 +711,12 @@ mod tests {
     fn incompatible_assets_fail_closed() {
         let now = Utc::now();
         let mut units = BTreeMap::new();
-        let _ = units.insert(ResearchService::AstraGeneration, 100);
+        let _ = units.insert(ResearchService::ResearchProverGeneration, 100);
         let _ = units.insert(ResearchService::Storage, 100);
         let mut storage = offer("storage", ResearchService::Storage, 100, now);
         storage.quote_asset = "DAI".into();
         let offers = vec![
-            offer("astra", ResearchService::AstraGeneration, 100, now),
+            offer("astra", ResearchService::ResearchProverGeneration, 100, now),
             storage,
         ];
         let estimates = estimates(now, &[("astra", 10_000), ("storage", 10_000)]);
@@ -542,10 +740,10 @@ mod tests {
     fn provider_offer_without_protocol_estimate_cannot_enter_routing() {
         let now = Utc::now();
         let mut units = BTreeMap::new();
-        let _ = units.insert(ResearchService::AstraGeneration, 100);
+        let _ = units.insert(ResearchService::ResearchProverGeneration, 100);
         let offers = vec![offer(
             "self-promoted",
-            ResearchService::AstraGeneration,
+            ResearchService::ResearchProverGeneration,
             1,
             now,
         )];
@@ -562,7 +760,9 @@ mod tests {
                 },
                 0,
             ),
-            Err(CurveError::MissingOffer(ResearchService::AstraGeneration))
+            Err(CurveError::MissingOffer(
+                ResearchService::ResearchProverGeneration
+            ))
         ));
     }
 
@@ -570,10 +770,20 @@ mod tests {
     fn equal_adjusted_cost_uses_stable_offer_id_tie_break() {
         let now = Utc::now();
         let mut units = BTreeMap::new();
-        let _ = units.insert(ResearchService::AstraGeneration, 100);
+        let _ = units.insert(ResearchService::ResearchProverGeneration, 100);
         let offers = vec![
-            offer("z-offer", ResearchService::AstraGeneration, 100, now),
-            offer("a-offer", ResearchService::AstraGeneration, 100, now),
+            offer(
+                "z-offer",
+                ResearchService::ResearchProverGeneration,
+                100,
+                now,
+            ),
+            offer(
+                "a-offer",
+                ResearchService::ResearchProverGeneration,
+                100,
+                now,
+            ),
         ];
         let estimates = estimates(now, &[("z-offer", 10_000), ("a-offer", 10_000)]);
         let quote = quote_quality_adjusted_certification_cost(
@@ -595,10 +805,10 @@ mod tests {
     fn provider_cannot_mutate_a_signed_protocol_probability() {
         let now = Utc::now();
         let mut units = BTreeMap::new();
-        let _ = units.insert(ResearchService::AstraGeneration, 100);
+        let _ = units.insert(ResearchService::ResearchProverGeneration, 100);
         let offers = vec![offer(
             "provider",
-            ResearchService::AstraGeneration,
+            ResearchService::ResearchProverGeneration,
             100,
             now,
         )];
@@ -624,10 +834,10 @@ mod tests {
     fn self_signed_but_unauthorized_estimator_is_rejected() {
         let now = Utc::now();
         let mut units = BTreeMap::new();
-        let _ = units.insert(ResearchService::AstraGeneration, 100);
+        let _ = units.insert(ResearchService::ResearchProverGeneration, 100);
         let offers = vec![offer(
             "provider",
-            ResearchService::AstraGeneration,
+            ResearchService::ResearchProverGeneration,
             100,
             now,
         )];
@@ -654,5 +864,75 @@ mod tests {
         ))
         .unwrap();
         assert!(estimates.verify_signature().is_ok());
+    }
+
+    #[test]
+    fn staged_procurement_stops_before_transferable_derivatives() {
+        let now = Utc::now();
+        let instrument = ComputeProcurementInstrument {
+            instrument_id: "capacity-option:one".into(),
+            stage: ComputeMarketStage::CapacityOption,
+            buyer: "research-cooperative".into(),
+            provider_id: "provider-one".into(),
+            service: ResearchService::ResearchProverGeneration,
+            domain: "formal-finance".into(),
+            service_profile_root: "blake3:service-profile".into(),
+            minimum_units: 100,
+            maximum_units: 1_000,
+            maximum_spend: Amount::new(10_000, "USDC", 6),
+            delivery_start: now + Duration::days(30),
+            delivery_end: now + Duration::days(31),
+            exercise_deadline: Some(now + Duration::days(20)),
+            reservation_or_collateral_root: Some("blake3:collateral".into()),
+            settlement_policy_id: PolicyId::derive(&"settlement").unwrap(),
+            transferable: false,
+            signatures: vec!["buyer".into(), "provider".into()],
+        };
+        assert!(instrument.validate().is_ok());
+        let mut derivative = instrument;
+        derivative.transferable = true;
+        assert!(matches!(
+            derivative.validate(),
+            Err(CurveError::InvalidInput)
+        ));
+    }
+
+    #[test]
+    fn route_requires_provider_model_region_and_fallback_diversity() {
+        let policy = ComputeConcentrationPolicy {
+            maximum_provider_share_bps: 6_000,
+            minimum_provider_clusters: 2,
+            minimum_regions: 2,
+            minimum_model_families: 2,
+            minimum_fallback_routes: 1,
+            require_confidential_delivery: true,
+            maximum_total_spend: Amount::new(1_000, "USDC", 6),
+        };
+        let mut route = vec![
+            RouteAllocation {
+                offer_id: "primary".into(),
+                provider_cluster: "provider-a".into(),
+                region: "region-a".into(),
+                model_family: "model-a".into(),
+                allocated_cost: Amount::new(500, "USDC", 6),
+                fallback: false,
+                confidential_delivery: true,
+            },
+            RouteAllocation {
+                offer_id: "fallback".into(),
+                provider_cluster: "provider-b".into(),
+                region: "region-b".into(),
+                model_family: "open-model-b".into(),
+                allocated_cost: Amount::new(500, "USDC", 6),
+                fallback: true,
+                confidential_delivery: true,
+            },
+        ];
+        assert!(validate_diversified_route(&route, &policy).is_ok());
+        route[1].provider_cluster = "provider-a".into();
+        assert!(matches!(
+            validate_diversified_route(&route, &policy),
+            Err(CurveError::ConcentratedRoute)
+        ));
     }
 }

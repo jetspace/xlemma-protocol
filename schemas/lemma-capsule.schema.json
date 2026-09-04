@@ -79,7 +79,7 @@
     },
     "economic_mode": {
       "type": "string",
-      "enum": ["open_commons", "commercial_research", "sponsored_challenge"]
+      "enum": ["commons", "reciprocal", "commercial_artifact", "sponsored_challenge"]
     },
     "revenue_route": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
