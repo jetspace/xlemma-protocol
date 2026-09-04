@@ -3,14 +3,10 @@ use chrono::{DateTime, Utc};
 use clap::{Parser, Subcommand, ValueEnum};
 use serde::{de::DeserializeOwned, Serialize};
 use std::{fs, path::PathBuf};
-use xlemma_compute_curve::{
-    quote_verified_proof_cost, ExpectedWork, ServiceOffer,
-};
+use xlemma_compute_curve::{quote_verified_proof_cost, ExpectedWork, ServiceOffer};
 use xlemma_consensus::{evaluate_formal_consensus, FormalConsensusPolicy};
-use xlemma_core::{ArtifactId, ClaimId, ProofId, TheoryId};
-use xlemma_economics::{
-    compute_savings_dividend, ComputeSavingsEvidence, ComputeSavingsPolicy,
-};
+use xlemma_core::{Amount, ArtifactId, ClaimManifest, ObservationReceipt, ProofManifest, TheoryId};
+use xlemma_economics::{compute_savings_dividend, ComputeSavingsEvidence, ComputeSavingsPolicy};
 use xlemma_storage::{build_bundle_manifest, BundleInput};
 
 #[derive(Parser)]
@@ -82,8 +78,12 @@ fn main() -> Result<()> {
             let value: serde_json::Value = read_json(input)?;
             let id = match kind {
                 IdKind::Theory => TheoryId::derive(&value)?.to_string(),
-                IdKind::Claim => ClaimId::derive(&value)?.to_string(),
-                IdKind::Proof => ProofId::derive(&value)?.to_string(),
+                IdKind::Claim => serde_json::from_value::<ClaimManifest>(value)?
+                    .derive_claim_id()?
+                    .to_string(),
+                IdKind::Proof => serde_json::from_value::<ProofManifest>(value)?
+                    .derive_proof_id()?
+                    .to_string(),
                 IdKind::Artifact => ArtifactId::derive(&value)?.to_string(),
             };
             println!("{id}");
@@ -93,7 +93,7 @@ fn main() -> Result<()> {
             observations,
         } => {
             let policy: FormalConsensusPolicy = read_json(policy)?;
-            let observations = read_json(observations)?;
+            let observations: Vec<ObservationReceipt> = read_json(observations)?;
             print_json(&evaluate_formal_consensus(&policy, &observations)?)?;
         }
         Command::Quote {
@@ -124,7 +124,7 @@ fn main() -> Result<()> {
         } => {
             let evidence: ComputeSavingsEvidence = read_json(evidence)?;
             let policy: ComputeSavingsPolicy = read_json(policy)?;
-            let revenue = read_json(downstream_net_revenue)?;
+            let revenue: Amount = read_json(downstream_net_revenue)?;
             print_json(&compute_savings_dividend(&evidence, &policy, &revenue)?)?;
         }
         Command::Pack {

@@ -1,6 +1,6 @@
 # xLemma Protocol
 
-**Proof-carrying decentralized research for sovereign researchers, ASTRA-assisted proof production, Lean verification, x402 payments, node-based independent reproduction, and compute-linked research economics.**
+**Proof-carrying decentralized research for sovereign researchers, with a provider-neutral protocol for independent reproduction, attribution, rights, and research economics.**
 
 > Status: architectural reference implementation and prototype. The Rust, Lean, Solidity, payment, and cryptographic components have not been independently audited. Do not deploy with real funds until the missing production work in `ROADMAP.md` is complete.
 
@@ -12,19 +12,76 @@ xLemma lets an individual or collective operate as a **Decentralized Researcher 
 - a fully backed, closed-loop Research Credit token, `Rᵢ`;
 - a Research Vault, `Vᵢ`;
 - immutable Lemma Capsules for claims, proofs, papers, code, data, and rights;
-- ASTRA-assisted formalization, proof search, repair, and exposition;
-- Lean plus independently implemented checker verification;
+- provider-neutral proof production, with ASTRA as the reference adapter;
+- provider-neutral formal verification, with Lean as the default adapter;
 - Proof of Independent Reproduction (PoIR) node certificates;
-- x402 payment for proof search, verification, review, storage, and access;
+- pluggable payment rails, including x402, research credits, stablecoins, grants, escrow, and invoicing;
 - revenue routing to contributors, dependencies, public goods, and future compute;
 - compute-forward pricing and conservative compute-savings dividends.
+
+Formally:
+
+> **xLemma is an open decentralized protocol for identifying, financing,
+> producing, independently reproducing, certifying, attributing, publishing,
+> licensing, reusing, and economically rewarding verifiable research objects.**
+
+## XLMP/1 is the protocol boundary
+
+XLMP/1 is the canonical xLemma protocol and wire layer. It owns research
+identity, immutable records, state transitions, Proof of Independent
+Reproduction (PoIR), challenges, quarantine, attribution, rights, and economic
+conservation. Named external technologies are replaceable adapters:
+
+```text
+                         XLMP/1
+                            │
+         ┌──────────────────┼──────────────────┐
+         │                  │                  │
+   Research graph       Consensus          Economics
+   claims/proofs        PoIR/challenge     credits/revenue
+   dependencies         certification      compute/bounties
+   provenance/rights    quarantine         dividends
+         │                  │                  │
+         └──────────────────┼──────────────────┘
+                            │
+                 adapter / transport layer
+                            │
+       ┌──────────┬─────────┼─────────┬──────────┐
+       ▼          ▼         ▼         ▼          ▼
+   ASTRA/etc.  Lean/etc.  x402/etc. chains   IPFS/etc.
+```
+
+- ASTRA is a `ResearchProver` implementation, not xLemma and never a certifier
+  of its own output.
+- Lean is the default `VerifierAdapter`, not xLemma. Other formal systems can
+  participate under explicit theory, canonicalization, and checker policies.
+- x402 is one `PaymentAdapter` and paid HTTP transport. It never defines XLMP
+  research state.
+- chains provide optional ordering, settlement, and finality; they do not
+  establish mathematical truth, attribution, novelty, or rights.
+- storage systems preserve content-addressed artifacts and availability
+  evidence; they do not establish validity.
+
+The canonical envelope and required messages are specified in
+[`spec/018-xlmp-wire-protocol.md`](spec/018-xlmp-wire-protocol.md). XLMP/1
+includes `XLMP_CLAIM`, `XLMP_COMMIT`, `XLMP_COMPUTE_QUOTE`,
+`XLMP_PROOF_CANDIDATE`, `XLMP_VERIFY_REQUEST`, `XLMP_OBSERVATION_COMMIT`,
+`XLMP_OBSERVATION_REVEAL`, `XLMP_CERTIFICATE`, `XLMP_CHALLENGE`,
+`XLMP_FINALIZE`, `XLMP_REVENUE`, and `XLMP_REVALIDATE`.
+
+Its protocol lifecycle is:
+
+```text
+CLAIM → COMMIT → FORMALIZE → PROVE → REPRODUCE → CERTIFY → CHALLENGE
+      → FINALIZE → PUBLISH → REUSE → REWARD → REVALIDATE
+```
 
 The flywheel is:
 
 ```text
 research funding
-  → ASTRA compute
-  → Lean proof candidate
+  → prover-adapter compute
+  → formal proof candidate
   → independent reproduction
   → certified lemma capsule
   → paid use / bounty / license / service
@@ -157,9 +214,9 @@ VPC(d,T) = min over models and compute classes of
 
 Reusable upstream lemmas may receive a capped share of **conservatively measured downstream compute savings**, but only from realized protocol revenue and only when the lemma is present in the final dependency graph.
 
-## ASTRA and Lean
+## ASTRA and Lean adapters
 
-ASTRA is a pluggable proof-production agent. It may:
+ASTRA is a pluggable `ResearchProver` adapter. It may:
 
 - formalize prose and LaTeX into candidate Lean statements;
 - decompose goals;
@@ -169,13 +226,13 @@ ASTRA is a pluggable proof-production agent. It may:
 - explain verified results in LaTeX;
 - produce signed compute and generation receipts.
 
-ASTRA does not certify itself. Final formal assurance comes from pinned Lean builds, trusted challenge matching, axiom inspection, the official kernel, independently implemented checkers, sandboxing, and open challenge periods.
+ASTRA does not certify itself. Lean is the first-class/default verifier adapter. Final formal assurance comes from pinned builds, trusted challenge matching, axiom inspection, the official kernel, independently implemented checkers, sandboxing, and open challenge periods. XLMP remains prover-neutral so another formal system can implement the verifier contract without forking the research protocol.
 
 The model name is configuration-driven through `OPENAI_MODEL`; the default in this snapshot is `gpt-6-astra`.
 
-## x402 transport
+## x402 payment adapter
 
-xLemma maps research services onto x402 payment schemes:
+x402 is one optional payment and paid-HTTP adapter. xLemma maps compatible research services onto these x402 schemes:
 
 | Service | Scheme |
 |---|---|
@@ -193,6 +250,7 @@ The payment facilitator validates and settles payment payloads. It is intentiona
 ```text
 crates/
   xlemma-core/           IDs, manifests, capsules, receipts and state types
+  xlemma-xlmp/           XLMP/1 envelopes, messages, lifecycle and adapter traits
   xlemma-crypto/         domain-separated envelopes, signatures and replay protection
   xlemma-consensus/      PoIR, generalized quorums, commit-reveal and novelty aggregation
   xlemma-node/           node capabilities, assignments, role separation and receipt workflow
@@ -200,7 +258,7 @@ crates/
   xlemma-compute-curve/  service offers, forward curves and proof-cost quotes
   xlemma-astra/          configurable OpenAI Responses API adapter and proof prompts
   xlemma-lean/           sandbox/checker command boundaries and receipt generation
-  xlemma-x402/           HTTP 402 headers, schemes and xLemma extension payloads
+  xlemma-x402/           optional HTTP 402 payment adapter and XLMP binding
   xlemma-storage/        content-addressed bundle manifests and availability receipts
   xlemma-api/            HTTP reference server
   xlemma-cli/            command-line reference client
@@ -220,18 +278,19 @@ scripts/                  validation, simulation and archiving tools
 
 ## Start here
 
-1. Read `docs/FULL_DESIGN.md` for the complete integrated architecture.
-2. Read `docs/ARCHITECTURE_DIAGRAMS.md` for system, trust-plane, lifecycle, economic, and deployment diagrams.
-3. Read `docs/TRACEABILITY_MATRIX.md` to locate every requested concept.
-4. Read `docs/RESEARCHER_USER_JOURNEYS.md` for researcher, supporter, node, bounty, reuse, and correction workflows.
-5. Read `spec/000-overview.md` and `spec/003-poir-consensus.md` before modifying consensus.
-6. Review `docs/THREAT_MODEL.md`, `docs/GOVERNANCE_CONSTITUTION.md`, and `docs/LEGAL_BOUNDARIES.md` before deployment.
-7. Use `docs/OPERATOR_RUNBOOK.md`, `docs/TESTING_STRATEGY.md`, and `docs/PRODUCTION_CHECKLIST.md` as implementation gates.
-8. Run `python3 scripts/validate_repo.py` to validate schemas, OpenAPI references, invariants, the source manifest, and repository completeness.
-9. Verify every source digest with `sha256sum -c MANIFEST.sha256`.
-10. Read `docs/VALIDATION_REPORT.md` for checks executed in this source snapshot and explicit limitations.
+1. Read `spec/018-xlmp-wire-protocol.md` for the canonical protocol and adapter boundary.
+2. Read `docs/FULL_DESIGN.md` for the complete integrated architecture.
+3. Read `docs/ARCHITECTURE_DIAGRAMS.md` for system, trust-plane, lifecycle, economic, and deployment diagrams.
+4. Read `docs/TRACEABILITY_MATRIX.md` to locate every requested concept.
+5. Read `docs/RESEARCHER_USER_JOURNEYS.md` for researcher, supporter, node, bounty, reuse, and correction workflows.
+6. Read `spec/000-overview.md` and `spec/003-poir-consensus.md` before modifying consensus.
+7. Review `docs/THREAT_MODEL.md`, `docs/GOVERNANCE_CONSTITUTION.md`, and `docs/LEGAL_BOUNDARIES.md` before deployment.
+8. Use `docs/OPERATOR_RUNBOOK.md`, `docs/TESTING_STRATEGY.md`, and `docs/PRODUCTION_CHECKLIST.md` as implementation gates.
+9. Run `python3 scripts/validate_repo.py` to validate schemas, OpenAPI references, invariants, the source manifest, and repository completeness.
+10. Verify every source digest with `sha256sum -c MANIFEST.sha256`.
+11. Read `docs/VALIDATION_REPORT.md` for checks executed in this source snapshot and explicit limitations.
 
-> **Source-snapshot note:** this archive intentionally does not fabricate a `Cargo.lock` or contract dependency lock without native dependency resolution. The first dependency-enabled build must generate, review, and commit those locks before a production release.
+> **Dependency-lock note:** `Cargo.lock` is committed for reproducible reference builds. Contract dependency locks still require review before a production release.
 
 ## Local commands
 

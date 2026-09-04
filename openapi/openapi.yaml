@@ -1,11 +1,12 @@
 openapi: 3.1.0
 info:
   title: xLemma Protocol API
-  version: 0.2.0
+  version: 1.0.0
   description: >-
-    Reference API for decentralized researcher identities, proof-production jobs,
-    independent Lean verification, PoIR observations, compute quotes, x402
-    payment-protected resources, novelty review, and lemma capsules.
+    HTTP adapter for canonical XLMP/1 messages and reference endpoints for
+    decentralized researcher identities, proof-production jobs, independent
+    verification, PoIR observations, compute quotes, optional x402 payments,
+    novelty review, and lemma capsules.
 servers:
   - url: http://localhost:8080
 paths:
@@ -22,8 +23,43 @@ paths:
                 required: [status, protocol, time]
                 properties:
                   status: { type: string }
-                  protocol: { type: string }
+                  protocol: { const: "XLMP/1" }
                   time: { type: string, format: date-time }
+  /xlmp/v1/messages:
+    post:
+      operationId: acceptXlmpMessage
+      summary: Validate canonical content identity and append an XLMP/1 message
+      requestBody:
+        required: true
+        content:
+          "application/x-xlmp+json;version=1":
+            schema: { $ref: ../schemas/xlmp-envelope.schema.json }
+          application/json:
+            schema: { $ref: ../schemas/xlmp-envelope.schema.json }
+      responses:
+        "202":
+          description: Immutable XLMP message accepted
+          content:
+            application/json:
+              schema: { $ref: ../schemas/xlmp-envelope.schema.json }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /xlmp/v1/messages/{messageId}:
+    get:
+      operationId: getXlmpMessage
+      summary: Retrieve an accepted XLMP/1 message by content-derived ID
+      parameters:
+        - in: path
+          name: messageId
+          required: true
+          schema: { type: string, pattern: "^xlmessage:blake3:[0-9a-f]{64}$" }
+      responses:
+        "200":
+          description: Canonical XLMP envelope
+          content:
+            application/json:
+              schema: { $ref: ../schemas/xlmp-envelope.schema.json }
+        "404": { $ref: "#/components/responses/NotFound" }
   /v1/researchers:
     post:
       operationId: registerResearcher
@@ -80,7 +116,7 @@ paths:
   /v1/claims/{claimId}/formalize:
     post:
       operationId: formalizeClaim
-      summary: Start a metered ASTRA formalization job
+      summary: Start a metered formalization through a ResearchProver adapter
       parameters:
         - $ref: "#/components/parameters/ClaimId"
       requestBody:
@@ -90,12 +126,12 @@ paths:
             schema:
               $ref: "#/components/schemas/FormalizationRequest"
       responses:
-        "200": { description: Candidate formal claim and ASTRA receipt }
+        "200": { description: Candidate formal claim and provider-neutral compute receipt }
         "402": { $ref: "#/components/responses/PaymentRequired" }
   /v1/claims/{claimId}/prove:
     post:
       operationId: proveClaim
-      summary: Start a variable-cost ASTRA proof-search job
+      summary: Start proof search through a ResearchProver adapter
       parameters:
         - $ref: "#/components/parameters/ClaimId"
       requestBody:
@@ -136,7 +172,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/ProofId"
       responses:
-        "200": { description: LaTeX explanation and ASTRA receipt }
+        "200": { description: LaTeX explanation and provider-neutral compute receipt }
         "402": { $ref: "#/components/responses/PaymentRequired" }
   /v1/proofs/{proofId}/bundle:
     get:
@@ -194,7 +230,7 @@ paths:
   /v1/verification-jobs/{jobId}/payment-required:
     post:
       operationId: createVerificationPaymentOffer
-      summary: Construct an x402 V2 payment-required offer for a verification job
+      summary: Construct an optional x402 payment-adapter offer for an XLMP job
       parameters:
         - $ref: "#/components/parameters/JobId"
       requestBody:
@@ -377,8 +413,9 @@ components:
     PaymentOfferRequest:
       type: object
       additionalProperties: false
-      required: [compute_quote_id, amount, asset, network, pay_to, max_timeout_seconds, artifact_commitment, model_policy, rights_manifest_hash, revenue_route_hash, delivery_mode, valid_until]
+      required: [xlmp_message_id, compute_quote_id, amount, asset, network, pay_to, max_timeout_seconds, artifact_commitment, model_policy, rights_manifest_hash, revenue_route_hash, delivery_mode, valid_until]
       properties:
+        xlmp_message_id: { type: string, pattern: "^xlmessage:blake3:[0-9a-f]{64}$" }
         compute_quote_id: { type: string, pattern: "^xlquote:blake3:[0-9a-f]{64}$" }
         amount: { type: string, pattern: "^[1-9][0-9]*$" }
         asset: { type: string, minLength: 1 }
@@ -393,11 +430,11 @@ components:
         valid_until: { type: string, format: date-time }
   responses:
     PaymentRequired:
-      description: x402 payment authorization required
+      description: Optional x402 payment authorization required
       headers:
         PAYMENT-REQUIRED:
           schema: { type: string }
-          description: Base64-encoded x402 V2 JSON with the xlemma extension
+          description: Base64-encoded x402 V2 JSON carrying an XLMP message binding
     BadRequest:
       description: Invalid request
     NotFound:

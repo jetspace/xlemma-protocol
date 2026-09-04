@@ -1,5 +1,5 @@
 {
-  "protocol_version": "xlemma/0.2",
+  "protocol_version": "XLMP/1",
   "theory_id": "xlt:blake3:1111111111111111111111111111111111111111111111111111111111111111",
   "canonical_elaborated_type": "forall (market : Market), Market.noFreeLunch market -> Not market.hasArbitrage",
   "declaration_name": "XLemma.NoArbitrage.noArbitrage",

@@ -1,5 +1,5 @@
 {
-  "protocol_version": "xlemma/0.2",
+  "protocol_version": "XLMP/1",
   "lean_toolchain": "leanprover/lean4:v4.33.1",
   "dependency_merkle_root": "blake3:1111111111111111111111111111111111111111111111111111111111111111",
   "trust_policy_id": "xlpolicy:blake3:9999999999999999999999999999999999999999999999999999999999999999",

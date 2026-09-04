@@ -1,6 +1,8 @@
-# XLIP-008 — x402 transport
+# XLIP-008 — x402 payment adapter
 
-xLemma uses x402 V2 payment semantics and adds an `xlemma` extension. Chain-specific settlement SHOULD be delegated to an audited SDK/facilitator or self-facilitated implementation.
+x402 is an optional `PaymentAdapter` and paid-HTTP transport for XLMP/1. xLemma adds an `xlmp` extension that binds the payment obligation to a canonical XLMP MessageID. Chain-specific settlement SHOULD be delegated to an audited SDK/facilitator or self-facilitated implementation.
+
+An XLMP implementation MUST remain usable with another payment adapter or with no payment. x402 fields MUST NOT define research state, proof validity, attribution, rights, or consensus.
 
 ## Schemes
 
@@ -10,7 +12,7 @@ xLemma uses x402 V2 payment semantics and adds an `xlemma` extension. Chain-spec
 
 ## Extension fields
 
-The extension MUST bind protocol version, JobID, ResearcherID, ClaimID, optional ProofID, artifact commitment, quote ID, verification policy, model policy, rights manifest, revenue route, delivery mode, and expiration.
+The extension MUST bind `XLMP/1`, MessageID, JobID, ResearcherID, ClaimID, optional ProofID, artifact commitment, quote ID, verification policy, model policy, rights manifest, revenue route, delivery mode, and expiration.
 
 ## Separation
 

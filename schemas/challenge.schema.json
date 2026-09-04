@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/challenge.schema.json",
+  "title": "Challenge",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "challenge_id": { "type": "string", "pattern": "^xlchallenge:blake3:[0-9a-f]{64}$" },
+    "certificate_id": { "type": "string", "pattern": "^xlcert:blake3:[0-9a-f]{64}$" },
+    "challenger": { "type": "string", "minLength": 1 },
+    "kind": {
+      "type": "string",
+      "enum": ["artifact_mismatch", "reproduction_failure", "checker_compromise", "policy_violation", "provenance_fraud", "rights_dispute"]
+    },
+    "evidence_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "bond": { "$ref": "common.schema.json#/$defs/amount" },
+    "status": { "type": "string", "enum": ["open", "evidence_requested", "upheld", "dismissed", "superseded"] },
+    "opened_at": { "type": "string", "format": "date-time" },
+    "resolved_at": { "type": ["string", "null"], "format": "date-time" },
+    "resolution_evidence_root": {
+      "anyOf": [{ "$ref": "common.schema.json#/$defs/hash" }, { "type": "null" }]
+    },
+    "supersedes": {
+      "anyOf": [
+        { "type": "string", "pattern": "^xlchallenge:blake3:[0-9a-f]{64}$" },
+        { "type": "null" }
+      ]
+    },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "challenge_id", "certificate_id", "challenger", "kind", "evidence_root", "bond", "status",
+    "opened_at", "resolved_at", "resolution_evidence_root", "supersedes", "signature"
+  ]
+}

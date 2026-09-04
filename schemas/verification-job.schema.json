@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/verification-job.schema.json",
+  "title": "VerificationJob",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "job_id": { "type": "string", "pattern": "^xljob:blake3:[0-9a-f]{64}$" },
+    "researcher_id": { "type": "string", "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$" },
+    "claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "theory_id": { "type": "string", "pattern": "^xlt:blake3:[0-9a-f]{64}$" },
+    "candidate_proof_id": {
+      "anyOf": [
+        { "type": "string", "pattern": "^xlp:blake3:[0-9a-f]{64}$" },
+        { "type": "null" }
+      ]
+    },
+    "artifact_id": { "type": "string", "pattern": "^xla:blake3:[0-9a-f]{64}$" },
+    "verification_policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "maximum_budget": { "$ref": "common.schema.json#/$defs/amount" },
+    "state": {
+      "type": "string",
+      "enum": [
+        "draft", "claim_committed", "quoted", "funded", "assigned", "formalizing",
+        "candidate_ready", "building", "checkers_committed", "checkers_revealed", "passed",
+        "failed", "divergent", "challenged", "finalized", "rejected", "quarantined",
+        "published", "revalidated", "superseded"
+      ]
+    },
+    "observation_receipt_ids": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
+      "uniqueItems": true
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "required": [
+    "job_id", "researcher_id", "claim_id", "theory_id", "candidate_proof_id", "artifact_id",
+    "verification_policy_id", "maximum_budget", "state", "observation_receipt_ids", "created_at",
+    "updated_at"
+  ]
+}

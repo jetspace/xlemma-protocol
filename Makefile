@@ -1,12 +1,12 @@
 .PHONY: check test lint fmt validate simulate rust-test lean-test contracts-test test-all run-api manifest archive
 
 check:
-	cargo check --workspace --all-targets
+	cargo check --locked --workspace --all-targets
 
 test: rust-test
 
 rust-test:
-	cargo test --workspace
+	cargo test --locked --workspace
 
 lean-test:
 	cd lean && lake build
@@ -17,7 +17,7 @@ contracts-test:
 test-all: validate simulate fmt lint rust-test lean-test contracts-test
 
 lint:
-	cargo clippy --workspace --all-targets -- -D warnings
+	cargo clippy --locked --workspace --all-targets -- -D warnings
 
 fmt:
 	cargo fmt --all -- --check

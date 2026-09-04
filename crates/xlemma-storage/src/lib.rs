@@ -1,4 +1,7 @@
-//! Content-addressed proof bundles and availability policy helpers.
+//! Content-addressed storage adapter and availability policy helpers.
+//!
+//! Storage providers preserve and retrieve XLMP artifacts; they do not define
+//! artifact validity, research consensus, attribution, or rights.
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -8,7 +11,7 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 use thiserror::Error;
-use xlemma_core::{ArtifactEntry, ArtifactId, ArtifactManifest, AvailabilityReceipt};
+use xlemma_core::{ArtifactEntry, ArtifactId, ArtifactManifest, AvailabilityReceipt, XLMP_VERSION};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BundleInput {
@@ -119,7 +122,7 @@ pub fn build_bundle_manifest(
     let root_hash = format!("blake3:{}", root_hasher.finalize().to_hex());
 
     let manifest = ArtifactManifest {
-        protocol_version: "xlemma/0.2".to_owned(),
+        protocol_version: XLMP_VERSION.to_owned(),
         entries,
         root: root_hash,
         source_commit,
@@ -216,8 +219,11 @@ mod tests {
     #[test]
     fn identical_content_and_environment_have_stable_artifact_id() {
         let root = temp_root("stable");
-        fs::write(root.join("proof.lean"), "theorem id (p : Prop) (h : p) : p := h\n")
-            .unwrap();
+        fs::write(
+            root.join("proof.lean"),
+            "theorem id (p : Prop) (h : p) : p := h\n",
+        )
+        .unwrap();
         let inputs = vec![BundleInput {
             relative_path: PathBuf::from("proof.lean"),
             media_type: "text/x-lean".into(),
@@ -257,14 +263,7 @@ mod tests {
             encrypted: false,
         };
         assert!(matches!(
-            build_bundle_manifest(
-                &root,
-                &[unsafe_input],
-                "lean",
-                "lock",
-                None,
-                None,
-            ),
+            build_bundle_manifest(&root, &[unsafe_input], "lean", "lock", None, None,),
             Err(StorageError::UnsafePath(_))
         ));
 
@@ -274,14 +273,7 @@ mod tests {
             encrypted: false,
         };
         assert!(matches!(
-            build_bundle_manifest(
-                &root,
-                &[safe.clone(), safe],
-                "lean",
-                "lock",
-                None,
-                None,
-            ),
+            build_bundle_manifest(&root, &[safe.clone(), safe], "lean", "lock", None, None,),
             Err(StorageError::DuplicatePath(_))
         ));
         fs::remove_dir_all(root).unwrap();
@@ -296,8 +288,7 @@ mod tests {
             receipt_id: ReceiptId::derive(&format!("receipt-{label}")).unwrap(),
             artifact_id,
             storage_node_id: NodeId::derive(&format!("node-{label}")).unwrap(),
-            operator_cluster_id: OperatorClusterId::derive(&format!("operator-{label}"))
-                .unwrap(),
+            operator_cluster_id: OperatorClusterId::derive(&format!("operator-{label}")).unwrap(),
             provider: format!("provider-{label}"),
             region: format!("region-{label}"),
             custody_challenge_root: format!("blake3:custody-{label}"),

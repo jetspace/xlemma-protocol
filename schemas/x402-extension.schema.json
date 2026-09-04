@@ -1,11 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "XLemmaPaymentExtension",
+  "title": "XlmpPaymentExtension",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "protocol": {
-      "const": "xlemma/0.2"
+      "const": "XLMP/1"
+    },
+    "xlmpMessageId": {
+      "type": "string",
+      "pattern": "^xlmessage:blake3:[0-9a-f]{64}$"
     },
     "jobId": {
       "type": "string",
@@ -71,6 +75,7 @@
   },
   "required": [
     "protocol",
+    "xlmpMessageId",
     "jobId",
     "researcherId",
     "claimId",

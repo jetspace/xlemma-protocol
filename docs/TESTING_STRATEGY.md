@@ -6,7 +6,7 @@ The reference repository is not complete merely because it compiles. xLemma need
 
 ### Unit tests
 
-Cover canonicalization, typed IDs, money arithmetic, contribution shares, state transitions, committee eligibility, commit-reveal, formal quorum, novelty aggregation, quote construction, backing conservation, revenue allocation, dividend caps, x402 encoding, and storage path safety.
+Cover canonicalization, typed IDs, XLMP envelope integrity and message round trips, protocol lifecycle transitions, money arithmetic, contribution shares, committee eligibility, commit-reveal, formal quorum, novelty aggregation, quote construction, backing conservation, revenue allocation, dividend caps, payment-adapter encoding, and storage path safety.
 
 ### Property tests
 
@@ -23,11 +23,15 @@ Required properties include:
 - state transitions outside the transition table always fail;
 - artifact repacking with identical content/environment yields the same identity;
 - unsafe or symlink-escaping bundle paths always fail.
+- any mutation of signed XLMP identity material invalidates its MessageID;
+- every supported transport decodes to the same canonical XLMP envelope;
+- no payment, finality, prover, verifier, or storage adapter can advance an XLMP state without the required protocol evidence.
 
 ### Integration tests
 
-- ASTRA candidate to Lean build to independent check to PoIR certificate;
-- x402 `upto` authorization, actual settlement, and refund;
+- `ResearchProver` candidate to default Lean adapter to independent check to PoIR certificate;
+- XLMP envelope conformance over HTTP plus at least one non-HTTP transport;
+- x402 and a non-x402 `PaymentAdapter` authorization, actual settlement, and refund;
 - external revenue routed partly to cash and partly to vault compounding;
 - bounty commitment, final certificate, release delay, and payout;
 - challenge, quarantine, remediation, and revalidation;
@@ -36,7 +40,7 @@ Required properties include:
 
 ### Conformance tests
 
-Publish language-neutral JSON test vectors for every canonical ID, receipt, signature domain, committee seed, commitment, certificate, revenue allocation, and bundle root. Independent implementations must produce byte-identical outputs.
+Publish language-neutral JSON test vectors for every XLMP message, canonical ID, receipt, signature domain, lifecycle transition, committee seed, commitment, certificate, revenue allocation, and bundle root. Independent implementations must produce byte-identical outputs.
 
 ## 2. Lean corpus
 
@@ -122,9 +126,10 @@ Run:
 
 The included contracts are reference implementations and must not be used with real value before these gates pass.
 
-## 6. x402 testing
+## 6. Payment-adapter testing
 
-- exact, upto, and batch-settlement flows;
+- common authorization and settlement contract across x402, backed research credit, grant/escrow, and invoicing adapters;
+- x402 exact, upto, and batch-settlement flows;
 - malformed and oversized headers;
 - network/asset/payee mismatch;
 - expired quote or authorization;
@@ -139,7 +144,18 @@ The included contracts are reference implementations and must not be used with r
 
 Payment success must never set formal status by itself.
 
-## 7. ASTRA evaluation
+## 7. XLMP transport and downgrade testing
+
+- all twelve XLMP/1 message discriminators validate against the canonical schema;
+- unsupported protocol names and major versions fail closed;
+- unknown required fields fail schema validation;
+- MessageID mutation, sender substitution, correlation substitution, and replay are rejected;
+- observation reveal fields match their prior commit;
+- HTTP, WebSocket, libp2p, and chain adapters preserve canonical message identity;
+- x402 extension payloads bind the exact XLMP MessageID;
+- adapter-specific metadata cannot be interpreted as proof validity or finalization evidence.
+
+## 8. Research-prover evaluation
 
 Evaluate ASTRA and alternative prover adapters by domain and point in time:
 
@@ -157,7 +173,7 @@ Evaluate ASTRA and alternative prover adapters by domain and point in time:
 
 Do not optimize only for pass rate; include statement correctness, novelty, compute cost, and human oversight.
 
-## 8. Privacy/security testing
+## 9. Privacy/security testing
 
 - prompt and proof contents absent from routine logs;
 - per-job encryption key isolation;
@@ -171,7 +187,7 @@ Do not optimize only for pass rate; include statement correctness, novelty, comp
 - filesystem traversal and symlink attacks blocked;
 - denial-of-service limits enforced.
 
-## 9. Chaos and recovery testing
+## 10. Chaos and recovery testing
 
 Inject:
 
@@ -189,7 +205,7 @@ Inject:
 
 Verify exact-once economic effects, at-least-once safe workflow handling, and preservation of signed evidence.
 
-## 10. Performance testing
+## 11. Performance testing
 
 Measure independently:
 
@@ -206,7 +222,7 @@ Measure independently:
 
 No latency target should cause the protocol to weaken checker diversity or skip challenge windows.
 
-## 11. Release gates
+## 12. Release gates
 
 A release candidate requires:
 

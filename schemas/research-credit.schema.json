@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/research-credit.schema.json",
+  "title": "ResearchCredit",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "credit_id": { "type": "string", "pattern": "^xlcredit:blake3:[0-9a-f]{64}$" },
+    "researcher_id": { "type": "string", "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$" },
+    "credit_amount": { "$ref": "common.schema.json#/$defs/amount" },
+    "backing_asset_amount": { "$ref": "common.schema.json#/$defs/amount" },
+    "backing_value_in_credit_units": { "type": ["string", "integer"], "pattern": "^[0-9]+$", "minimum": 0 },
+    "valuation_policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "backing_reference": { "type": "string", "minLength": 1 },
+    "issued_at": { "type": "string", "format": "date-time" },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "credit_id", "researcher_id", "credit_amount", "backing_asset_amount",
+    "backing_value_in_credit_units", "valuation_policy_id", "backing_reference", "issued_at", "signature"
+  ]
+}

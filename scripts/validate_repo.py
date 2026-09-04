@@ -7,7 +7,10 @@ import hashlib
 import json
 import re
 import sys
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python 3.10 compatibility for local validation.
+    import tomli as tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,6 +57,7 @@ REQUIRED_FILES = [
     "spec/015-storage-availability.md",
     "spec/016-privacy.md",
     "spec/017-deployment-operations.md",
+    "spec/018-xlmp-wire-protocol.md",
     "openapi/openapi.yaml",
     "contracts/src/ResearchVault.sol",
     "contracts/src/ResearcherCredit.sol",
@@ -67,6 +71,7 @@ REQUIRED_FILES = [
     "latex/xlemma.sty",
     "crates/xlemma-crypto/src/lib.rs",
     "crates/xlemma-node/src/lib.rs",
+    "crates/xlemma-xlmp/src/lib.rs",
 ]
 
 EXAMPLE_SCHEMA_MAP = {
@@ -80,6 +85,7 @@ EXAMPLE_SCHEMA_MAP = {
     "researcher.json": "researcher-node.schema.json",
     "lemma-capsule.json": "lemma-capsule.schema.json",
     "x402-extension.json": "x402-extension.schema.json",
+    "xlmp-envelope.json": "xlmp-envelope.schema.json",
 }
 
 
@@ -105,45 +111,59 @@ def validate_json_syntax_and_schemas() -> None:
     for path in sorted(SCHEMAS.glob("*.json")):
         schema_objects[path.name] = load_json(path)
 
-    if len(schema_objects) < 20:
-        fail(f"expected at least 20 protocol schemas, found {len(schema_objects)}")
+    if len(schema_objects) < 31:
+        fail(f"expected at least 31 protocol schemas, found {len(schema_objects)}")
 
     try:
         import jsonschema
+    except ImportError:
+        print("warning: jsonschema unavailable; schema instance validation skipped")
+        return
+
+    try:
         from referencing import Registry, Resource
     except ImportError:
-        print("warning: jsonschema/referencing unavailable; schema instance validation skipped")
-        return
+        Registry = None
+        Resource = None
 
     for name, schema in schema_objects.items():
         jsonschema.Draft202012Validator.check_schema(schema)
 
-    registry = Registry()
-    for schema in schema_objects.values():
-        registry = registry.with_resource(schema["$id"], Resource.from_contents(schema))
+    schema_store = {schema["$id"]: schema for schema in schema_objects.values()}
+    registry = None
+    if Registry is not None and Resource is not None:
+        registry = Registry()
+        for schema in schema_objects.values():
+            registry = registry.with_resource(
+                schema["$id"], Resource.from_contents(schema)
+            )
+
+    def schema_validator(schema):
+        if registry is not None:
+            return jsonschema.Draft202012Validator(schema, registry=registry)
+        # jsonschema 4.17 and earlier use RefResolver rather than the separate
+        # referencing package. Keep full local validation available there.
+        resolver = jsonschema.RefResolver.from_schema(schema, store=schema_store)
+        return jsonschema.Draft202012Validator(schema, resolver=resolver)
 
     # Relative refs such as common.schema.json are resolved against each schema's $id.
     for example_name, schema_name in EXAMPLE_SCHEMA_MAP.items():
         instance = load_json(EXAMPLE / example_name)
-        validator = jsonschema.Draft202012Validator(
-            schema_objects[schema_name], registry=registry
-        )
+        validator = schema_validator(schema_objects[schema_name])
         errors = sorted(validator.iter_errors(instance), key=lambda err: list(err.path))
         if errors:
             joined = "\n".join(f"  {list(e.path)}: {e.message}" for e in errors)
             fail(f"{example_name} failed {schema_name}:\n{joined}")
 
     observation_schema = schema_objects["observation.schema.json"]
-    observation_validator = jsonschema.Draft202012Validator(
-        observation_schema, registry=registry
-    )
+    observation_validator = schema_validator(observation_schema)
     for index, observation in enumerate(load_json(EXAMPLE / "observations.json")):
         errors = list(observation_validator.iter_errors(observation))
         if errors:
             fail(f"observations.json[{index}] invalid: {errors[0].message}")
 
     offer_schema = schema_objects["compute-offer.schema.json"]
-    offer_validator = jsonschema.Draft202012Validator(offer_schema, registry=registry)
+    offer_validator = schema_validator(offer_schema)
     for index, offer in enumerate(load_json(EXAMPLE / "compute-offers.json")):
         errors = list(offer_validator.iter_errors(offer))
         if errors:
@@ -176,6 +196,8 @@ def validate_toml() -> None:
         fail("ASTRA self-certification must remain disabled")
     if config["x402"]["facilitator_participates_in_research_consensus"]:
         fail("payment facilitator must remain outside research consensus")
+    if config["protocol_version"] != "XLMP/1":
+        fail("the canonical protocol version must be XLMP/1")
 
 
 def validate_yaml() -> None:
@@ -210,6 +232,8 @@ def validate_yaml() -> None:
         fail("OpenAPI components.schemas must be a mapping")
     if "PaymentOfferRequest" not in schemas:
         fail("OpenAPI is missing PaymentOfferRequest")
+    if "/xlmp/v1/messages" not in openapi["paths"]:
+        fail("OpenAPI is missing the canonical XLMP message ingress")
     if "/v1/verification-jobs/{jobId}/payment-required" not in openapi["paths"]:
         fail("OpenAPI is missing the verification payment-required endpoint")
 
@@ -343,8 +367,8 @@ def validate_documented_invariants() -> None:
 def validate_source_tree() -> None:
     cargo_root = tomllib.loads((ROOT / "Cargo.toml").read_text())
     members = cargo_root.get("workspace", {}).get("members", [])
-    if len(members) < 12:
-        fail(f"expected at least 12 Rust workspace members, found {len(members)}")
+    if len(members) < 13:
+        fail(f"expected at least 13 Rust workspace members, found {len(members)}")
     for member in members:
         manifest = ROOT / member / "Cargo.toml"
         source = ROOT / member / "src"
@@ -358,8 +382,8 @@ def validate_source_tree() -> None:
         fail(f"expected at least 9 Solidity reference contracts, found {len(solidity)}")
 
     specs = sorted((ROOT / "spec").glob("[0-9][0-9][0-9]-*.md"))
-    if len(specs) < 18:
-        fail(f"expected at least 18 numbered specifications, found {len(specs)}")
+    if len(specs) < 19:
+        fail(f"expected at least 19 numbered specifications, found {len(specs)}")
 
     full_design = (ROOT / "docs/FULL_DESIGN.md").read_text()
     if len(full_design.splitlines()) < 1000:
@@ -370,6 +394,7 @@ def validate_source_tree() -> None:
 
     openapi = (ROOT / "openapi/openapi.yaml").read_text()
     required_paths = [
+        "/xlmp/v1/messages",
         "/v1/claims/{claimId}/formalize",
         "/v1/claims/{claimId}/prove",
         "/v1/proofs/{proofId}/verify",
@@ -452,12 +477,18 @@ def validate_release_manifest() -> None:
 
 def validate_source_placeholders() -> None:
     # Prevent accidental hardcoded real secrets or private keys in the archive.
+    excluded_parts = {".git", "target", ".lake", "out", "cache", "__pycache__"}
     secret_patterns = [
         re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
         re.compile(r"-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----"),
     ]
     for path in ROOT.rglob("*"):
-        if not path.is_file() or path.suffix in {".zip", ".png", ".jpg", ".pdf"}:
+        relative_parts = path.relative_to(ROOT).parts
+        if (
+            not path.is_file()
+            or any(part in excluded_parts for part in relative_parts)
+            or path.suffix in {".zip", ".png", ".jpg", ".pdf"}
+        ):
             continue
         text = path.read_text(errors="ignore")
         for pattern in secret_patterns:

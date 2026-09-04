@@ -14,17 +14,19 @@ use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use xlemma_consensus::{evaluate_formal_consensus, FormalConsensusOutcome, FormalConsensusPolicy};
 use xlemma_core::{
-    ArtifactId, ClaimId, ComputeQuoteId, JobId, ObservationReceipt, PolicyId, ResearcherId,
-    TheoryId, VerificationState,
+    ArtifactId, ClaimId, ComputeQuoteId, JobId, MessageId, ObservationReceipt, PolicyId,
+    ResearcherId, TheoryId, VerificationState,
 };
 use xlemma_x402::{
-    insert_payment_required, with_xlemma_extension, PaymentRequired, PaymentRequirement,
-    PaymentScheme, ResourceDescription, XLemmaPaymentExtension,
+    insert_payment_required, with_xlmp_extension, PaymentRequired, PaymentRequirement,
+    PaymentScheme, ResourceDescription, XlmpPaymentExtension,
 };
+use xlemma_xlmp::{XlmpEnvelope, XLMP_VERSION};
 
 #[derive(Clone, Default)]
 struct AppState {
     jobs: Arc<RwLock<BTreeMap<String, VerificationJobRecord>>>,
+    messages: Arc<RwLock<BTreeMap<String, XlmpEnvelope>>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -54,9 +56,9 @@ struct CreateVerificationJob {
     settlement_asset: String,
 }
 
-
 #[derive(Debug, Deserialize)]
 struct PaymentOfferRequest {
+    xlmp_message_id: MessageId,
     compute_quote_id: ComputeQuoteId,
     amount: String,
     asset: String,
@@ -110,15 +112,18 @@ impl IntoResponse for ApiError {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-            "info,xlemma_api=debug,tower_http=info".into()
-        }))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "info,xlemma_api=debug,tower_http=info".into()),
+        )
         .with(tracing_subscriber::fmt::layer().json())
         .init();
 
     let state = AppState::default();
     let app = Router::new()
         .route("/health", get(health))
+        .route("/xlmp/v1/messages", post(accept_xlmp_message))
+        .route("/xlmp/v1/messages/{message_id}", get(get_xlmp_message))
         .route("/v1/verification-jobs", post(create_job))
         .route("/v1/verification-jobs/{job_id}", get(get_job))
         .route(
@@ -149,9 +154,44 @@ async fn main() -> anyhow::Result<()> {
 async fn health() -> Json<HealthResponse> {
     Json(HealthResponse {
         status: "ok",
-        protocol: "xlemma/0.2",
+        protocol: XLMP_VERSION,
         time: Utc::now(),
     })
+}
+
+async fn accept_xlmp_message(
+    State(state): State<AppState>,
+    Json(envelope): Json<XlmpEnvelope>,
+) -> Result<(StatusCode, Json<XlmpEnvelope>), ApiError> {
+    envelope
+        .validate_integrity()
+        .map_err(|error| ApiError::Invalid(error.to_string()))?;
+    let mut messages = state.messages.write().await;
+    match messages.entry(envelope.message_id.to_string()) {
+        std::collections::btree_map::Entry::Vacant(entry) => {
+            entry.insert(envelope.clone());
+        }
+        std::collections::btree_map::Entry::Occupied(_) => {
+            return Err(ApiError::Conflict(
+                "XLMP message identifier already exists".to_owned(),
+            ));
+        }
+    }
+    Ok((StatusCode::ACCEPTED, Json(envelope)))
+}
+
+async fn get_xlmp_message(
+    State(state): State<AppState>,
+    Path(message_id): Path<String>,
+) -> Result<Json<XlmpEnvelope>, ApiError> {
+    state
+        .messages
+        .read()
+        .await
+        .get(&message_id)
+        .cloned()
+        .map(Json)
+        .ok_or(ApiError::NotFound)
 }
 
 async fn create_job(
@@ -172,8 +212,8 @@ async fn create_job(
         "created_at": Utc::now(),
         "nonce": uuid::Uuid::new_v4(),
     });
-    let job_id = JobId::derive(&job_material)
-        .map_err(|error| ApiError::Invalid(error.to_string()))?;
+    let job_id =
+        JobId::derive(&job_material).map_err(|error| ApiError::Invalid(error.to_string()))?;
     let now = Utc::now();
     let record = VerificationJobRecord {
         job_id: job_id.clone(),
@@ -269,7 +309,6 @@ async fn evaluate_job(
     }))
 }
 
-
 async fn create_payment_required(
     State(state): State<AppState>,
     Path(job_id): Path<String>,
@@ -292,10 +331,9 @@ async fn create_payment_required(
         ));
     }
 
-    let amount_minor_units = request
-        .amount
-        .parse::<u128>()
-        .map_err(|_| ApiError::Invalid("payment amount must be an unsigned integer string".to_owned()))?;
+    let amount_minor_units = request.amount.parse::<u128>().map_err(|_| {
+        ApiError::Invalid("payment amount must be an unsigned integer string".to_owned())
+    })?;
     if amount_minor_units == 0 {
         return Err(ApiError::Invalid(
             "payment amount must be greater than zero".to_owned(),
@@ -320,8 +358,9 @@ async fn create_payment_required(
         ));
     }
 
-    let extension = XLemmaPaymentExtension {
-        protocol: "xlemma/0.2".to_owned(),
+    let extension = XlmpPaymentExtension {
+        protocol: XLMP_VERSION.to_owned(),
+        xlmp_message_id: request.xlmp_message_id,
         job_id: job.job_id.clone(),
         researcher_id: job.researcher_id,
         claim_id: job.claim_id,
@@ -357,10 +396,70 @@ async fn create_payment_required(
         }],
         extensions: BTreeMap::new(),
     };
-    let required = with_xlemma_extension(required, &extension)
+    let required = with_xlmp_extension(required, &extension)
         .map_err(|error| ApiError::Invalid(error.to_string()))?;
     let mut response = (StatusCode::PAYMENT_REQUIRED, Json(required.clone())).into_response();
     insert_payment_required(response.headers_mut(), &required)
         .map_err(|error| ApiError::Invalid(error.to_string()))?;
     Ok(response)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use xlemma_core::ClaimManifest;
+    use xlemma_xlmp::{ClaimMessage, XlmpMessage};
+
+    fn claim_envelope() -> XlmpEnvelope {
+        let claim = ClaimManifest {
+            protocol_version: XLMP_VERSION.to_owned(),
+            theory_id: TheoryId::derive(&"api-test-theory").unwrap(),
+            canonical_elaborated_type: "forall p : Prop, p -> p".into(),
+            declaration_name: "XLemma.Api.identity".into(),
+            source_artifact: None,
+            created_at: Utc::now(),
+        };
+        let claim_id = claim.derive_claim_id().unwrap();
+        XlmpEnvelope::new(
+            None,
+            "did:key:api-test",
+            Utc::now(),
+            XlmpMessage::Claim(ClaimMessage {
+                claim_id,
+                claim,
+                contribution_manifest_hash: "blake3:contributions".into(),
+                rights_manifest_hash: "blake3:rights".into(),
+            }),
+            "test-signature",
+        )
+        .unwrap()
+    }
+
+    #[tokio::test]
+    async fn xlmp_ingress_is_append_only_and_retrievable() {
+        let state = AppState::default();
+        let envelope = claim_envelope();
+        let message_id = envelope.message_id.to_string();
+
+        let accepted = accept_xlmp_message(State(state.clone()), Json(envelope.clone()))
+            .await
+            .unwrap();
+        assert_eq!(accepted.0, StatusCode::ACCEPTED);
+
+        let fetched = get_xlmp_message(State(state.clone()), Path(message_id))
+            .await
+            .unwrap();
+        assert_eq!(fetched.0, envelope);
+
+        let duplicate = accept_xlmp_message(State(state), Json(envelope)).await;
+        assert!(matches!(duplicate, Err(ApiError::Conflict(_))));
+    }
+
+    #[tokio::test]
+    async fn xlmp_ingress_rejects_content_identity_mismatch() {
+        let mut envelope = claim_envelope();
+        envelope.sender = "did:key:mutated".into();
+        let result = accept_xlmp_message(State(AppState::default()), Json(envelope)).await;
+        assert!(matches!(result, Err(ApiError::Invalid(_))));
+    }
 }

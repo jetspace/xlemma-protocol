@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/poir-certificate.schema.json",
+  "title": "PoIRCertificate",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "certificate_id": { "type": "string", "pattern": "^xlcert:blake3:[0-9a-f]{64}$" },
+    "job_id": { "type": "string", "pattern": "^xljob:blake3:[0-9a-f]{64}$" },
+    "theory_id": { "type": "string", "pattern": "^xlt:blake3:[0-9a-f]{64}$" },
+    "claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "proof_id": { "type": "string", "pattern": "^xlp:blake3:[0-9a-f]{64}$" },
+    "artifact_id": { "type": "string", "pattern": "^xla:blake3:[0-9a-f]{64}$" },
+    "verification_policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "observation_receipt_ids": {
+      "type": "array", "minItems": 2, "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" }
+    },
+    "checker_families": {
+      "type": "array", "minItems": 2,
+      "items": { "type": "string", "enum": ["lean_kernel", "nanoda", "other_independent"] }
+    },
+    "operator_cluster_ids": {
+      "type": "array", "minItems": 2, "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^xloperator:blake3:[0-9a-f]{64}$" }
+    },
+    "artifact_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "environment_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "dependency_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "axiom_set_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "formal_status": { "const": "certified" },
+    "assurance_level": {
+      "type": "string",
+      "enum": ["independently_reproduced", "formally_certified", "research_certified", "economically_finalized", "mature"]
+    },
+    "issued_at": { "type": "string", "format": "date-time" },
+    "challenge_window_ends_at": { "type": "string", "format": "date-time" },
+    "aggregate_signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "certificate_id", "job_id", "theory_id", "claim_id", "proof_id", "artifact_id",
+    "verification_policy_id", "observation_receipt_ids", "checker_families", "operator_cluster_ids",
+    "artifact_root", "environment_root", "dependency_root", "axiom_set_root", "formal_status",
+    "assurance_level", "issued_at", "challenge_window_ends_at", "aggregate_signature"
+  ]
+}

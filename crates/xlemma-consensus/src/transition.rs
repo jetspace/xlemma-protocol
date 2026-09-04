@@ -59,11 +59,9 @@ mod tests {
             VerificationState::Divergent
         )
         .is_ok());
-        assert!(ensure_transition(
-            VerificationState::Divergent,
-            VerificationState::Quarantined
-        )
-        .is_ok());
+        assert!(
+            ensure_transition(VerificationState::Divergent, VerificationState::Quarantined).is_ok()
+        );
     }
 
     #[test]

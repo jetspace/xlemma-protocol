@@ -8,36 +8,11 @@ pub fn observation_commitment(
     observation_root: &str,
     salt: &[u8],
 ) -> String {
-    let mut hasher = blake3::Hasher::new();
-    hasher.update(b"xlemma-poir-commit-v1\0");
-    update_field(&mut hasher, job_id.as_str().as_bytes());
-    update_field(&mut hasher, verdict_label(verdict).as_bytes());
-    update_field(&mut hasher, observation_root.as_bytes());
-    update_field(&mut hasher, salt);
-    format!("blake3:{}", hasher.finalize().to_hex())
+    xlemma_core::observation_commitment(job_id, verdict, observation_root, salt)
 }
 
 pub fn verify_reveal(receipt: &ObservationReceipt, salt: &[u8]) -> bool {
-    observation_commitment(
-        &receipt.job_id,
-        receipt.verdict,
-        &receipt.observation_root,
-        salt,
-    ) == receipt.commitment
-}
-
-fn update_field(hasher: &mut blake3::Hasher, bytes: &[u8]) {
-    hasher.update(&(bytes.len() as u64).to_le_bytes());
-    hasher.update(bytes);
-}
-
-fn verdict_label(verdict: ObservationVerdict) -> &'static str {
-    match verdict {
-        ObservationVerdict::Pass => "pass",
-        ObservationVerdict::Fail => "fail",
-        ObservationVerdict::Error => "error",
-        ObservationVerdict::Abstain => "abstain",
-    }
+    xlemma_core::verify_observation_reveal(receipt, salt)
 }
 
 #[cfg(test)]

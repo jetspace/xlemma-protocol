@@ -1,5 +1,5 @@
 {
-  "protocol_version": "xlemma/0.2",
+  "protocol_version": "XLMP/1",
   "entries": [
     {
       "path": "NoArbitrage.lean",

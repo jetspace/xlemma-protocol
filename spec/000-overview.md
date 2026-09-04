@@ -1,12 +1,12 @@
 # XLIP-000 — Protocol overview and normative invariants
 
-Status: Draft 0.2
+Status: Draft XLMP/1
 
 The key words MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY are normative.
 
 ## Purpose
 
-xLemma coordinates proof production, deterministic verification, provenance, rights manifests, researcher funding, paid access, compute markets, and downstream rewards for decentralized researchers.
+XLMP is xLemma's canonical, provider-neutral protocol for proof production, deterministic verification, provenance, rights manifests, researcher funding, paid access, compute markets, and downstream rewards for decentralized researchers. ASTRA, Lean, x402, chains, transports, and storage systems are adapters; none defines XLMP research state or consensus.
 
 ## Normative invariants
 
@@ -26,3 +26,5 @@ xLemma coordinates proof production, deterministic verification, provenance, rig
 14. Upstream rewards MUST be capped by realized downstream net revenue.
 15. LaTeX or natural-language presentation MUST NOT override the formal Lean declaration.
 16. A public “verified” representation MUST disclose the verification policy or assurance level.
+17. Payment, transport, chain, model, checker, and storage adapters MUST NOT redefine XLMP object identity or research-state transitions.
+18. An XLMP message MUST preserve its content-derived MessageID across transport adapters.

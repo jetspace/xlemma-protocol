@@ -1,17 +1,17 @@
-# xLemma v0.2 — Complete Protocol Design
+# xLemma XLMP/1 — Complete Protocol Design
 
 ## Executive definition
 
-xLemma is a decentralized protocol for **proof-carrying research**. Its primary user is a sovereign decentralized researcher—an individual, pseudonymous contributor, laboratory, or collective—who wants to finance research, use ASTRA to formalize and search for proofs, obtain reproducible Lean certification from independent nodes, publish human-readable LaTeX, preserve priority and contribution history, and earn from real downstream use.
+xLemma is an open decentralized protocol for **proof-carrying research**. Its primary user is a sovereign decentralized researcher—an individual, pseudonymous contributor, laboratory, or collective—who wants to identify, finance, produce, independently reproduce, certify, attribute, publish, license, reuse, and economically reward verifiable research objects. ASTRA and Lean are the reference prover and verifier adapters, not protocol dependencies.
 
 The protocol's research flywheel is:
 
 \[
 \text{funding}
 \rightarrow
-\text{ASTRA compute}
+\text{prover-adapter compute}
 \rightarrow
-\text{Lean candidate}
+\text{formal proof candidate}
 \rightarrow
 \text{independent reproduction}
 \rightarrow
@@ -100,17 +100,18 @@ Novelty, usefulness, interpretation, significance, and prior-art coverage are ev
 | Module | Responsibility | Does not do |
 |---|---|---|
 | `xlemma-core` | IDs, manifests, capsules, receipts, append-only graph | Run models or chains |
-| `xlemma-astra` | Formalization, proof search, repair, explanation | Certify its own output |
-| `xlemma-lean` | Pinned builds, proof export, axiom inventory, checker replay | Assess novelty or rights |
+| `xlemma-xlmp` | Canonical XLMP/1 messages, lifecycle, and provider-neutral adapter contracts | Execute a provider, checker, payment, chain, transport, or store |
+| `xlemma-astra` | Reference `ResearchProver` adapter for formalization, proof search, repair, explanation | Define XLMP or certify its own output |
+| `xlemma-lean` | Default `VerifierAdapter` for pinned builds, proof export, axiom inventory, checker replay | Define XLMP, assess novelty, or determine rights |
 | `xlemma-consensus` | PoIR, generalized quorums, commit-reveal, divergence | Token-weighted truth voting |
-| `xlemma-x402` | Paid HTTP transport and usage settlement | Research consensus |
+| `xlemma-x402` | Optional x402 payment and paid-HTTP adapter | Define research state or consensus |
 | `xlemma-economics` | Backed credits, revenue conservation, dividends | Create unbacked value |
 | `xlemma-compute-curve` | Spot/forward service offers and proof-cost estimates | Treat compute as storable inventory |
-| `xlemma-storage` | Content-addressed bundles and availability receipts | Decide truth or ownership |
-| Registry contracts | Anchor roots, escrow value, route revenue, tokenize optional rights | Interpret Lean statements |
+| `xlemma-storage` | `StorageAdapter` implementation, content-addressed bundles, availability receipts | Decide truth or ownership |
+| Registry contracts | `FinalityAdapter` anchors, escrow value, revenue routing, optional rights tokens | Interpret formal statements or define XLMP |
 | Presentation layer | LaTeX, web, citations, explanations | Override the formal claim |
 
-This modularity allows xLemma to use an existing blockchain rather than creating a bespoke consensus chain at launch.
+This dependency direction is strict: adapters depend on XLMP types; XLMP never depends on ASTRA, Lean, x402, a chain, or a storage network. It allows xLemma to use an existing blockchain rather than creating a bespoke consensus chain at launch.
 
 ---
 
@@ -753,9 +754,9 @@ Revenue activation occurs only after payment settlement, required formal evidenc
 
 ---
 
-## 17. x402 research transport
+## 17. Payment and transport adapters
 
-x402 is the transport for machine-to-machine paid research services. It does not replace the research consensus protocol.
+XLMP messages may travel over HTTP, libp2p, WebSocket, chain event streams, or x402-protected HTTP. Payment may use x402, stablecoins, native-chain assets, backed research credits, grants, bounty escrow, or institutional invoices. These adapters do not replace the research protocol. x402 is the reference paid-HTTP option.
 
 ### 17.1 Scheme mapping
 
@@ -772,7 +773,7 @@ x402 is the transport for machine-to-machine paid research services. It does not
 
 ```text
 client → GET/POST protected research resource
-server → 402 + PAYMENT-REQUIRED + xlemma extension
+server → 402 + PAYMENT-REQUIRED + xlmp extension
 client → retry + PAYMENT-SIGNATURE
 server/facilitator → verify authorization
 server → perform job
@@ -780,12 +781,13 @@ facilitator → settle actual amount
 server → result + PAYMENT-RESPONSE + separate research receipts
 ```
 
-### 17.3 xLemma extension
+### 17.3 XLMP extension
 
 The extension binds:
 
 ```text
 protocol version
+XLMP MessageID
 JobID
 ResearcherID
 ClaimID and optional ProofID
@@ -1005,7 +1007,7 @@ For private research:
 plaintext bundle
   → client-side encryption
   → publish encrypted content-addressed bundle
-  → x402 authorization/settlement
+  → selected payment-adapter authorization/settlement
   → release wrapped decryption key
   → buyer decrypts and independently verifies
 ```
@@ -1056,7 +1058,7 @@ PoIR nodes, official and independent checkers, commit-reveal, operator diversity
 
 ### V0.3 — paid research services
 
-Backed researcher credits, Research Vaults, x402 exact/upto/batch settlement, ASTRA prover marketplace, stable-asset node payouts.
+Backed researcher credits, Research Vaults, pluggable payments with x402 exact/upto/batch as the reference paid-HTTP adapter, provider-neutral prover marketplace with ASTRA as the reference implementation, stable-asset node payouts.
 
 ### V0.4 — revenue and impact
 

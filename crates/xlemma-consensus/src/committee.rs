@@ -33,7 +33,9 @@ pub struct CommitteeSelection {
 
 #[derive(Debug, Error)]
 pub enum CommitteeError {
-    #[error("not enough eligible independent operators for role {role:?}: need {needed}, found {found}")]
+    #[error(
+        "not enough eligible independent operators for role {role:?}: need {needed}, found {found}"
+    )]
     InsufficientEligibleNodes {
         role: NodeRole,
         needed: usize,
@@ -112,11 +114,7 @@ pub fn select_committee(
 mod tests {
     use super::*;
 
-    fn eligible_node(
-        label: &str,
-        operator: &str,
-        roles: BTreeSet<NodeRole>,
-    ) -> EligibleNode {
+    fn eligible_node(label: &str, operator: &str, roles: BTreeSet<NodeRole>) -> EligibleNode {
         EligibleNode {
             node_id: NodeId::derive(&label).unwrap(),
             operator_cluster_id: OperatorClusterId::derive(&operator).unwrap(),

@@ -4,7 +4,8 @@ Every box is a release gate. The reference repository intentionally leaves many 
 
 ## Build and dependency integrity
 
-- [ ] Resolve the Rust workspace with the pinned toolchain, generate `Cargo.lock`, review it, and commit it before a release tag.
+- [x] Resolve the Rust workspace with the pinned toolchain and commit `Cargo.lock`.
+- [ ] Complete independent dependency and license review of the locked Rust graph before a release tag.
 - [ ] Pin OpenZeppelin, forge-std, Lean, checker, container, and system dependency revisions by immutable version or digest.
 - [ ] Generate and retain software bills of materials and provenance attestations for API, node, checker, and contract builds.
 - [ ] Reproduce release artifacts from a clean environment and compare digests.
@@ -12,6 +13,9 @@ Every box is a release gate. The reference repository intentionally leaves many 
 
 ## Protocol and identifiers
 
+- [ ] XLMP/1 envelope and all required message vectors independently implemented.
+- [ ] Unsupported XLMP versions, unknown required fields, and adapter downgrades fail closed.
+- [ ] HTTP and one non-HTTP transport preserve identical MessageIDs.
 - [ ] Canonical serialization frozen and independently implemented.
 - [ ] RFC 8785-compatible behavior covered by published vectors.
 - [ ] ClaimID derived from elaborated Lean expressions, including universes and implicit structure.
@@ -21,7 +25,7 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] Signature domains bind network, contract, nonce, expiry, policy, and artifact.
 - [ ] Append-only correction/supersession semantics tested.
 
-## Lean and checker assurance
+## Verifier and checker assurance
 
 - [ ] Exact trusted challenge workflow implemented.
 - [ ] `#print axioms` or equivalent inventory enforced.
@@ -82,8 +86,9 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] Dividends are capped by realized downstream net revenue.
 - [ ] Measurement disputes and corrections are append-only.
 
-## x402
+## Payment adapters
 
+- [ ] At least one non-x402 payment adapter passes common authorization, settlement, replay, and receipt tests.
 - [ ] Current official SDK/protocol version reverified.
 - [ ] Exact, upto, and batch flows tested against selected facilitator/network.
 - [ ] Idempotency survives retries and lost responses.

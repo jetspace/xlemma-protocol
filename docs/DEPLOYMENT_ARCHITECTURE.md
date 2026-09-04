@@ -6,21 +6,22 @@ This is a production-oriented decomposition, not a claim that the reference impl
 
 Launch on an established settlement chain rather than building a new L1. Keep formal verification and evidence production off chain; anchor compact certificate, policy, artifact, payment, and revenue roots on chain.
 
-Core services:
+XLMP/1 is the service-to-service contract. Core services and adapters:
 
-- API and x402 gateway;
+- XLMP message router with HTTP, libp2p, or WebSocket transport adapters;
+- optional x402 and other payment adapters;
 - researcher identity/manifest service;
 - quote and compute-curve service;
 - durable job orchestrator;
-- ASTRA prover workers;
-- Lean build workers;
+- `ResearchProver` workers, with ASTRA as the reference adapter;
+- `VerifierAdapter` build workers, with Lean as the default;
 - official-kernel checker network;
 - independent-checker network;
 - committee selection and receipt aggregator;
 - novelty/review network;
 - watcher/challenge service;
 - content-addressed storage and availability service;
-- chain writer/indexer;
+- finality-adapter chain writer/indexer;
 - vault/revenue reconciler;
 - public explorer;
 - metrics, security monitoring, and incident tooling.
@@ -93,7 +94,7 @@ At minimum:
 - primary/shadow aggregators with epoch fencing;
 - independent watcher infrastructure.
 
-A loss of ASTRA availability should degrade proof generation, not existing proof verification. A payment outage should not alter certificate state.
+A loss of one prover adapter should degrade only the work routed to that provider, not existing proof verification or XLMP interoperability. A payment-adapter outage should not alter certificate state. A finality-adapter outage should delay anchoring without rewriting signed observations.
 
 ## 6. Key hierarchy
 

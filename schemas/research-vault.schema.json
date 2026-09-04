@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/research-vault.schema.json",
+  "title": "ResearchVault",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "vault_id": { "type": "string", "pattern": "^xlvault:blake3:[0-9a-f]{64}$" },
+    "researcher_id": { "type": "string", "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$" },
+    "credit_asset": { "type": "string", "minLength": 1 },
+    "backing_assets": { "type": "object", "additionalProperties": { "$ref": "common.schema.json#/$defs/amount" } },
+    "backing_value_in_credit_units": { "type": ["string", "integer"], "pattern": "^[0-9]+$", "minimum": 0 },
+    "outstanding_credit_units": { "type": ["string", "integer"], "pattern": "^[0-9]+$", "minimum": 0 },
+    "valuation_policy_id": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "state_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "vault_id", "researcher_id", "credit_asset", "backing_assets", "backing_value_in_credit_units",
+    "outstanding_credit_units", "valuation_policy_id", "state_root", "observed_at", "signature"
+  ]
+}

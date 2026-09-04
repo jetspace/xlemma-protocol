@@ -19,11 +19,13 @@
 ```text
 researcher client
   | untrusted network
-x402 gateway / facilitator
-  | paid service boundary
-ASTRA provider
+XLMP message router
+  | transport adapter boundary
+payment adapter / facilitator
+  | separate paid service boundary
+research prover / ASTRA provider
   | model output is untrusted
-proof-build sandbox
+verifier adapter / proof-build sandbox
   | hostile code boundary
 exported proof object
   | replay outside sandbox
@@ -75,6 +77,18 @@ Controls: backing ≥ total supply, atomic burn-and-release, no issuance against
 
 Controls: payment identifier, nonce, expiration, network and verifying-contract binding, facilitator reconciliation, authorization state, and one-time settlement.
 
+### Adapter substitution or protocol downgrade
+
+Controls: the XLMP protocol name, major version, MessageID, signer, policy roots, and payload are bound together; unknown major versions and unknown required fields fail closed; payment, transport, finality, storage, prover, and verifier receipts remain separate. An adapter cannot translate a message into weaker research semantics without changing its MessageID and invalidating its signature.
+
+### Forged or unauthenticated XLMP envelope
+
+Controls: deployment-approved signature profiles, sender-key resolution,
+domain-separated signing bytes, replay/idempotency policy, and append-only
+MessageID storage. The prototype HTTP ingress checks content integrity and a
+nonempty signature field but does not authenticate it; it MUST remain behind
+an authenticating gateway until signature verification is implemented.
+
 ### Revenue fabrication
 
 Controls: only finalized external settlement events enter gross revenue; costs, refunds, and reserves are deducted first; related-party demand is labeled; unrealized token changes are excluded.
@@ -114,3 +128,4 @@ Slashing requires objectively provable misconduct: equivocation, false artifact 
 - Rights disputes can exceed what on-chain evidence resolves.
 - Stable backing can face issuer, chain, bridge, custody, and regulatory risk.
 - Succinct proof systems add their own trusted setup, circuit, and implementation assumptions.
+- The prototype HTTP ingress does not yet authenticate XLMP signatures.

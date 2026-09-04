@@ -1,9 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use thiserror::Error;
-use xlemma_core::{
-    Amount, ContributionManifest, MoneyError, ResearcherId, RevenueWaterfall,
-};
+use xlemma_core::{Amount, ContributionManifest, MoneyError, ResearcherId, RevenueWaterfall};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RevenueInputs {
@@ -112,8 +110,7 @@ pub fn allocate_revenue(
             contributor_allocations.insert(contribution.contributor.clone(), allocation);
         let previous_compound =
             contributor_credit_compound.insert(contribution.contributor.clone(), compound);
-        let previous_cash =
-            contributor_cash_payout.insert(contribution.contributor.clone(), cash);
+        let previous_cash = contributor_cash_payout.insert(contribution.contributor.clone(), cash);
         debug_assert!(previous_allocation.is_none());
         debug_assert!(previous_compound.is_none());
         debug_assert!(previous_cash.is_none());
@@ -160,15 +157,16 @@ pub fn allocate_revenue(
     })
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use chrono::Utc;
-    use xlemma_core::{ClaimId, ContributionRole, ContributionShare};
+    use xlemma_core::{ClaimId, ContributionRole, ContributionShare, TheoryId};
 
     fn contributions() -> ContributionManifest {
-        let claim_id = ClaimId::derive(&"claim").unwrap();
+        let claim_id =
+            ClaimId::from_canonical_elaborated_type(&TheoryId::derive(&"theory").unwrap(), "claim")
+                .unwrap();
         ContributionManifest {
             claim_id,
             contributors: vec![
@@ -213,8 +211,8 @@ mod tests {
             dispute_insurance_pool_bps: 500,
             protocol_operations_bps: 500,
         };
-        let result = allocate_revenue(&inputs, &waterfall, &contributions(), &BTreeMap::new())
-            .unwrap();
+        let result =
+            allocate_revenue(&inputs, &waterfall, &contributions(), &BTreeMap::new()).unwrap();
         let top_level = result.creator_pool.units
             + result.upstream_dependency_pool.units
             + result.reverification_security_pool.units
@@ -223,7 +221,11 @@ mod tests {
             + result.protocol_operations.units
             + result.rounding_remainder.units;
         assert_eq!(top_level, result.net_distributable.units);
-        let creator = result.contributor_allocations.values().map(|a| a.units).sum::<u128>()
+        let creator = result
+            .contributor_allocations
+            .values()
+            .map(|a| a.units)
+            .sum::<u128>()
             + result.creator_pool_remainder.units;
         assert_eq!(creator, result.creator_pool.units);
     }

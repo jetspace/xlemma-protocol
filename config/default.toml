@@ -1,4 +1,4 @@
-protocol_version = "xlemma/0.2"
+protocol_version = "XLMP/1"
 canonical_json = "rfc8785+jcs"
 canonical_lean_expression = "xlemma-lean-expr-v1"
 settlement_asset = "USDC"

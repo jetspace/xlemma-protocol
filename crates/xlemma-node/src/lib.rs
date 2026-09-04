@@ -16,7 +16,6 @@ use xlemma_core::{
 /// Domain-separated assignment envelope used by schedulers and node agents.
 pub type SignedNodeAssignment = xlemma_crypto::SignedEnvelope<NodeAssignment>;
 
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NodeCapability {
     pub node_id: NodeId,
@@ -144,14 +143,16 @@ pub fn validate_assignment(
     {
         return Err(NodeError::InvalidTiming);
     }
-    if capability.infrastructure_provider.trim().is_empty()
-        || capability.region.trim().is_empty()
-    {
+    if capability.infrastructure_provider.trim().is_empty() || capability.region.trim().is_empty() {
         return Err(NodeError::MissingInfrastructureIdentity);
     }
     if is_checker_role(assignment.role)
         && (capability.checker_family.is_none()
-            || capability.checker_name.as_deref().unwrap_or_default().is_empty()
+            || capability
+                .checker_name
+                .as_deref()
+                .unwrap_or_default()
+                .is_empty()
             || capability
                 .checker_version
                 .as_deref()
@@ -180,11 +181,19 @@ pub fn roles_conflict(left: NodeRole, right: NodeRole) -> bool {
     }
     matches!(
         (left, right),
-        (Researcher, OfficialKernelChecker | IndependentChecker | NoveltyReviewer | CertificateFinalizer)
-            | (OfficialKernelChecker | IndependentChecker | NoveltyReviewer | CertificateFinalizer, Researcher)
-            | (AstraProver, OfficialKernelChecker | IndependentChecker | CertificateFinalizer)
-            | (OfficialKernelChecker | IndependentChecker | CertificateFinalizer, AstraProver)
-            | (LeanBuilder, OfficialKernelChecker | IndependentChecker)
+        (
+            Researcher,
+            OfficialKernelChecker | IndependentChecker | NoveltyReviewer | CertificateFinalizer
+        ) | (
+            OfficialKernelChecker | IndependentChecker | NoveltyReviewer | CertificateFinalizer,
+            Researcher
+        ) | (
+            AstraProver,
+            OfficialKernelChecker | IndependentChecker | CertificateFinalizer
+        ) | (
+            OfficialKernelChecker | IndependentChecker | CertificateFinalizer,
+            AstraProver
+        ) | (LeanBuilder, OfficialKernelChecker | IndependentChecker)
             | (OfficialKernelChecker | IndependentChecker, LeanBuilder)
             | (PaymentFacilitator, CertificateFinalizer)
             | (CertificateFinalizer, PaymentFacilitator)
@@ -277,10 +286,7 @@ pub fn build_observation_receipt(
         checker_family: family,
         checker_name: capability.checker_name.clone().unwrap_or_default(),
         checker_version: capability.checker_version.clone().unwrap_or_default(),
-        checker_binary_digest: capability
-            .checker_binary_digest
-            .clone()
-            .unwrap_or_default(),
+        checker_binary_digest: capability.checker_binary_digest.clone().unwrap_or_default(),
         infrastructure_provider: capability.infrastructure_provider.clone(),
         region: capability.region.clone(),
         artifact_root: assignment.artifact_root.clone(),
@@ -333,7 +339,11 @@ mod tests {
             assigned_node_id: NodeId::derive(&"node").unwrap(),
             assigned_operator_cluster_id: OperatorClusterId::derive(&"operator").unwrap(),
             role,
-            claim_id: ClaimId::derive(&"claim").unwrap(),
+            claim_id: ClaimId::from_canonical_elaborated_type(
+                &TheoryId::derive(&"theory").unwrap(),
+                "claim",
+            )
+            .unwrap(),
             theory_id: TheoryId::derive(&"theory").unwrap(),
             artifact_id: ArtifactId::derive(&"artifact").unwrap(),
             artifact_root: "blake3:artifact".into(),
@@ -407,7 +417,6 @@ mod tests {
         ));
     }
 
-
     #[test]
     fn assignment_rejects_future_issue_time() {
         let now = Utc::now();
@@ -456,5 +465,4 @@ mod tests {
         );
         assert!(matches!(result, Err(NodeError::InvalidTiming)));
     }
-
 }

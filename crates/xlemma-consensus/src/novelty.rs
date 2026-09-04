@@ -163,15 +163,18 @@ fn logistic(log_odds: f64) -> f64 {
 mod tests {
     use super::*;
     use chrono::Utc;
-    use xlemma_core::{ClaimId, NodeId, ReceiptId};
+    use xlemma_core::{ClaimId, NodeId, ReceiptId, TheoryId};
 
     fn review(label: &str, novelty: f64, equivalent: f64) -> NoveltyReviewReceipt {
         NoveltyReviewReceipt {
             receipt_id: ReceiptId::derive(&format!("receipt-{label}")).unwrap(),
-            claim_id: ClaimId::derive(&"claim").unwrap(),
+            claim_id: ClaimId::from_canonical_elaborated_type(
+                &TheoryId::derive(&"theory").unwrap(),
+                "claim",
+            )
+            .unwrap(),
             reviewer_node_id: NodeId::derive(&format!("node-{label}")).unwrap(),
-            operator_cluster_id: OperatorClusterId::derive(&format!("operator-{label}"))
-                .unwrap(),
+            operator_cluster_id: OperatorClusterId::derive(&format!("operator-{label}")).unwrap(),
             corpus_root: "blake3:corpus".into(),
             corpus_cutoff: Utc::now(),
             known_equivalent_probability: equivalent,
@@ -235,6 +238,9 @@ mod tests {
             &reviews,
             &weights,
         );
-        assert!(matches!(result, Err(NoveltyError::InsufficientIndependence)));
+        assert!(matches!(
+            result,
+            Err(NoveltyError::InsufficientIndependence)
+        ));
     }
 }

@@ -1,7 +1,9 @@
-//! x402 V2 transport objects and the xLemma extension.
+//! x402 V2 payment-adapter objects for XLMP/1.
 //!
-//! This crate does not reimplement chain-specific settlement. Use an audited
-//! official or production x402 SDK/facilitator behind `PaymentFacilitator`.
+//! x402 transports payment authorization; it does not define xLemma research
+//! state, verification, rights, or consensus. This crate does not reimplement
+//! chain-specific settlement. Use an audited SDK/facilitator behind
+//! `PaymentFacilitator`.
 
 use async_trait::async_trait;
 use base64::{engine::general_purpose::STANDARD, Engine};
@@ -12,7 +14,8 @@ use serde_json::Value;
 use std::collections::BTreeMap;
 use thiserror::Error;
 use xlemma_core::{
-    Amount, ClaimId, ComputeQuoteId, JobId, PaymentReceipt, PolicyId, ProofId, ResearcherId,
+    Amount, ClaimId, ComputeQuoteId, JobId, MessageId, PaymentReceipt, PolicyId, ProofId,
+    ResearcherId, XLMP_VERSION,
 };
 
 pub const PAYMENT_REQUIRED_HEADER: &str = "payment-required";
@@ -52,8 +55,10 @@ pub struct PaymentRequirement {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct XLemmaPaymentExtension {
+pub struct XlmpPaymentExtension {
     pub protocol: String,
+    #[serde(rename = "xlmpMessageId")]
+    pub xlmp_message_id: MessageId,
     #[serde(rename = "jobId")]
     pub job_id: JobId,
     #[serde(rename = "researcherId")]
@@ -125,8 +130,9 @@ pub enum ResearchServiceKind {
 
 pub fn recommended_scheme(service: ResearchServiceKind) -> PaymentScheme {
     match service {
-        ResearchServiceKind::FixedLeanCheck
-        | ResearchServiceKind::CertifiedBundleDownload => PaymentScheme::Exact,
+        ResearchServiceKind::FixedLeanCheck | ResearchServiceKind::CertifiedBundleDownload => {
+            PaymentScheme::Exact
+        }
         ResearchServiceKind::VariableAstraSearch | ResearchServiceKind::MeteredRepair => {
             PaymentScheme::Upto
         }
@@ -149,6 +155,8 @@ pub enum X402Error {
     Verification(String),
     #[error("payment settlement failed: {0}")]
     Settlement(String),
+    #[error("invalid XLMP payment extension: {0}")]
+    InvalidExtension(String),
 }
 
 pub fn encode_header<T: Serialize>(value: &T) -> Result<HeaderValue, X402Error> {
@@ -170,9 +178,7 @@ pub fn insert_payment_required(
     Ok(())
 }
 
-pub fn read_payment_signature(
-    headers: &HeaderMap,
-) -> Result<PaymentSignatureEnvelope, X402Error> {
+pub fn read_payment_signature(headers: &HeaderMap) -> Result<PaymentSignatureEnvelope, X402Error> {
     let value = headers
         .get(PAYMENT_SIGNATURE_HEADER)
         .ok_or(X402Error::MissingHeader)?;
@@ -199,23 +205,45 @@ pub trait PaymentFacilitator: Send + Sync {
     async fn settle(&self, request: SettlementRequest) -> Result<PaymentReceipt, X402Error>;
 }
 
-/// Adds the xLemma extension without conflating payment validity with proof
+/// Adds the XLMP extension without conflating payment validity with proof
 /// validity. The proof certificate is delivered as a separate resource or
 /// extension only after independent verification.
-pub fn with_xlemma_extension(
+pub fn with_xlmp_extension(
     mut required: PaymentRequired,
-    extension: &XLemmaPaymentExtension,
+    extension: &XlmpPaymentExtension,
 ) -> Result<PaymentRequired, X402Error> {
+    if extension.protocol != XLMP_VERSION {
+        return Err(X402Error::InvalidExtension(format!(
+            "expected protocol {XLMP_VERSION}"
+        )));
+    }
+    extension
+        .xlmp_message_id
+        .validate()
+        .map_err(|error| X402Error::InvalidExtension(error.to_string()))?;
     let _ = required
         .extensions
-        .insert("xlemma".to_owned(), serde_json::to_value(extension)?);
+        .insert("xlmp".to_owned(), serde_json::to_value(extension)?);
     Ok(required)
+}
+
+#[deprecated(note = "use XlmpPaymentExtension")]
+pub type XLemmaPaymentExtension = XlmpPaymentExtension;
+
+#[deprecated(note = "use with_xlmp_extension")]
+pub fn with_xlemma_extension(
+    required: PaymentRequired,
+    extension: &XlmpPaymentExtension,
+) -> Result<PaymentRequired, X402Error> {
+    with_xlmp_extension(required, extension)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::Duration;
     use serde_json::json;
+    use xlemma_core::TheoryId;
 
     #[test]
     fn headers_round_trip() {
@@ -229,5 +257,43 @@ mod tests {
         let encoded = encode_header(&envelope).unwrap();
         let decoded: PaymentSignatureEnvelope = decode_header(&encoded).unwrap();
         assert_eq!(decoded.payment_identifier, envelope.payment_identifier);
+    }
+
+    #[test]
+    fn payment_offer_binds_xlmp_without_becoming_research_consensus() {
+        let extension = XlmpPaymentExtension {
+            protocol: XLMP_VERSION.into(),
+            xlmp_message_id: MessageId::derive(&"message").unwrap(),
+            job_id: JobId::derive(&"job").unwrap(),
+            researcher_id: ResearcherId::derive(&"researcher").unwrap(),
+            claim_id: ClaimId::from_canonical_elaborated_type(
+                &TheoryId::derive(&"theory").unwrap(),
+                "claim",
+            )
+            .unwrap(),
+            proof_id: None,
+            artifact_commitment: "blake3:artifact".into(),
+            compute_quote_id: ComputeQuoteId::derive(&"quote").unwrap(),
+            required_verification_policy: PolicyId::derive(&"policy").unwrap(),
+            model_policy: "provider-neutral".into(),
+            rights_manifest_hash: "blake3:rights".into(),
+            revenue_route_hash: "blake3:revenue".into(),
+            delivery_mode: "public_bundle".into(),
+            valid_until: Utc::now() + Duration::hours(1),
+        };
+        let required = PaymentRequired {
+            x402_version: 2,
+            error: "payment required".into(),
+            resource: ResourceDescription {
+                url: "/resource".into(),
+                description: "test".into(),
+                mime_type: "application/json".into(),
+            },
+            accepts: vec![],
+            extensions: BTreeMap::new(),
+        };
+        let bound = with_xlmp_extension(required, &extension).unwrap();
+        assert!(bound.extensions.contains_key("xlmp"));
+        assert!(!bound.extensions.contains_key("xlemma"));
     }
 }

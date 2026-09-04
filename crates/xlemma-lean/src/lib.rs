@@ -1,4 +1,8 @@
-//! Lean build and checker execution boundaries.
+//! Lean implementation of an XLMP verifier-adapter boundary.
+//!
+//! Lean is the default formal system, not the XLMP protocol itself. Other
+//! independently identified formal systems can implement the same verification
+//! contract without changing xLemma research state.
 //!
 //! `LocalCommandRunner` is a development utility. Production nodes MUST run
 //! hostile proof artifacts in a hardened, no-network sandbox and export proof
@@ -11,8 +15,8 @@ use std::{collections::BTreeMap, path::PathBuf, process::Stdio};
 use thiserror::Error;
 use tokio::{io::AsyncReadExt, process::Command, time::timeout};
 use xlemma_core::{
-    ArtifactId, CheckerExecution, CheckerFamily, ClaimId, JobId, LeanVerificationReceipt,
-    NodeId, ObservationVerdict, OperatorClusterId, PolicyId, ProofId, ReceiptId, TheoryId,
+    ArtifactId, CheckerExecution, CheckerFamily, ClaimId, JobId, LeanVerificationReceipt, NodeId,
+    ObservationVerdict, OperatorClusterId, PolicyId, ProofId, ReceiptId, TheoryId,
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -64,7 +68,9 @@ pub struct CommandResult {
 
 #[derive(Debug, Error)]
 pub enum LeanVerificationError {
-    #[error("unsafe sandbox policy: production verification requires no network and a read-only root")]
+    #[error(
+        "unsafe sandbox policy: production verification requires no network and a read-only root"
+    )]
     UnsafeSandboxPolicy,
     #[error("command I/O failed: {0}")]
     Io(#[from] std::io::Error),
@@ -126,15 +132,11 @@ impl SandboxRunner for LocalCommandRunner {
             Ok::<_, std::io::Error>(status)
         };
 
-        let status = match timeout(
-            std::time::Duration::from_secs(policy.timeout_seconds),
-            wait,
-        )
-        .await
-        {
-            Ok(result) => result?,
-            Err(_) => return Err(LeanVerificationError::Timeout),
-        };
+        let status =
+            match timeout(std::time::Duration::from_secs(policy.timeout_seconds), wait).await {
+                Ok(result) => result?,
+                Err(_) => return Err(LeanVerificationError::Timeout),
+            };
 
         let mut trace_hasher = blake3::Hasher::new();
         trace_hasher.update(b"xlemma-command-trace-v1\0");
@@ -282,9 +284,7 @@ impl<R: SandboxRunner> LeanVerifier<R> {
                 binary_digest: "CONFIGURE_AT_DEPLOYMENT".to_owned(),
                 node_id: self.official_kernel.node_id.clone(),
                 operator_cluster_id: self.official_kernel.operator_cluster_id.clone(),
-                infrastructure_provider: Some(
-                    self.official_kernel.infrastructure_provider.clone(),
-                ),
+                infrastructure_provider: Some(self.official_kernel.infrastructure_provider.clone()),
                 region: Some(self.official_kernel.region.clone()),
                 verdict: kernel_verdict,
                 execution_trace_root: kernel.trace_root,

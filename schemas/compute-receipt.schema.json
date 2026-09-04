@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/compute-receipt.schema.json",
+  "title": "ComputeReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "receipt_id": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
+    "job_id": { "type": "string", "pattern": "^xljob:blake3:[0-9a-f]{64}$" },
+    "quote_id": {
+      "anyOf": [
+        { "type": "string", "pattern": "^xlquote:blake3:[0-9a-f]{64}$" },
+        { "type": "null" }
+      ]
+    },
+    "service": {
+      "type": "string",
+      "enum": ["formalization", "proof_search", "proof_repair", "formal_verification", "independent_reproduction", "novelty_review", "storage", "revalidation", "explanation"]
+    },
+    "provider": { "type": "string", "minLength": 1 },
+    "implementation_id": { "type": "string", "minLength": 1 },
+    "implementation_snapshot": { "type": ["string", "null"] },
+    "execution_parameters": { "type": "object", "additionalProperties": { "type": "string" } },
+    "request_hash": { "$ref": "common.schema.json#/$defs/hash" },
+    "context_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "metering": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "charged_amount": { "$ref": "common.schema.json#/$defs/amount" },
+    "output_artifact_roots": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/hash" }
+    },
+    "completed_at": { "type": "string", "format": "date-time" },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "receipt_id", "job_id", "quote_id", "service", "provider", "implementation_id",
+    "implementation_snapshot", "execution_parameters", "request_hash", "context_root", "metering", "charged_amount",
+    "output_artifact_roots", "completed_at", "signature"
+  ]
+}

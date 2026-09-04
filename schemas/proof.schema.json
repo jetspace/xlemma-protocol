@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "properties": {
     "protocol_version": {
-      "const": "xlemma/0.2"
+      "const": "XLMP/1"
     },
     "claim_id": {
       "type": "string",

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/quarantine-record.schema.json",
+  "title": "QuarantineRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "quarantine_id": { "type": "string", "pattern": "^xlquarantine:blake3:[0-9a-f]{64}$" },
+    "certificate_id": { "type": "string", "pattern": "^xlcert:blake3:[0-9a-f]{64}$" },
+    "challenge_id": {
+      "anyOf": [
+        { "type": "string", "pattern": "^xlchallenge:blake3:[0-9a-f]{64}$" },
+        { "type": "null" }
+      ]
+    },
+    "affected_claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "reason": { "type": "string", "minLength": 1 },
+    "evidence_roots": {
+      "type": "array", "minItems": 1,
+      "items": { "$ref": "common.schema.json#/$defs/hash" }
+    },
+    "quarantined_at": { "type": "string", "format": "date-time" },
+    "supersedes": {
+      "anyOf": [
+        { "type": "string", "pattern": "^xlquarantine:blake3:[0-9a-f]{64}$" },
+        { "type": "null" }
+      ]
+    },
+    "authority_signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "quarantine_id", "certificate_id", "challenge_id", "affected_claim_id", "reason",
+    "evidence_roots", "quarantined_at", "supersedes", "authority_signature"
+  ]
+}

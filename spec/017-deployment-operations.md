@@ -1,6 +1,6 @@
 # XLIP-017 — Deployment and operations
 
-V1 SHOULD use an existing chain and off-chain role-specific node committees. Production deployment requires:
+XLMP/1 SHOULD use an existing chain through a `FinalityAdapter` and off-chain role-specific node committees. A chain orders or anchors state and settles value; it does not define formal validity, attribution, novelty, or rights. Production deployment requires:
 
 - audited smart contracts and cryptography;
 - hardened sandboxing;

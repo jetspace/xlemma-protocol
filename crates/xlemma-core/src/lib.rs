@@ -8,6 +8,7 @@ pub mod canonical;
 pub mod id;
 pub mod manifest;
 pub mod money;
+pub mod protocol;
 pub mod receipt;
 pub mod state;
 
@@ -15,5 +16,11 @@ pub use canonical::{canonical_json_bytes, canonical_json_hash, CanonicalizationE
 pub use id::*;
 pub use manifest::*;
 pub use money::*;
+pub use protocol::*;
 pub use receipt::*;
 pub use state::*;
+
+/// Canonical name and version of the xLemma wire protocol.
+pub const XLMP_PROTOCOL: &str = "XLMP";
+pub const XLMP_MAJOR_VERSION: u16 = 1;
+pub const XLMP_VERSION: &str = "XLMP/1";

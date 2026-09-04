@@ -72,9 +72,8 @@ pub fn compute_savings_dividend(
     let conservative_savings_units =
         (lower_bound_without - evidence.observed_with_units as f64).max(0.0) as u128;
 
-    let uncapped_units = conservative_savings_units
-        .saturating_mul(u128::from(policy.savings_share_bps))
-        / 10_000;
+    let uncapped_units =
+        conservative_savings_units.saturating_mul(u128::from(policy.savings_share_bps)) / 10_000;
     let cap_units = downstream_net_revenue
         .units
         .saturating_mul(u128::from(policy.downstream_revenue_cap_bps))

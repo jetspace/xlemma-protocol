@@ -1,6 +1,6 @@
 use crate::{
-    Amount, ArtifactId, ClaimId, FormalStatus, LemmaId, NoveltyDecision, PolicyId, ProofId,
-    ReceiptId, ResearcherId, TheoryId,
+    Amount, ArtifactId, ClaimId, FormalStatus, IdError, LemmaId, NoveltyDecision, PolicyId,
+    ProofId, ReceiptId, ResearcherId, TheoryId,
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -28,6 +28,15 @@ pub struct ClaimManifest {
     pub created_at: DateTime<Utc>,
 }
 
+impl ClaimManifest {
+    /// Derive formal identity only from the elaborated type and its theory.
+    /// Presentation names, source locations, and timestamps are deliberately
+    /// excluded so source text can never become the final ClaimID.
+    pub fn derive_claim_id(&self) -> Result<ClaimId, IdError> {
+        ClaimId::from_canonical_elaborated_type(&self.theory_id, &self.canonical_elaborated_type)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProofManifest {
     pub protocol_version: String,
@@ -38,6 +47,13 @@ pub struct ProofManifest {
     pub direct_dependencies: Vec<ClaimId>,
     pub dependency_root: String,
     pub observed_axioms: Vec<String>,
+}
+
+impl ProofManifest {
+    /// Bind the exact checker-consumable proof object to its formal claim.
+    pub fn derive_proof_id(&self) -> Result<ProofId, IdError> {
+        ProofId::from_canonical_proof_object(&self.claim_id, &self.canonical_proof_object)
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

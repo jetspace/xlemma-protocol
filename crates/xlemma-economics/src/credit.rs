@@ -150,12 +150,8 @@ impl BackedCreditLedger {
         ))
     }
 
-
     /// Releases an unused authorization without burning credits or backing.
-    pub fn cancel(
-        &mut self,
-        authorization: &mut CreditAuthorization,
-    ) -> Result<(), CreditError> {
+    pub fn cancel(&mut self, authorization: &mut CreditAuthorization) -> Result<(), CreditError> {
         if authorization.closed {
             return Err(CreditError::AuthorizationClosed);
         }
@@ -215,10 +211,7 @@ mod tests {
             .deposit_and_mint(&Amount::new(1_000_000_000, "USDC", 6))
             .unwrap();
         let mut auth = ledger
-            .authorize(
-                "proof-job",
-                &Amount::new(125_000_000, "R-IAN", 6),
-            )
+            .authorize("proof-job", &Amount::new(125_000_000, "R-IAN", 6))
             .unwrap();
         let payout = ledger
             .settle(&mut auth, &Amount::new(40_000_000, "R-IAN", 6))

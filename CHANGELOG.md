@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased — XLMP/1 protocol independence
+
+- Added `xlemma-xlmp` as the canonical wire, message, lifecycle, and adapter-contract layer.
+- Added typed, content-derived XLMP MessageIDs and the twelve XLMP/1 message discriminators.
+- Elevated verification, challenge, quarantine, compute, credit, vault, revenue, dividend, license, and publication records into provider-neutral core types and schemas.
+- Added canonical HTTP XLMP ingress while retaining REST endpoints as convenience adapters.
+- Recast ASTRA, Lean, x402, chains, transports, and storage providers as replaceable adapters that cannot redefine research consensus.
+- Bound x402 offers to an XLMP MessageID and renamed the extension namespace to `xlmp`.
+- Added XLMP lifecycle, integrity, economic backing, and dependency-cap tests.
+- Restricted ClaimID and ProofID construction to theory-bound elaborated types
+  and claim-bound canonical proof objects, excluding presentation metadata.
+- Added and pinned `Cargo.lock` for reproducible Rust 1.82 reference builds.
+
 ## 0.2.0 — Researcher-first consensus architecture
 
 - Added sovereign decentralized researcher nodes and one backed research-credit token per researcher.

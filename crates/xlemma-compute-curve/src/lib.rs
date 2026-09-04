@@ -144,9 +144,8 @@ pub fn quote_verified_proof_cost(
             Some(_) => return Err(CurveError::IncompatibleAssets),
         }
 
-        let service_cost = ((*required_units / best.quantity_scale as f64)
-            * best.price_minor_units as f64)
-            .ceil();
+        let service_cost =
+            ((*required_units / best.quantity_scale as f64) * best.price_minor_units as f64).ceil();
         if !service_cost.is_finite() || service_cost < 0.0 || service_cost > u128::MAX as f64 {
             return Err(CurveError::Overflow);
         }
@@ -196,10 +195,7 @@ pub fn migration_spread(numerator: &ProofCostQuote, denominator: &ProofCostQuote
     {
         return None;
     }
-    Some(
-        numerator.verified_proof_cost.units as f64
-            / denominator.verified_proof_cost.units as f64,
-    )
+    Some(numerator.verified_proof_cost.units as f64 / denominator.verified_proof_cost.units as f64)
 }
 
 pub fn research_lead_signal(inputs: &ResearchLeadInputs) -> Result<f64, CurveError> {
@@ -218,16 +214,16 @@ pub fn research_lead_signal(inputs: &ResearchLeadInputs) -> Result<f64, CurveErr
         return Err(CurveError::InvalidInput);
     }
 
-    Ok((inputs.contracted_value_units / inputs.reserved_compute_cost_units)
-        * inputs.contract_survival_probability
-        * inputs.gold_success_probability
-        * inputs.novelty_clearance_probability)
+    Ok(
+        (inputs.contracted_value_units / inputs.reserved_compute_cost_units)
+            * inputs.contract_survival_probability
+            * inputs.gold_success_probability
+            * inputs.novelty_clearance_probability,
+    )
 }
 
 fn quality_adjusted_unit_price(offer: &ServiceOffer) -> f64 {
-    offer.price_minor_units as f64
-        / offer.quantity_scale as f64
-        / offer.completion_probability
+    offer.price_minor_units as f64 / offer.quantity_scale as f64 / offer.completion_probability
 }
 
 fn validate_probability(value: f64) -> Result<(), CurveError> {
@@ -279,21 +275,20 @@ mod tests {
         let _ = units.insert(ResearchService::OfficialKernelCheck, 100.0);
         let work = ExpectedWork { units };
         let offers = vec![
-            offer("cheap-unreliable", ResearchService::AstraGeneration, 100, 0.25, now),
+            offer(
+                "cheap-unreliable",
+                ResearchService::AstraGeneration,
+                100,
+                0.25,
+                now,
+            ),
             offer("reliable", ResearchService::AstraGeneration, 200, 1.0, now),
             offer("kernel", ResearchService::OfficialKernelCheck, 50, 1.0, now),
         ];
 
-        let quote = quote_verified_proof_cost(
-            now,
-            now + Duration::hours(2),
-            &work,
-            &offers,
-            0.8,
-            0.5,
-            0,
-        )
-        .unwrap();
+        let quote =
+            quote_verified_proof_cost(now, now + Duration::hours(2), &work, &offers, 0.8, 0.5, 0)
+                .unwrap();
         assert!(quote.selected_offer_ids.iter().any(|id| id == "reliable"));
         assert_eq!(quote.direct_expected_cost.units, 450);
         assert_eq!(quote.verified_proof_cost.units, 1_125);

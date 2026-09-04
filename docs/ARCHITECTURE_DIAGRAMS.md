@@ -5,23 +5,23 @@ These diagrams are normative illustrations of the trust boundaries described in 
 ## 1. System context
 
 ```mermaid
-flowchart LR
-    R[Decentralized Researcher Node] -->|claim, budget, rights manifest| G[x402 Research Gateway]
-    G -->|metered proof task| A[ASTRA Prover Nodes]
-    A -->|candidate Lean artifacts| B[Lean Build Nodes]
-    B -->|immutable bundle| C[PoIR Checker Committee]
-    C -->|signed observation receipts| E[Evidence Aggregator]
-    E -->|PoIR certificate| L[Base Chain / App Rollup]
-    L -->|economic finality| P[Proof Registry]
-    P --> V[Research Vault + Revenue Router]
-    V -->|cash payout + backed credits| R
-    P --> S[Storage and Index Nodes]
-    W[Watchers / Challengers] -->|counterevidence| E
-    W -->|challenge transaction| L
-    N[Novelty / Significance Review Nodes] --> E
+flowchart TB
+    X[XLMP/1 canonical protocol]
+    X --> RG[Research graph<br/>claims, proofs, dependencies,<br/>provenance, rights]
+    X --> C[Consensus<br/>PoIR, challenge, certification,<br/>quarantine, revalidation]
+    X --> E[Economics<br/>credits, revenue, compute,<br/>bounties, dividends]
+    RG --> AB[Adapter / transport boundary]
+    C --> AB
+    E --> AB
+    AB --> A[ResearchProver<br/>ASTRA / others]
+    AB --> L[VerifierAdapter<br/>Lean / Coq / Rocq / others]
+    AB --> P[PaymentAdapter<br/>x402 / credits / grants / escrow]
+    AB --> F[FinalityAdapter<br/>Ethereum / Base / Solana / others]
+    AB --> S[StorageAdapter<br/>IPFS / object stores / archives]
+    AB --> T[TransportAdapter<br/>HTTP / libp2p / WebSocket]
 ```
 
-The base chain orders certificates and economic state. It does not execute a social vote over theorem validity.
+XLMP owns research state and consensus. Every named external technology is an adapter. A chain may order certificates and economic state, but it does not execute a social vote over theorem validity.
 
 ## 2. Trust planes
 
@@ -50,7 +50,7 @@ flowchart TB
     end
 
     subgraph Economic[Economic plane]
-      X[x402 payment]
+      X[Payment adapter<br/>x402, credits, grants, escrow]
       BV[Backed vault]
       RR[Revenue route]
       BF[Base-chain finality]
@@ -116,8 +116,9 @@ stateDiagram-v2
 sequenceDiagram
     participant Researcher
     participant Router
-    participant Astra as ASTRA prover
-    participant Builder as Lean builder
+    participant Payment as Payment adapter
+    participant Astra as ResearchProver (ASTRA)
+    participant Builder as Verifier adapter (Lean)
     participant K1 as Kernel node A
     participant K2 as Kernel node B
     participant IC as Independent checker
@@ -125,8 +126,9 @@ sequenceDiagram
     participant Chain
 
     Researcher->>Router: Commit ClaimID + ArtifactRoot + budget
-    Router-->>Researcher: x402 quote / authorization requirements
-    Researcher->>Router: Backed R_i authorization
+    Router-->>Researcher: XLMP compute quote
+    Researcher->>Payment: authorize via selected payment rail
+    Payment-->>Router: separate payment receipt
     Router->>Astra: Formalize/search/repair task
     Astra-->>Router: Candidate + generation receipt
     Router->>Builder: Reproducible build request

@@ -37,7 +37,10 @@ impl Amount {
 
     pub fn checked_add(&self, other: &Self) -> Result<Self, MoneyError> {
         self.ensure_compatible(other)?;
-        let units = self.units.checked_add(other.units).ok_or(MoneyError::Overflow)?;
+        let units = self
+            .units
+            .checked_add(other.units)
+            .ok_or(MoneyError::Overflow)?;
         Ok(Self::new(units, self.asset.clone(), self.decimals))
     }
 

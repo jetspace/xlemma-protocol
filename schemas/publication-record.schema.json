@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/publication-record.schema.json",
+  "title": "PublicationRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "publication_id": { "type": "string", "pattern": "^xlpublication:blake3:[0-9a-f]{64}$" },
+    "claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "proof_id": { "type": "string", "pattern": "^xlp:blake3:[0-9a-f]{64}$" },
+    "certificate_id": { "type": "string", "pattern": "^xlcert:blake3:[0-9a-f]{64}$" },
+    "artifact_id": { "type": "string", "pattern": "^xla:blake3:[0-9a-f]{64}$" },
+    "rights_manifest_hash": { "$ref": "common.schema.json#/$defs/hash" },
+    "license_ids": {
+      "type": "array", "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^xllicense:blake3:[0-9a-f]{64}$" }
+    },
+    "locations": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "published_at": { "type": "string", "format": "date-time" },
+    "supersedes": {
+      "anyOf": [
+        { "type": "string", "pattern": "^xlpublication:blake3:[0-9a-f]{64}$" },
+        { "type": "null" }
+      ]
+    },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "publication_id", "claim_id", "proof_id", "certificate_id", "artifact_id",
+    "rights_manifest_hash", "license_ids", "locations", "published_at", "supersedes", "signature"
+  ]
+}

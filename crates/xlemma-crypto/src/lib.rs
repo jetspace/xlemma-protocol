@@ -186,10 +186,7 @@ impl ReplayGuard {
             protocol: envelope.domain.protocol.clone(),
             protocol_version: envelope.domain.protocol_version.clone(),
             network: envelope.domain.network.clone(),
-            verifying_contract_or_service: envelope
-                .domain
-                .verifying_contract_or_service
-                .clone(),
+            verifying_contract_or_service: envelope.domain.verifying_contract_or_service.clone(),
             purpose: envelope.domain.purpose.clone(),
             signer: envelope.metadata.signer.clone(),
             key_id: envelope.metadata.key_id.clone(),
@@ -311,8 +308,8 @@ mod tests {
             issued_at: now - Duration::seconds(1),
             expires_at: now + Duration::minutes(5),
         };
-        let first = create_envelope(&TestKey, domain("observation"), metadata.clone(), "payload")
-            .unwrap();
+        let first =
+            create_envelope(&TestKey, domain("observation"), metadata.clone(), "payload").unwrap();
         let mut second_domain = domain("observation");
         second_domain.verifying_contract_or_service = "service-b".into();
         let second = create_envelope(&TestKey, second_domain, metadata, "payload").unwrap();
@@ -339,5 +336,4 @@ mod tests {
         );
         assert!(matches!(result, Err(CryptoError::InvalidMetadata)));
     }
-
 }

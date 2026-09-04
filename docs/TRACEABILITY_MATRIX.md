@@ -4,11 +4,21 @@ Every major concept requested or developed in the design is mapped to its primar
 
 | Concept | Specification / documentation | Reference implementation |
 |---|---|---|
+| Canonical provider-neutral protocol | `spec/018-xlmp-wire-protocol.md` | `xlemma-xlmp`, `xlmp-envelope.schema.json` |
+| XLMP/1 envelope and MessageID integrity | same | `XlmpEnvelope::validate_integrity`, HTTP message ingress |
+| Canonical XLMP message vocabulary | same | `XlmpMessage`, `MessageKind` |
+| Protocol lifecycle | `spec/018-xlmp-wire-protocol.md`, `spec/014-api-protocol.md` | `ResearchLifecycleState`, `ensure_lifecycle_transition` |
+| Research prover neutrality | `spec/007-astra-lean.md` | `ResearchProver`; ASTRA reference adapter |
+| Formal-system neutrality | same | `VerifierAdapter`; Lean default adapter |
+| Payment neutrality | `spec/008-x402-transport.md` | `PaymentAdapter`; x402 optional adapter |
+| Transport neutrality | `spec/018-xlmp-wire-protocol.md` | `TransportAdapter`; HTTP XLMP ingress |
+| Chain/finality neutrality | `spec/017-deployment-operations.md` | `FinalityAdapter` and chain reference contracts |
+| Storage neutrality | `spec/015-storage-availability.md` | `StorageAdapter`, `xlemma-storage` |
 | Decentralized researcher as target user | `FULL_DESIGN.md` §§1, 5–7 | `xlemma-core::ResearcherNodeManifest` |
 | One researcher token, many lemma capsules | `FULL_DESIGN.md` §§1, 5–6 | `ResearcherCredit.sol`, `LemmaCapsule1155.sol` |
 | Researcher identity and treasury | `spec/002-proof-rights-capsule.md`, `spec/004-researcher-credit.md` | `ResearcherNodeManifest`, `ResearchVault.sol` |
 | Backed research credit | `spec/004-researcher-credit.md` | `xlemma-economics::BackedCreditLedger`, `ResearchVault.sol` |
-| Pay nodes using researcher's own credit | `spec/008-x402-transport.md` | `xlemma-x402`, `ResearchVault.authorize/settle` |
+| Pay nodes using researcher's own credit | `spec/004-researcher-credit.md`, `spec/008-x402-transport.md` | `PaymentAdapter`, `ResearchVault.authorize/settle` |
 | Stable node settlement | `spec/004-researcher-credit.md` | `BackedCreditLedger::settle`, `ResearchVault.settle` |
 | Profit adds future research capacity | `FULL_DESIGN.md` §7 | `allocate_revenue`, `compoundRevenue` |
 | Realized profit definition | `spec/006-revenue-and-dividends.md` | `RevenueInputs`, `RevenueRouter.sol` |
@@ -21,8 +31,8 @@ Every major concept requested or developed in the design is mapped to its primar
 | Employment/university/grant clearance | `docs/LEGAL_BOUNDARIES.md` | `RightsManifest.employer_university_grant_clearance` |
 | Immutable object graph | `spec/001-identifiers.md` | `xlemma-core`, `ProofRegistry.sol` |
 | TheoryID | `spec/001-identifiers.md` | `TheoryId`, `theory.schema.json` |
-| ClaimID from elaborated Lean type | `spec/001-identifiers.md` | `ClaimManifest`, Lean exporter boundary |
-| ProofID from proof object | `spec/001-identifiers.md` | `ProofManifest` |
+| ClaimID from elaborated Lean type | `spec/001-identifiers.md` | `ClaimId::from_canonical_elaborated_type`, `ClaimManifest::derive_claim_id`, Lean exporter boundary |
+| ProofID from proof object | `spec/001-identifiers.md` | `ProofId::from_canonical_proof_object`, `ProofManifest::derive_proof_id` |
 | ArtifactID / Merkle bundle | `spec/015-storage-availability.md` | `xlemma-storage::build_bundle_manifest` |
 | ReceiptID | `spec/001-identifiers.md` | `ReceiptId` and receipt structs |
 | Formal equivalence edge | `spec/001-identifiers.md` | Lean example pattern; graph specification |
@@ -63,7 +73,7 @@ Every major concept requested or developed in the design is mapped to its primar
 | Slash only objective misconduct | `docs/THREAT_MODEL.md` | `NodeBondRegistry.slash` comments/policy |
 | Watcher/challenger nodes | `spec/013-governance-disputes.md` | certificate and bond registries |
 | Verification state machine | `spec/014-api-protocol.md` | `VerificationState`, `ensure_transition` |
-| x402 extension | `spec/008-x402-transport.md` | `XLemmaPaymentExtension` and schema |
+| x402 XLMP binding | `spec/008-x402-transport.md` | `XlmpPaymentExtension` and schema |
 | HTTP 402 offer construction | `spec/008-x402-transport.md` | `xlemma-api` payment-required endpoint and `xlemma-x402` header codec |
 | x402 exact | same | `PaymentScheme::Exact` |
 | x402 upto | same | `PaymentScheme::Upto` |

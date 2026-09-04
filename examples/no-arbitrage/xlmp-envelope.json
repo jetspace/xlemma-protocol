@@ -1,0 +1,25 @@
+{
+  "protocol": "XLMP",
+  "version": 1,
+  "message_id": "xlmessage:blake3:a4384331a50d850cc0a791a1548aea326b7c6f00c61859f814be0efe133f62e5",
+  "correlation_id": null,
+  "sender": "did:key:researcher-no-arbitrage",
+  "sent_at": "2026-09-03T20:00:01Z",
+  "message": {
+    "type": "XLMP_CLAIM",
+    "payload": {
+      "claim_id": "xlc:blake3:1117d892ad3a90b5c40d700b96fa1df96882dfc4a52dc23a00ebf1eefc5815f8",
+      "claim": {
+        "protocol_version": "XLMP/1",
+        "theory_id": "xlt:blake3:1111111111111111111111111111111111111111111111111111111111111111",
+        "canonical_elaborated_type": "forall (market : Market), Market.noFreeLunch market -> Not market.hasArbitrage",
+        "declaration_name": "XLemma.NoArbitrage.noArbitrage",
+        "source_artifact": "xla:blake3:4444444444444444444444444444444444444444444444444444444444444444",
+        "created_at": "2026-09-03T20:00:00Z"
+      },
+      "contribution_manifest_hash": "blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "rights_manifest_hash": "blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
+  },
+  "signature": "example-detached-signature"
+}

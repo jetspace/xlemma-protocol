@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/revenue-event.schema.json",
+  "title": "RevenueEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "revenue_event_id": { "type": "string", "pattern": "^xlrevenue:blake3:[0-9a-f]{64}$" },
+    "claim_id": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "source": { "type": "string", "minLength": 1 },
+    "settlement_receipt_id": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
+    "gross_collected": { "$ref": "common.schema.json#/$defs/amount" },
+    "refunds": { "$ref": "common.schema.json#/$defs/amount" },
+    "service_costs": { "$ref": "common.schema.json#/$defs/amount" },
+    "reserves": { "$ref": "common.schema.json#/$defs/amount" },
+    "realized_at": { "type": "string", "format": "date-time" },
+    "evidence_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "revenue_event_id", "claim_id", "source", "settlement_receipt_id", "gross_collected",
+    "refunds", "service_costs", "reserves", "realized_at", "evidence_root", "signature"
+  ]
+}

@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/xlmp-envelope.schema.json",
+  "title": "XLMP/1 Envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "protocol": { "const": "XLMP" },
+    "version": { "const": 1 },
+    "message_id": { "$ref": "#/$defs/messageId" },
+    "correlation_id": {
+      "anyOf": [{ "$ref": "#/$defs/messageId" }, { "type": "null" }]
+    },
+    "sender": { "type": "string", "minLength": 1 },
+    "sent_at": { "type": "string", "format": "date-time" },
+    "message": {
+      "oneOf": [
+        { "$ref": "#/$defs/claimMessage" },
+        { "$ref": "#/$defs/commitMessage" },
+        { "$ref": "#/$defs/computeQuoteMessage" },
+        { "$ref": "#/$defs/proofCandidateMessage" },
+        { "$ref": "#/$defs/verifyRequestMessage" },
+        { "$ref": "#/$defs/observationCommitMessage" },
+        { "$ref": "#/$defs/observationRevealMessage" },
+        { "$ref": "#/$defs/certificateMessage" },
+        { "$ref": "#/$defs/challengeMessage" },
+        { "$ref": "#/$defs/finalizeMessage" },
+        { "$ref": "#/$defs/revenueMessage" },
+        { "$ref": "#/$defs/revalidateMessage" }
+      ]
+    },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": ["protocol", "version", "message_id", "correlation_id", "sender", "sent_at", "message", "signature"],
+  "$defs": {
+    "messageId": { "type": "string", "pattern": "^xlmessage:blake3:[0-9a-f]{64}$" },
+    "jobId": { "type": "string", "pattern": "^xljob:blake3:[0-9a-f]{64}$" },
+    "claimId": { "type": "string", "pattern": "^xlc:blake3:[0-9a-f]{64}$" },
+    "proofId": { "type": "string", "pattern": "^xlp:blake3:[0-9a-f]{64}$" },
+    "artifactId": { "type": "string", "pattern": "^xla:blake3:[0-9a-f]{64}$" },
+    "policyId": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "receiptId": { "type": "string", "pattern": "^xlr:blake3:[0-9a-f]{64}$" },
+    "certificateId": { "type": "string", "pattern": "^xlcert:blake3:[0-9a-f]{64}$" },
+    "claimPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": { "$ref": "#/$defs/claimId" },
+        "claim": { "$ref": "claim.schema.json" },
+        "contribution_manifest_hash": { "$ref": "common.schema.json#/$defs/hash" },
+        "rights_manifest_hash": { "$ref": "common.schema.json#/$defs/hash" }
+      },
+      "required": ["claim_id", "claim", "contribution_manifest_hash", "rights_manifest_hash"]
+    },
+    "commitPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "job_id": { "$ref": "#/$defs/jobId" },
+        "researcher_id": { "type": "string", "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$" },
+        "claim_id": { "$ref": "#/$defs/claimId" },
+        "commitment_root": { "$ref": "common.schema.json#/$defs/hash" },
+        "verification_policy_id": { "$ref": "#/$defs/policyId" },
+        "reveal_deadline": { "type": "string", "format": "date-time" }
+      },
+      "required": ["job_id", "researcher_id", "claim_id", "commitment_root", "verification_policy_id", "reveal_deadline"]
+    },
+    "proofCandidatePayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "job_id": { "$ref": "#/$defs/jobId" },
+        "proof_id": { "$ref": "#/$defs/proofId" },
+        "proof": { "$ref": "proof.schema.json" },
+        "artifact_id": { "$ref": "#/$defs/artifactId" }
+      },
+      "required": ["job_id", "proof_id", "proof", "artifact_id"]
+    },
+    "verifyRequestPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "job": { "$ref": "verification-job.schema.json" },
+        "exact_challenge_hash": { "$ref": "common.schema.json#/$defs/hash" },
+        "dependency_root": { "$ref": "common.schema.json#/$defs/hash" },
+        "axiom_policy_id": { "$ref": "#/$defs/policyId" }
+      },
+      "required": ["job", "exact_challenge_hash", "dependency_root", "axiom_policy_id"]
+    },
+    "observationCommitPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "job_id": { "$ref": "#/$defs/jobId" },
+        "receipt_id": { "$ref": "#/$defs/receiptId" },
+        "node_id": { "type": "string", "pattern": "^xlnode:blake3:[0-9a-f]{64}$" },
+        "operator_cluster_id": { "type": "string", "pattern": "^xloperator:blake3:[0-9a-f]{64}$" },
+        "commitment": { "$ref": "common.schema.json#/$defs/hash" },
+        "committed_at": { "type": "string", "format": "date-time" },
+        "signature": { "$ref": "common.schema.json#/$defs/signature" }
+      },
+      "required": ["job_id", "receipt_id", "node_id", "operator_cluster_id", "commitment", "committed_at", "signature"]
+    },
+    "finalizePayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "certificate_id": { "$ref": "#/$defs/certificateId" },
+        "claim_id": { "$ref": "#/$defs/claimId" },
+        "finalization_root": { "$ref": "common.schema.json#/$defs/hash" },
+        "finalized_at": { "type": "string", "format": "date-time" },
+        "signature": { "$ref": "common.schema.json#/$defs/signature" }
+      },
+      "required": ["certificate_id", "claim_id", "finalization_root", "finalized_at", "signature"]
+    },
+    "revalidatePayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "certificate_id": { "$ref": "#/$defs/certificateId" },
+        "claim_id": { "$ref": "#/$defs/claimId" },
+        "prior_observation_receipt_ids": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/$defs/receiptId" }
+        },
+        "verification_policy_id": { "$ref": "#/$defs/policyId" },
+        "reason": { "type": "string", "minLength": 1 },
+        "requested_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["certificate_id", "claim_id", "prior_observation_receipt_ids", "verification_policy_id", "reason", "requested_at"]
+    },
+    "claimMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": { "type": { "const": "XLMP_CLAIM" }, "payload": { "$ref": "#/$defs/claimPayload" } },
+      "required": ["type", "payload"]
+    },
+    "commitMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": { "type": { "const": "XLMP_COMMIT" }, "payload": { "$ref": "#/$defs/commitPayload" } },
+      "required": ["type", "payload"]
+    },
+    "computeQuoteMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_COMPUTE_QUOTE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "quote": { "$ref": "compute-quote.schema.json" } },
+          "required": ["quote"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "proofCandidateMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": { "type": { "const": "XLMP_PROOF_CANDIDATE" }, "payload": { "$ref": "#/$defs/proofCandidatePayload" } },
+      "required": ["type", "payload"]
+    },
+    "verifyRequestMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": { "type": { "const": "XLMP_VERIFY_REQUEST" }, "payload": { "$ref": "#/$defs/verifyRequestPayload" } },
+      "required": ["type", "payload"]
+    },
+    "observationCommitMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": { "type": { "const": "XLMP_OBSERVATION_COMMIT" }, "payload": { "$ref": "#/$defs/observationCommitPayload" } },
+      "required": ["type", "payload"]
+    },
+    "observationRevealMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_OBSERVATION_REVEAL" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "observation": { "$ref": "observation.schema.json" } },
+          "required": ["observation"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "certificateMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_CERTIFICATE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "certificate": { "$ref": "poir-certificate.schema.json" } },
+          "required": ["certificate"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "challengeMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_CHALLENGE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "challenge": { "$ref": "challenge.schema.json" } },
+          "required": ["challenge"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "finalizeMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": { "type": { "const": "XLMP_FINALIZE" }, "payload": { "$ref": "#/$defs/finalizePayload" } },
+      "required": ["type", "payload"]
+    },
+    "revenueMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_REVENUE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "event": { "$ref": "revenue-event.schema.json" } },
+          "required": ["event"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "revalidateMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": { "type": { "const": "XLMP_REVALIDATE" }, "payload": { "$ref": "#/$defs/revalidatePayload" } },
+      "required": ["type", "payload"]
+    }
+  }
+}

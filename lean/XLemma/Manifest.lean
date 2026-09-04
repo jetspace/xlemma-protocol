@@ -1,7 +1,7 @@
 namespace XLemma
 
 structure TheoryMetadata where
-  protocolVersion : String := "xlemma/0.2"
+  protocolVersion : String := "XLMP/1"
   trustPolicyId : String
   checkerPolicyId : String
   dependencyRoot : String

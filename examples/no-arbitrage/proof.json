@@ -1,6 +1,6 @@
 {
-  "protocol_version": "xlemma/0.2",
-  "claim_id": "xlc:blake3:2222222222222222222222222222222222222222222222222222222222222222",
+  "protocol_version": "XLMP/1",
+  "claim_id": "xlc:blake3:1117d892ad3a90b5c40d700b96fa1df96882dfc4a52dc23a00ebf1eefc5815f8",
   "canonical_proof_object": "fun market h => h",
   "artifact_id": "xla:blake3:4444444444444444444444444444444444444444444444444444444444444444",
   "direct_dependencies": [],

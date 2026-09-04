@@ -1,17 +1,20 @@
-//! Configurable ASTRA proof-production adapter.
+//! Configurable ASTRA implementation of the XLMP research-prover boundary.
 //!
-//! The adapter is intentionally provider-bound only at the HTTP edge. Protocol
-//! code depends on `AstraProverAdapter`, allowing additional model providers or
-//! self-hosted provers without changing proof identities or verification.
+//! ASTRA produces candidates and compute receipts. It is not XLMP, cannot
+//! certify its own output, and may be replaced without changing protocol
+//! identities, messages, or verification policy.
 
 use async_trait::async_trait;
 use chrono::Utc;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use std::{env, time::Instant};
+use std::{collections::BTreeMap, env, time::Instant};
 use thiserror::Error;
-use xlemma_core::{Amount, AstraComputeReceipt, JobId, ReceiptId};
+use xlemma_core::{
+    Amount, ArtifactId, AstraComputeReceipt, ComputeReceipt, ComputeService, JobId, ReceiptId,
+};
+use xlemma_xlmp::{AdapterError, ProverArtifact, ProverRequest, ResearchProver};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AstraConfig {
@@ -202,7 +205,10 @@ impl OpenAiAstraClient {
 
         let response = self
             .http
-            .post(format!("{}/responses", self.config.base_url.trim_end_matches('/')))
+            .post(format!(
+                "{}/responses",
+                self.config.base_url.trim_end_matches('/')
+            ))
             .bearer_auth(&self.config.api_key)
             .json(&request_value)
             .send()
@@ -351,6 +357,189 @@ impl AstraProverAdapter for OpenAiAstraClient {
             vec![root],
         );
         Ok((explanation, receipt))
+    }
+}
+
+impl OpenAiAstraClient {
+    async fn run_protocol_proof_task(
+        &self,
+        request: ProverRequest,
+        service: ComputeService,
+    ) -> Result<ProverArtifact, AdapterError> {
+        let proof_request = ProofSearchRequest {
+            job_id: request.job_id,
+            lean_statement: required_parameter(&request.parameters, "lean_statement")?.to_owned(),
+            current_lean_file: required_parameter(&request.parameters, "current_lean_file")?
+                .to_owned(),
+            compiler_diagnostics: list_parameter(&request.parameters, "compiler_diagnostics"),
+            allowed_imports: list_parameter(&request.parameters, "allowed_imports"),
+            forbidden_axioms: list_parameter(&request.parameters, "forbidden_axioms"),
+            maximum_iterations: request
+                .parameters
+                .get("maximum_iterations")
+                .map(|value| value.parse::<u32>())
+                .transpose()
+                .map_err(|error| adapter_error(format!("invalid maximum_iterations: {error}")))?
+                .unwrap_or(8),
+            artifact_context_root: request.context_root,
+        };
+        let (candidate, receipt) = AstraProverAdapter::search_proof(self, proof_request)
+            .await
+            .map_err(|error| adapter_error(error.to_string()))?;
+        let root = hash_text(&candidate.lean_source);
+        protocol_artifact(receipt, service, root, "text/x-lean")
+    }
+}
+
+#[async_trait]
+impl ResearchProver for OpenAiAstraClient {
+    async fn formalize(&self, request: ProverRequest) -> Result<ProverArtifact, AdapterError> {
+        let formalization_request = FormalizationRequest {
+            job_id: request.job_id,
+            natural_language_claim: required_parameter(
+                &request.parameters,
+                "natural_language_claim",
+            )?
+            .to_owned(),
+            latex_context: request.parameters.get("latex_context").cloned(),
+            lean_imports: list_parameter(&request.parameters, "lean_imports"),
+            namespace: request
+                .parameters
+                .get("namespace")
+                .cloned()
+                .unwrap_or_else(|| "XLemma.Generated".to_owned()),
+            theory_constraints: list_parameter(&request.parameters, "theory_constraints"),
+            artifact_context_root: request.context_root,
+        };
+        let (candidate, receipt) = AstraProverAdapter::formalize(self, formalization_request)
+            .await
+            .map_err(|error| adapter_error(error.to_string()))?;
+        let root = hash_text(&candidate.lean_statement);
+        protocol_artifact(receipt, ComputeService::Formalization, root, "text/x-lean")
+    }
+
+    async fn propose(&self, request: ProverRequest) -> Result<ProverArtifact, AdapterError> {
+        self.run_protocol_proof_task(request, ComputeService::ProofSearch)
+            .await
+    }
+
+    async fn prove(&self, request: ProverRequest) -> Result<ProverArtifact, AdapterError> {
+        self.run_protocol_proof_task(request, ComputeService::ProofSearch)
+            .await
+    }
+
+    async fn repair(&self, request: ProverRequest) -> Result<ProverArtifact, AdapterError> {
+        self.run_protocol_proof_task(request, ComputeService::ProofRepair)
+            .await
+    }
+
+    async fn explain(&self, request: ProverRequest) -> Result<ProverArtifact, AdapterError> {
+        let explanation_request = ExplanationRequest {
+            job_id: request.job_id,
+            verified_lean_statement: required_parameter(
+                &request.parameters,
+                "verified_lean_statement",
+            )?
+            .to_owned(),
+            verified_lean_proof: required_parameter(&request.parameters, "verified_lean_proof")?
+                .to_owned(),
+            target_audience: request
+                .parameters
+                .get("target_audience")
+                .cloned()
+                .unwrap_or_else(|| "researcher".to_owned()),
+            artifact_context_root: request.context_root,
+        };
+        let (explanation, receipt) = AstraProverAdapter::explain(self, explanation_request)
+            .await
+            .map_err(|error| adapter_error(error.to_string()))?;
+        let root = hash_text(&explanation.latex);
+        protocol_artifact(receipt, ComputeService::Explanation, root, "text/x-tex")
+    }
+}
+
+fn required_parameter<'a>(
+    parameters: &'a BTreeMap<String, String>,
+    name: &str,
+) -> Result<&'a str, AdapterError> {
+    parameters
+        .get(name)
+        .map(String::as_str)
+        .filter(|value| !value.trim().is_empty())
+        .ok_or_else(|| adapter_error(format!("missing required parameter {name}")))
+}
+
+fn list_parameter(parameters: &BTreeMap<String, String>, name: &str) -> Vec<String> {
+    parameters
+        .get(name)
+        .map(|value| {
+            value
+                .lines()
+                .map(str::trim)
+                .filter(|item| !item.is_empty())
+                .map(str::to_owned)
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn protocol_artifact(
+    receipt: AstraComputeReceipt,
+    service: ComputeService,
+    artifact_root: String,
+    media_type: &str,
+) -> Result<ProverArtifact, AdapterError> {
+    let artifact_id = ArtifactId::derive(&(
+        "xlmp-prover-artifact-v1",
+        &receipt.job_id,
+        service,
+        &artifact_root,
+        media_type,
+    ))
+    .map_err(|error| adapter_error(error.to_string()))?;
+    let metering = BTreeMap::from([
+        ("input_units".to_owned(), receipt.input_units),
+        ("cached_input_units".to_owned(), receipt.cached_input_units),
+        ("output_units".to_owned(), receipt.output_units),
+        ("tool_calls".to_owned(), receipt.tool_calls),
+        ("wall_time_ms".to_owned(), receipt.wall_time_ms),
+        ("retry_count".to_owned(), u64::from(receipt.retry_count)),
+    ]);
+    let protocol_receipt = ComputeReceipt {
+        receipt_id: receipt.receipt_id,
+        job_id: receipt.job_id,
+        quote_id: None,
+        service,
+        provider: receipt.provider,
+        implementation_id: receipt.model_id,
+        implementation_snapshot: receipt.model_snapshot,
+        execution_parameters: receipt
+            .reasoning_effort
+            .map(|effort| BTreeMap::from([("reasoning_effort".to_owned(), effort)]))
+            .unwrap_or_default(),
+        request_hash: receipt.request_hash,
+        context_root: receipt.context_root,
+        metering,
+        charged_amount: receipt.charged_amount,
+        output_artifact_roots: receipt.candidate_artifact_roots,
+        completed_at: receipt.generated_at,
+        signature: receipt.signature,
+    };
+    Ok(ProverArtifact {
+        artifact_id,
+        // A provider-produced candidate cannot assign the final proof identity;
+        // that requires the canonical exported proof object.
+        proof_id: None,
+        media_type: media_type.to_owned(),
+        artifact_root,
+        compute_receipt: protocol_receipt,
+    })
+}
+
+fn adapter_error(reason: String) -> AdapterError {
+    AdapterError {
+        adapter: "astra/openai".to_owned(),
+        reason,
     }
 }
 

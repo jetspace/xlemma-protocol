@@ -2,8 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use thiserror::Error;
 use xlemma_core::{
-    CheckerFamily, FormalStatus, JobId, ObservationReceipt, ObservationVerdict,
-    OperatorClusterId,
+    CheckerFamily, FormalStatus, JobId, ObservationReceipt, ObservationVerdict, OperatorClusterId,
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -163,27 +162,24 @@ pub fn evaluate_formal_consensus(
         .filter(|receipt| receipt.verdict == ObservationVerdict::Abstain)
         .count();
 
-    let required_root_divergence =
-        (policy.require_identical_artifact_root && !artifact_matches)
-            || (policy.require_identical_environment_root && !environment_matches)
-            || (policy.require_identical_dependency_root && !dependency_matches)
-            || (policy.require_identical_axiom_set_root && !axiom_matches);
+    let required_root_divergence = (policy.require_identical_artifact_root && !artifact_matches)
+        || (policy.require_identical_environment_root && !environment_matches)
+        || (policy.require_identical_dependency_root && !dependency_matches)
+        || (policy.require_identical_axiom_set_root && !axiom_matches);
 
     let required_evidence_complete = reasons.is_empty();
-    let status = if required_root_divergence
-        || error_count > 0
-        || (pass_count > 0 && fail_count > 0)
-    {
-        FormalStatus::Divergent
-    } else if !required_evidence_complete || abstain_count > 0 {
-        FormalStatus::Unchecked
-    } else if pass_count == receipts.len() {
-        FormalStatus::Certified
-    } else if fail_count == receipts.len() {
-        FormalStatus::Rejected
-    } else {
-        FormalStatus::Divergent
-    };
+    let status =
+        if required_root_divergence || error_count > 0 || (pass_count > 0 && fail_count > 0) {
+            FormalStatus::Divergent
+        } else if !required_evidence_complete || abstain_count > 0 {
+            FormalStatus::Unchecked
+        } else if pass_count == receipts.len() {
+            FormalStatus::Certified
+        } else if fail_count == receipts.len() {
+            FormalStatus::Rejected
+        } else {
+            FormalStatus::Divergent
+        };
 
     Ok(FormalConsensusOutcome {
         status,
@@ -208,7 +204,10 @@ fn validate_policy(policy: &FormalConsensusPolicy) -> Result<(), FormalConsensus
     if policy.minimum_operator_clusters == 0
         || policy.minimum_infrastructure_providers == 0
         || policy.minimum_regions == 0
-        || policy.required_family_counts.values().all(|count| *count == 0)
+        || policy
+            .required_family_counts
+            .values()
+            .all(|count| *count == 0)
     {
         return Err(FormalConsensusError::InvalidPolicy(
             "non-zero checker and independence requirements are mandatory".to_owned(),
@@ -221,12 +220,7 @@ fn all_equal<'a, F>(receipts: &'a [ObservationReceipt], selector: F) -> bool
 where
     F: Fn(&'a ObservationReceipt) -> &'a str,
 {
-    receipts
-        .iter()
-        .map(selector)
-        .collect::<BTreeSet<_>>()
-        .len()
-        == 1
+    receipts.iter().map(selector).collect::<BTreeSet<_>>().len() == 1
 }
 
 #[cfg(test)]
@@ -235,7 +229,11 @@ mod tests {
     use chrono::Utc;
     use xlemma_core::{NodeId, ReceiptId};
 
-    fn receipt(index: usize, family: CheckerFamily, verdict: ObservationVerdict) -> ObservationReceipt {
+    fn receipt(
+        index: usize,
+        family: CheckerFamily,
+        verdict: ObservationVerdict,
+    ) -> ObservationReceipt {
         ObservationReceipt {
             receipt_id: ReceiptId::derive(&format!("receipt-{index}")).unwrap(),
             job_id: JobId::derive(&"job").unwrap(),
@@ -245,7 +243,12 @@ mod tests {
             checker_name: format!("checker-{index}"),
             checker_version: "1.0.0".into(),
             checker_binary_digest: format!("sha256:checker-{index}"),
-            infrastructure_provider: if index == 1 { "provider-a" } else { "provider-b" }.into(),
+            infrastructure_provider: if index == 1 {
+                "provider-a"
+            } else {
+                "provider-b"
+            }
+            .into(),
             region: if index == 3 { "region-b" } else { "region-a" }.into(),
             artifact_root: "artifact".into(),
             environment_root: "environment".into(),
