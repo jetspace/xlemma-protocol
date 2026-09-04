@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
     fs::{File, OpenOptions},
-    io::{BufRead, BufReader, Write},
+    io::{BufRead, BufReader, Read, Write},
     path::{Path, PathBuf},
     sync::Mutex,
 };
@@ -24,6 +24,7 @@ const JOURNAL_HASH_DOMAIN: &str = "api-event-journal-entry-v1";
 const GENESIS_HASH: &str =
     "blake3:0000000000000000000000000000000000000000000000000000000000000000";
 const MAX_SAFE_SEQUENCE: u64 = 9_007_199_254_740_991;
+const MAX_ENTRY_BYTES: u64 = 64 * 1024 * 1024;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "event_type", rename_all = "snake_case", deny_unknown_fields)]
@@ -112,6 +113,7 @@ fn entry_hash(
 
 #[derive(Clone, Default)]
 pub(crate) struct RecoveredState {
+    pub projection: xlemma_xlmp::ProtocolProjection,
     pub jobs: BTreeMap<String, VerificationJobRecord>,
     pub messages: BTreeMap<String, XlmpEnvelope>,
     pub observation_commits: BTreeMap<String, ObservationCommitMessage>,
@@ -123,6 +125,28 @@ impl RecoveredState {
             ApiJournalEvent::MessageAccepted { envelope } => {
                 envelope
                     .validate_integrity()
+                    .map_err(|error| EventStoreError::InvalidEvent(error.to_string()))?;
+                xlemma_xlmp::verify_ed25519_signature(envelope)
+                    .map_err(|error| EventStoreError::InvalidEvent(error.to_string()))?;
+                if let XlmpMessage::Certificate(message) = &envelope.message {
+                    let job = self
+                        .jobs
+                        .get(message.certificate.job_id.as_str())
+                        .ok_or_else(|| {
+                            EventStoreError::MissingRecord(message.certificate.job_id.to_string())
+                        })?;
+                    crate::validate_certificate_evidence(
+                        job,
+                        &message.certificate,
+                        &self.messages,
+                        Utc::now(),
+                    )
+                    .map_err(|_| {
+                        EventStoreError::InvalidEvent("invalid certificate evidence".into())
+                    })?;
+                }
+                self.projection
+                    .apply(envelope)
                     .map_err(|error| EventStoreError::InvalidEvent(error.to_string()))?;
                 let message_id = envelope.message_id.to_string();
                 if self.messages.contains_key(&message_id) {
@@ -209,6 +233,7 @@ struct JournalWriter {
     next_sequence: u64,
     previous_hash: String,
     state: RecoveredState,
+    failed: bool,
 }
 
 pub(crate) struct EventJournal {
@@ -229,21 +254,51 @@ impl EventJournal {
             std::fs::create_dir_all(parent)?;
         }
 
-        let file = OpenOptions::new()
-            .create(true)
-            .read(true)
-            .append(true)
-            .open(&path)?;
+        let mut options = OpenOptions::new();
+        options.create(true).read(true).append(true);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            options
+                .mode(0o600)
+                .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK);
+        }
+        let file = options.open(&path)?;
+        if !file.metadata()?.is_file() {
+            return Err(EventStoreError::InvalidPath);
+        }
+        #[cfg(unix)]
+        {
+            use std::os::fd::AsRawFd;
+            // SAFETY: file owns this valid descriptor for the journal lifetime.
+            // The nonblocking advisory lock is released when that file closes.
+            if unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
+                return Err(EventStoreError::Io(std::io::Error::last_os_error()));
+            }
+            file.sync_all()?;
+            let parent = path
+                .parent()
+                .filter(|p| !p.as_os_str().is_empty())
+                .unwrap_or_else(|| Path::new("."));
+            File::open(parent)?.sync_all()?;
+        }
         let mut recovered = RecoveredState::default();
         let mut expected_sequence = 0_u64;
         let mut previous_hash = GENESIS_HASH.to_owned();
-        for line in BufReader::new(file.try_clone()?).lines() {
-            let line = line?;
-            if line.trim().is_empty() {
+        let mut reader = BufReader::new(file.try_clone()?);
+        loop {
+            let mut line = Vec::new();
+            let read = Read::by_ref(&mut reader)
+                .take(MAX_ENTRY_BYTES + 1)
+                .read_until(b'\n', &mut line)?;
+            if read == 0 {
+                break;
+            }
+            if read as u64 > MAX_ENTRY_BYTES || line.pop() != Some(b'\n') || line.is_empty() {
                 return Err(EventStoreError::IntegrityViolation(expected_sequence));
             }
-            let entry: JournalEntry = serde_json::from_str(&line)?;
-            if line.as_bytes() != canonical_json_bytes(&entry)? {
+            let entry: JournalEntry = serde_json::from_slice(&line)?;
+            if line != canonical_json_bytes(&entry)? {
                 return Err(EventStoreError::IntegrityViolation(expected_sequence));
             }
             entry.verify(expected_sequence, &previous_hash)?;
@@ -262,6 +317,7 @@ impl EventJournal {
                     next_sequence: expected_sequence,
                     previous_hash,
                     state: recovered.clone(),
+                    failed: false,
                 }),
             },
             recovered,
@@ -272,13 +328,29 @@ impl EventJournal {
     /// acknowledged by the API.
     pub fn append(&self, event: ApiJournalEvent) -> Result<(), EventStoreError> {
         let mut writer = self.writer.lock().map_err(|_| EventStoreError::Poisoned)?;
+        if writer.failed {
+            return Err(EventStoreError::Poisoned);
+        }
         let mut next_state = writer.state.clone();
         next_state.apply(&event)?;
         let entry = JournalEntry::new(writer.next_sequence, writer.previous_hash.clone(), event)?;
-        let encoded = canonical_json_bytes(&entry)?;
-        writer.file.write_all(&encoded)?;
-        writer.file.write_all(b"\n")?;
-        writer.file.sync_data()?;
+        let mut encoded = canonical_json_bytes(&entry)?;
+        encoded.push(b'\n');
+        if encoded.len() as u64 > MAX_ENTRY_BYTES {
+            return Err(EventStoreError::InvalidEvent(
+                "journal entry exceeds byte limit".into(),
+            ));
+        }
+        if let Err(error) = writer
+            .file
+            .write_all(&encoded)
+            .and_then(|()| writer.file.sync_all())
+        {
+            // No subsequent acknowledgement is safe after a partial write or
+            // uncertain fsync. Recovery must inspect the durable file first.
+            writer.failed = true;
+            return Err(EventStoreError::Io(error));
+        }
         writer.next_sequence = writer
             .next_sequence
             .checked_add(1)
@@ -493,6 +565,52 @@ mod tests {
             Err(EventStoreError::InvalidTransition(_))
         ));
         drop(journal);
+        std::fs::remove_file(path).unwrap();
+    }
+    #[test]
+    fn incomplete_final_record_fails_closed() {
+        let path = temp_path("missing-newline");
+        let (journal, _) = EventJournal::open(&path).unwrap();
+        journal
+            .append(ApiJournalEvent::VerificationJobCreated { job: job() })
+            .unwrap();
+        drop(journal);
+        let file = OpenOptions::new().write(true).open(&path).unwrap();
+        file.set_len(file.metadata().unwrap().len() - 1).unwrap();
+        assert!(EventJournal::open(&path).is_err());
+        std::fs::remove_file(path).unwrap();
+    }
+
+    #[test]
+    fn io_failure_prevents_later_acknowledgements() {
+        let path = temp_path("failed-write");
+        let (journal, _) = EventJournal::open(&path).unwrap();
+        // Inject a descriptor on which writes fail.
+        journal.writer.lock().unwrap().file = File::open(&path).unwrap();
+        assert!(matches!(
+            journal.append(ApiJournalEvent::VerificationJobCreated { job: job() }),
+            Err(EventStoreError::Io(_))
+        ));
+        assert!(matches!(
+            journal.append(ApiJournalEvent::VerificationJobCreated { job: job() }),
+            Err(EventStoreError::Poisoned)
+        ));
+        assert!(journal.writer.lock().unwrap().state.jobs.is_empty());
+        drop(journal);
+        std::fs::remove_file(path).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn concurrent_writer_and_symlink_journal_are_rejected() {
+        let path = temp_path("locked");
+        let (journal, _) = EventJournal::open(&path).unwrap();
+        assert!(EventJournal::open(&path).is_err());
+        drop(journal);
+        let alias = temp_path("symlink");
+        std::os::unix::fs::symlink(&path, &alias).unwrap();
+        assert!(EventJournal::open(&alias).is_err());
+        std::fs::remove_file(alias).unwrap();
         std::fs::remove_file(path).unwrap();
     }
 }

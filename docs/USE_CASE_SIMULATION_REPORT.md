@@ -1,13 +1,13 @@
 # xLemma use-case simulation report
 
-Generated: 2026-09-04T20:00:00Z
+Generated: 2026-09-04T19:14:02.084276Z
 
 > This is deterministic reference-implementation evidence, not a security audit,
 > independent mathematical verification, live settlement attestation, or production certification.
 
 ## Executive result
 
-**11/11 documented journeys passed** across **20/20 executable gates** and **173 Rust tests**.
+**11/11 documented journeys passed** across **20/20 executable gates** and **184 Rust tests**.
 
 | ID | Documented journey | Result | Executable gates |
 |---|---|---:|---|

@@ -2061,6 +2061,7 @@ dependencies = [
  "chrono",
  "ed25519-dalek",
  "hex",
+ "libc",
  "serde",
  "serde_json",
  "thiserror",

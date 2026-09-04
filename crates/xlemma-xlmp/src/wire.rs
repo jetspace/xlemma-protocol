@@ -1101,6 +1101,10 @@ impl XlmpEnvelope {
         }
         self.message.validate_ids()?;
         match &self.message {
+            XlmpMessage::Certificate(message) => message
+                .certificate
+                .validate_integrity()
+                .map_err(|_| XlmpError::ResearchObjectIntegrity)?,
             XlmpMessage::Researcher(message) => message
                 .researcher
                 .validate_integrity()

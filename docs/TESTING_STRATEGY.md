@@ -309,3 +309,15 @@ A release candidate requires:
 - documented unresolved risks.
 
 A production economic release additionally requires independent audits, legal review, staged value caps, incident drills, and live monitoring.
+
+## Audit regressions and continuous integration
+
+`make validate` runs Python release-inventory tests before schema and manifest
+validation. CI also executes the full participant journey harness in the Lean
+job. Targeted security regressions cover certificate evidence substitution,
+omitted dissent, policy weakening, payment rewrapping and uncertain settlement,
+partial journal writes, multiple local writers, bounded retrieval, native ASTRA
+receipt conversion, and Solidity compounding dust/no-op vaults.
+
+The audited results and intentionally unresolved production integrations are
+recorded in `docs/REPOSITORY_AUDIT.md`.

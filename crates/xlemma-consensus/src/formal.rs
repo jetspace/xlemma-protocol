@@ -267,9 +267,13 @@ pub fn validate_formal_consensus_policy(
             .values()
             .any(|count| *count > 0)
         || policy.challenge_period_seconds < 3_600
+        || !policy.require_identical_artifact_root
+        || !policy.require_identical_environment_root
+        || !policy.require_identical_dependency_root
+        || !policy.require_identical_axiom_set_root
     {
         return Err(FormalConsensusError::InvalidPolicy(
-            "non-zero checker and independence requirements are mandatory".to_owned(),
+            "checker independence, exact roots, and a challenge period are mandatory".to_owned(),
         ));
     }
     Ok(())
@@ -437,5 +441,21 @@ mod tests {
             evaluate_formal_consensus(&policy(), &receipts),
             Err(FormalConsensusError::DuplicateVerifiedUser)
         ));
+    }
+    #[test]
+    fn a_policy_cannot_disable_exact_reproduction() {
+        let policy: FormalConsensusPolicy =
+            serde_json::from_str(include_str!("../../../examples/no-arbitrage/policy.json"))
+                .unwrap();
+        for field in 0..4 {
+            let mut weaker = policy.clone();
+            match field {
+                0 => weaker.require_identical_artifact_root = false,
+                1 => weaker.require_identical_environment_root = false,
+                2 => weaker.require_identical_dependency_root = false,
+                _ => weaker.require_identical_axiom_set_root = false,
+            }
+            assert!(validate_formal_consensus_policy(&weaker).is_err());
+        }
     }
 }

@@ -4,6 +4,10 @@ This roadmap distinguishes a checked-in reference implementation from a
 production deployment. A checked item is reproducible in this repository; it
 does not imply an independent audit, live-network deployment, or legal review.
 
+The latest repository-wide audit and verified fixes are in
+[`docs/REPOSITORY_AUDIT.md`](docs/REPOSITORY_AUDIT.md). Passing local tests does
+not close the production integrations and trust dependencies listed below.
+
 ## Current execution focus — Phase 0 closure
 
 - [x] Publish versioned, domain-separated ID derivation and RFC 8785 canonicalization code.

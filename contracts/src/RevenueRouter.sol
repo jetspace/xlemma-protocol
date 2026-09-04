@@ -78,7 +78,7 @@ contract RevenueRouter is ReentrancyGuard {
             revert InvalidShares();
         }
 
-        uint256 totalBps;
+        uint256 totalBps = 0;
         for (uint256 i = 0; i < cashRecipients.length; ++i) {
             if (cashRecipients[i].account == address(0)) revert InvalidRecipient();
             totalBps += cashRecipients[i].shareBps;
@@ -101,8 +101,8 @@ contract RevenueRouter is ReentrancyGuard {
             revert UnsupportedAssetBehavior();
         }
 
-        uint256 paid;
-        uint256 cursor;
+        uint256 paid = 0;
+        uint256 cursor = 0;
         uint256 recipientCount = cashRecipients.length + compoundRecipients.length;
         for (uint256 i = 0; i < cashRecipients.length; ++i) {
             uint256 allocation = ++cursor == recipientCount ? amount - paid : amount * cashRecipients[i].shareBps / BPS;
@@ -113,10 +113,17 @@ contract RevenueRouter is ReentrancyGuard {
             uint256 allocation =
                 ++cursor == recipientCount ? amount - paid : amount * compoundRecipients[i].shareBps / BPS;
             paid += allocation;
+            if (allocation == 0) continue;
+            uint256 beforeCompound = asset.balanceOf(address(this));
             asset.forceApprove(address(compoundRecipients[i].vault), allocation);
             compoundRecipients[i].vault.compoundRevenue(allocation, compoundRecipients[i].beneficiary);
             asset.forceApprove(address(compoundRecipients[i].vault), 0);
+            if (asset.balanceOf(address(this)) + allocation != beforeCompound) {
+                revert UnsupportedAssetBehavior();
+            }
         }
+
+        if (asset.balanceOf(address(this)) != beforeBalance) revert UnsupportedAssetBehavior();
 
         emit RevenueRouted(revenueEventId, address(asset), amount, cashRecipients.length, compoundRecipients.length);
     }

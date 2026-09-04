@@ -532,6 +532,70 @@ pub struct PoIRCertificate {
 }
 
 impl PoIRCertificate {
+    /// The complete certificate content, excluding its ID and signature.
+    pub fn derive_certificate_id(&self) -> Result<CertificateId, crate::IdError> {
+        let mut identity =
+            serde_json::to_value(self).map_err(crate::CanonicalizationError::from)?;
+        if let serde_json::Value::Object(fields) = &mut identity {
+            fields.remove("certificate_id");
+            fields.remove("aggregate_signature");
+        }
+        CertificateId::derive(&identity)
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), PoIRCertificateError> {
+        self.certificate_id.validate()?;
+        self.job_id.validate()?;
+        self.theory_id.validate()?;
+        self.claim_id.validate()?;
+        self.proof_id.validate()?;
+        self.artifact_id.validate()?;
+        self.verification_policy_id.validate()?;
+        for receipt in &self.observation_receipt_ids {
+            receipt.validate()?;
+        }
+        for cluster in &self.operator_cluster_ids {
+            cluster.validate()?;
+        }
+        if self.certificate_id != self.derive_certificate_id()?
+            || !self.has_independent_reproduction()
+            || self
+                .observation_receipt_ids
+                .iter()
+                .collect::<BTreeSet<_>>()
+                .len()
+                != self.observation_receipt_ids.len()
+            || self
+                .operator_cluster_ids
+                .iter()
+                .collect::<BTreeSet<_>>()
+                .len()
+                != self.operator_cluster_ids.len()
+            || self.checker_families.len() < 2
+            || self.challenge_window_ends_at <= self.issued_at
+            || [
+                &self.artifact_root,
+                &self.environment_root,
+                &self.dependency_root,
+                &self.axiom_set_root,
+                &self.aggregate_signature,
+            ]
+            .iter()
+            .any(|s| s.trim().is_empty())
+            || !matches!(
+                self.assurance_level,
+                AssuranceLevel::IndependentlyReproduced
+                    | AssuranceLevel::FormallyCertified
+                    | AssuranceLevel::ResearchCertified
+                    | AssuranceLevel::EconomicallyFinalized
+                    | AssuranceLevel::Mature
+            )
+        {
+            return Err(PoIRCertificateError::Invalid);
+        }
+        Ok(())
+    }
+
     /// This is a structural guard, not a substitute for evaluating the policy
     /// and exact checker receipts used to issue the certificate.
     pub fn has_independent_reproduction(&self) -> bool {
@@ -540,6 +604,14 @@ impl PoIRCertificate {
             && self.observation_receipt_ids.len() >= 2
             && operators.len() >= 2
     }
+}
+
+#[derive(Debug, Error)]
+pub enum PoIRCertificateError {
+    #[error(transparent)]
+    Id(#[from] crate::IdError),
+    #[error("PoIR certificate identity or evidence structure is invalid")]
+    Invalid,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]

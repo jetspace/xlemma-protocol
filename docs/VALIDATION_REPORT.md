@@ -2,6 +2,10 @@
 
 As-of date: 2026-09-04.
 
+The follow-up audit, additional regressions, and current readiness assessment are
+in [`REPOSITORY_AUDIT.md`](REPOSITORY_AUDIT.md). The original snapshot evidence
+below predates those fixes.
+
 ## Scope
 
 This report records checks actually executed for the XLMP/1 researcher-

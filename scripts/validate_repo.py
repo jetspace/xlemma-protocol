@@ -892,16 +892,8 @@ def validate_source_tree() -> None:
 
 def validate_release_manifest() -> None:
     manifest_path = ROOT / "MANIFEST.sha256"
-    excluded_parts = {".git", "target", ".lake", "out", "cache", "__pycache__"}
-    expected_files = sorted(
-        path
-        for path in ROOT.rglob("*")
-        if path.is_file()
-        and path != manifest_path
-        and not any(
-            part in excluded_parts for part in path.relative_to(ROOT).parts
-        )
-    )
+    from source_inventory import source_files
+    expected_files = source_files(ROOT)
 
     entries: dict[str, str] = {}
     for line_number, line in enumerate(manifest_path.read_text().splitlines(), start=1):

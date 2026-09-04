@@ -266,7 +266,13 @@ pub struct X402PaymentAdapter<F, P> {
     config: X402AdapterConfig,
     facilitator: F,
     payer: P,
-    consumed_authorizations: Mutex<BTreeSet<String>>,
+    authorizations: Mutex<AuthorizationState>,
+}
+
+#[derive(Default)]
+struct AuthorizationState {
+    issued: BTreeMap<String, String>,
+    consumed_payments: BTreeSet<(String, String)>,
 }
 
 impl<F, P> X402PaymentAdapter<F, P> {
@@ -274,6 +280,11 @@ impl<F, P> X402PaymentAdapter<F, P> {
         if config.network.trim().is_empty()
             || config.pay_to.trim().is_empty()
             || config.authorization_timeout_seconds == 0
+            || i64::try_from(config.authorization_timeout_seconds)
+                .ok()
+                .and_then(Duration::try_seconds)
+                .and_then(|duration| Utc::now().checked_add_signed(duration))
+                .is_none()
         {
             return Err(X402Error::InvalidInstruction);
         }
@@ -281,7 +292,7 @@ impl<F, P> X402PaymentAdapter<F, P> {
             config,
             facilitator,
             payer,
-            consumed_authorizations: Mutex::new(BTreeSet::new()),
+            authorizations: Mutex::new(AuthorizationState::default()),
         })
     }
 }
@@ -342,13 +353,15 @@ impl<F: PaymentFacilitator, P: X402Payer> PaymentAdapter for X402PaymentAdapter<
             .verify_authorization(&requirement, &authorized.signature)
             .await
             .map_err(adapter_error)?;
-        let expires_at = instruction.valid_until.min(
-            Utc::now()
-                + Duration::seconds(
-                    i64::try_from(self.config.authorization_timeout_seconds)
-                        .map_err(|_| adapter_error(X402Error::InvalidInstruction))?,
-                ),
-        );
+        let timeout = i64::try_from(self.config.authorization_timeout_seconds)
+            .ok()
+            .and_then(Duration::try_seconds)
+            .and_then(|duration| Utc::now().checked_add_signed(duration))
+            .ok_or_else(|| adapter_error(X402Error::InvalidInstruction))?;
+        let expires_at = instruction.valid_until.min(timeout);
+        if expires_at <= Utc::now() {
+            return Err(adapter_error(X402Error::InvalidAuthorization));
+        }
         let reference = StoredAuthorizationReference {
             signature: authorized.signature,
             job_id: instruction.job_id.clone(),
@@ -371,12 +384,18 @@ impl<F: PaymentFacilitator, P: X402Payer> PaymentAdapter for X402PaymentAdapter<
                     .map_err(|_| adapter_error(X402Error::InvalidAuthorization))?
             )
         );
+        let authorization_reference = STANDARD.encode(reference_bytes);
+        self.authorizations
+            .lock()
+            .map_err(|_| adapter_error(X402Error::ReplayState))?
+            .issued
+            .insert(authorization_id.clone(), authorization_reference.clone());
         Ok(PaymentAuthorization {
             authorization_id,
             job_id: instruction.job_id,
             adapter: "x402".into(),
             authorized: instruction.maximum_authorization,
-            authorization_reference: STANDARD.encode(reference_bytes),
+            authorization_reference,
             expires_at,
             signature: reference.authorization_attestation,
         })
@@ -425,6 +444,22 @@ impl<F: PaymentFacilitator, P: X402Payer> PaymentAdapter for X402PaymentAdapter<
             || reference.network != self.config.network
             || reference.payee != self.config.pay_to
             || reference.payment_terms_root.trim().is_empty()
+            || reference.signature.x402_version != 2
+            || reference.signature.scheme != reference.scheme
+            || reference.signature.network != reference.network
+            || reference.signature.payment_identifier.trim().is_empty()
+        {
+            return Err(adapter_error(X402Error::InvalidAuthorization));
+        }
+        // A content hash is not authorization: callers can recompute it after
+        // changing an expiry or payment binding. Require an exact issued record.
+        if self
+            .authorizations
+            .lock()
+            .map_err(|_| adapter_error(X402Error::ReplayState))?
+            .issued
+            .get(&authorization.authorization_id)
+            != Some(&authorization.authorization_reference)
         {
             return Err(adapter_error(X402Error::InvalidAuthorization));
         }
@@ -452,11 +487,16 @@ impl<F: PaymentFacilitator, P: X402Payer> PaymentAdapter for X402PaymentAdapter<
             .await
             .map_err(adapter_error)?;
         {
-            let mut consumed = self
-                .consumed_authorizations
+            let mut state = self
+                .authorizations
                 .lock()
                 .map_err(|_| adapter_error(X402Error::ReplayState))?;
-            if !consumed.insert(authorization.authorization_id.clone()) {
+            // Rewrapping the same facilitator payment must never create a
+            // second settlement attempt, including concurrent requests.
+            if !state.consumed_payments.insert((
+                reference.network.clone(),
+                reference.signature.payment_identifier.clone(),
+            )) {
                 return Err(adapter_error(X402Error::InvalidAuthorization));
             }
         }
@@ -474,10 +514,8 @@ impl<F: PaymentFacilitator, P: X402Payer> PaymentAdapter for X402PaymentAdapter<
         let receipt = match result {
             Ok(receipt) => receipt,
             Err(error) => {
-                self.consumed_authorizations
-                    .lock()
-                    .map_err(|_| adapter_error(X402Error::ReplayState))?
-                    .remove(&authorization.authorization_id);
+                // A transport error may follow a successful external charge.
+                // Keep the attempt consumed until external reconciliation.
                 return Err(adapter_error(error));
             }
         };
@@ -698,7 +736,22 @@ mod tests {
             payment_terms_root: "blake3:payment-terms".into(),
             valid_until: Utc::now() + Duration::minutes(10),
         };
-        let authorization = adapter.authorize(instruction).await.unwrap();
+        let authorization = adapter.authorize(instruction.clone()).await.unwrap();
+        let mut forged = authorization.clone();
+        let mut reference: StoredAuthorizationReference =
+            serde_json::from_slice(&STANDARD.decode(&forged.authorization_reference).unwrap())
+                .unwrap();
+        reference.expires_at += Duration::hours(1);
+        forged.expires_at = reference.expires_at;
+        forged.authorization_reference = STANDARD.encode(serde_json::to_vec(&reference).unwrap());
+        forged.authorization_id = format!(
+            "x402auth:{}",
+            hex_digest(canonical_json_hash("x402-payment-authorization-v1", &reference).unwrap())
+        );
+        assert!(adapter
+            .settle(forged, Amount::new(72_000, "USDC", 6))
+            .await
+            .is_err());
         let mut altered = authorization.clone();
         altered.job_id = JobId::derive(&"different-job").unwrap();
         assert!(adapter
@@ -716,5 +769,89 @@ mod tests {
             .settle(authorization, Amount::new(72_000, "USDC", 6))
             .await
             .is_err());
+        // The payer returned the same payment identifier in a new wrapper.
+        let reissued = adapter.authorize(instruction).await.unwrap();
+        assert!(adapter
+            .settle(reissued, Amount::new(72_000, "USDC", 6))
+            .await
+            .is_err());
+    }
+
+    struct UncertainFacilitator(std::sync::atomic::AtomicUsize);
+
+    #[async_trait]
+    impl PaymentFacilitator for UncertainFacilitator {
+        async fn verify_authorization(
+            &self,
+            requirement: &PaymentRequirement,
+            signature: &PaymentSignatureEnvelope,
+        ) -> Result<(), X402Error> {
+            TestFacilitator
+                .verify_authorization(requirement, signature)
+                .await
+        }
+        async fn settle(&self, _request: SettlementRequest) -> Result<PaymentReceipt, X402Error> {
+            self.0.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            Err(X402Error::Settlement(
+                "response lost after external charge".into(),
+            ))
+        }
+    }
+
+    #[tokio::test]
+    async fn uncertain_external_settlement_cannot_be_retried() {
+        let adapter = X402PaymentAdapter::new(
+            X402AdapterConfig {
+                scheme: PaymentScheme::Upto,
+                network: "eip155:8453".into(),
+                pay_to: "did:key:node".into(),
+                authorization_timeout_seconds: 300,
+            },
+            UncertainFacilitator(std::sync::atomic::AtomicUsize::new(0)),
+            TestPayer,
+        )
+        .unwrap();
+        let authorization = adapter
+            .authorize(PaymentInstruction {
+                job_id: JobId::derive(&"job").unwrap(),
+                quote_id: ComputeQuoteId::derive(&"quote").unwrap(),
+                payer: "did:key:payer".into(),
+                payee: "did:key:node".into(),
+                maximum_authorization: Amount::new(100, "USDC", 6),
+                payment_terms_root: "blake3:terms".into(),
+                valid_until: Utc::now() + Duration::minutes(10),
+            })
+            .await
+            .unwrap();
+        for _ in 0..2 {
+            assert!(adapter
+                .settle(authorization.clone(), Amount::new(50, "USDC", 6))
+                .await
+                .is_err());
+        }
+        assert_eq!(
+            adapter
+                .facilitator
+                .0
+                .load(std::sync::atomic::Ordering::SeqCst),
+            1
+        );
+    }
+
+    #[test]
+    fn unrepresentable_authorization_timeout_is_rejected_without_panicking() {
+        for timeout in [u64::MAX, i64::MAX as u64] {
+            assert!(X402PaymentAdapter::new(
+                X402AdapterConfig {
+                    scheme: PaymentScheme::Upto,
+                    network: "eip155:8453".into(),
+                    pay_to: "did:key:node".into(),
+                    authorization_timeout_seconds: timeout,
+                },
+                TestFacilitator,
+                TestPayer
+            )
+            .is_err());
+        }
     }
 }

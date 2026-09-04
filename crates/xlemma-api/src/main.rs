@@ -47,6 +47,7 @@ struct AppState {
     jobs: Arc<RwLock<BTreeMap<String, VerificationJobRecord>>>,
     messages: Arc<RwLock<BTreeMap<String, XlmpEnvelope>>>,
     observation_commits: Arc<RwLock<BTreeMap<String, ObservationCommitMessage>>>,
+    projection: Arc<RwLock<xlemma_xlmp::ProtocolProjection>>,
     auth_token: Arc<str>,
     trusted_signers: Arc<BTreeSet<String>>,
     node_signers: Arc<BTreeMap<xlemma_core::NodeId, String>>,
@@ -209,6 +210,7 @@ impl AppState {
             jobs: Arc::new(RwLock::new(recovered.jobs)),
             messages: Arc::new(RwLock::new(recovered.messages)),
             observation_commits: Arc::new(RwLock::new(recovered.observation_commits)),
+            projection: Arc::new(RwLock::new(recovered.projection)),
             auth_token: auth_token.into(),
             trusted_signers: Arc::new(trusted_signers),
             node_signers: Arc::new(node_signers),
@@ -222,6 +224,7 @@ impl AppState {
             jobs: Arc::default(),
             messages: Arc::default(),
             observation_commits: Arc::default(),
+            projection: Arc::default(),
             auth_token: "test-auth-token-that-is-at-least-32-bytes".into(),
             trusted_signers: Arc::new(BTreeSet::from([trusted_signer])),
             node_signers: Arc::default(),
@@ -360,341 +363,6 @@ fn authenticate_node_sender(
     Ok(())
 }
 
-fn native_object_key(message: &XlmpMessage) -> Option<String> {
-    match message {
-        XlmpMessage::Researcher(value) => Some(value.researcher.researcher_id.to_string()),
-        XlmpMessage::Theory(value) => Some(value.theory_id.to_string()),
-        XlmpMessage::Claim(value) => Some(value.claim_id.to_string()),
-        XlmpMessage::Contribution(value) => Some(value.manifest_hash.clone()),
-        XlmpMessage::Rights(value) => Some(value.manifest_hash.clone()),
-        XlmpMessage::ProofCandidate(value) => Some(value.proof_id.to_string()),
-        XlmpMessage::Certificate(value) => Some(value.certificate.certificate_id.to_string()),
-        XlmpMessage::Challenge(value) => Some(value.challenge.challenge_id.to_string()),
-        XlmpMessage::Quarantine(value) => Some(value.record.quarantine_id.to_string()),
-        XlmpMessage::ComputeReceipt(value) => Some(value.receipt.receipt_id.to_string()),
-        XlmpMessage::ResearchCredit(value) => Some(value.credit.credit_id.to_string()),
-        XlmpMessage::ResearchVault(value) => Some(format!(
-            "{}:{}",
-            value.vault.vault_id, value.vault.state_root
-        )),
-        XlmpMessage::Revenue(value) => Some(value.event.revenue_event_id.to_string()),
-        XlmpMessage::DependencyDividend(value) => Some(value.dividend.dividend_id.to_string()),
-        XlmpMessage::License(value) => Some(value.license.license_id.to_string()),
-        XlmpMessage::Capsule(value) => Some(value.capsule.lemma_id.to_string()),
-        XlmpMessage::Publish(value) => Some(value.publication.publication_id.to_string()),
-        XlmpMessage::Availability(value) => Some(value.receipt.receipt_id.to_string()),
-        _ => None,
-    }
-}
-
-fn validate_native_relationships(
-    history: &BTreeMap<String, XlmpEnvelope>,
-    message: &XlmpMessage,
-) -> Result<(), ApiError> {
-    if let Some(key) = native_object_key(message) {
-        if history
-            .values()
-            .any(|envelope| native_object_key(&envelope.message).as_ref() == Some(&key))
-        {
-            return Err(ApiError::Conflict(
-                "native protocol object is append-only and already exists".into(),
-            ));
-        }
-    }
-    let contains = |predicate: &dyn Fn(&XlmpMessage) -> bool| {
-        history
-            .values()
-            .any(|envelope| predicate(&envelope.message))
-    };
-    match message {
-        XlmpMessage::Contribution(value) => {
-            if !contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Claim(claim)
-                    if claim.claim_id == value.manifest.claim_id
-                        && claim.contribution_manifest_hash == value.manifest_hash)
-            }) {
-                return Err(ApiError::Invalid(
-                    "contribution manifest must match an accepted claim commitment".into(),
-                ));
-            }
-        }
-        XlmpMessage::Rights(value) => {
-            if !contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Claim(claim)
-                    if claim.claim_id == value.manifest.claim_id
-                        && claim.rights_manifest_hash == value.manifest_hash)
-            }) {
-                return Err(ApiError::Invalid(
-                    "rights manifest must match an accepted claim commitment".into(),
-                ));
-            }
-        }
-        XlmpMessage::Challenge(value) => {
-            let certificate_known = contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Certificate(certificate)
-                    if certificate.certificate.certificate_id == value.challenge.certificate_id)
-            });
-            let parent_known = value.challenge.supersedes.as_ref().is_none_or(|parent| {
-                contains(&|candidate| {
-                    matches!(candidate, XlmpMessage::Challenge(challenge)
-                        if &challenge.challenge.challenge_id == parent
-                            && challenge.challenge.certificate_id
-                                == value.challenge.certificate_id)
-                })
-            });
-            if !certificate_known || !parent_known {
-                return Err(ApiError::Invalid(
-                    "challenge must reference an accepted certificate and supersession parent"
-                        .into(),
-                ));
-            }
-        }
-        XlmpMessage::Quarantine(value) => {
-            let certificate_matches = contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Certificate(certificate)
-                    if certificate.certificate.certificate_id == value.record.certificate_id
-                        && certificate.certificate.claim_id == value.record.affected_claim_id)
-            });
-            let challenge_known = value
-                .record
-                .challenge_id
-                .as_ref()
-                .is_none_or(|challenge_id| {
-                    contains(&|candidate| {
-                        matches!(candidate, XlmpMessage::Challenge(challenge)
-                        if &challenge.challenge.challenge_id == challenge_id
-                            && challenge.challenge.certificate_id == value.record.certificate_id)
-                    })
-                });
-            let parent_known = value.record.supersedes.as_ref().is_none_or(|parent| {
-                contains(&|candidate| {
-                    matches!(candidate, XlmpMessage::Quarantine(quarantine)
-                        if &quarantine.record.quarantine_id == parent
-                            && quarantine.record.certificate_id == value.record.certificate_id)
-                })
-            });
-            if !certificate_matches || !challenge_known || !parent_known {
-                return Err(ApiError::Invalid(
-                    "quarantine must bind an accepted certificate, challenge, and supersession parent"
-                        .into(),
-                ));
-            }
-        }
-        XlmpMessage::Finalize(value) => {
-            let certificate = history
-                .values()
-                .find_map(|envelope| match &envelope.message {
-                    XlmpMessage::Certificate(certificate)
-                        if certificate.certificate.certificate_id == value.certificate_id =>
-                    {
-                        Some(&certificate.certificate)
-                    }
-                    _ => None,
-                });
-            let unresolved_challenge = history.values().any(|envelope| {
-                let XlmpMessage::Challenge(challenge) = &envelope.message else {
-                    return false;
-                };
-                challenge.challenge.certificate_id == value.certificate_id
-                    && matches!(
-                        challenge.challenge.status,
-                        xlemma_core::ChallengeStatus::Open
-                            | xlemma_core::ChallengeStatus::EvidenceRequested
-                    )
-                    && !contains(&|candidate| {
-                        matches!(candidate, XlmpMessage::Challenge(candidate)
-                            if candidate.challenge.supersedes.as_ref()
-                                == Some(&challenge.challenge.challenge_id))
-                    })
-            });
-            let quarantined = contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Quarantine(quarantine)
-                    if quarantine.record.certificate_id == value.certificate_id)
-            });
-            if certificate.is_none_or(|certificate| {
-                certificate.claim_id != value.claim_id
-                    || value.finalized_at < certificate.challenge_window_ends_at
-            }) || unresolved_challenge
-                || quarantined
-            {
-                return Err(ApiError::Invalid(
-                    "finalization requires an ended challenge window and no unresolved challenge"
-                        .into(),
-                ));
-            }
-        }
-        XlmpMessage::ResearchCredit(value) => {
-            if !contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Researcher(researcher)
-                    if researcher.researcher.researcher_id == value.credit.researcher_id)
-            }) {
-                return Err(ApiError::Invalid(
-                    "research credit must reference an accepted researcher".into(),
-                ));
-            }
-        }
-        XlmpMessage::ResearchVault(value) => {
-            if !contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Researcher(researcher)
-                    if researcher.researcher.researcher_id == value.vault.researcher_id)
-            }) {
-                return Err(ApiError::Invalid(
-                    "research vault must reference an accepted researcher".into(),
-                ));
-            }
-            let newest = history
-                .values()
-                .filter_map(|envelope| match &envelope.message {
-                    XlmpMessage::ResearchVault(vault)
-                        if vault.vault.vault_id == value.vault.vault_id =>
-                    {
-                        Some(vault.vault.observed_at)
-                    }
-                    _ => None,
-                });
-            if newest
-                .max()
-                .is_some_and(|time| time >= value.vault.observed_at)
-            {
-                return Err(ApiError::Conflict(
-                    "vault snapshots must advance append-only observation time".into(),
-                ));
-            }
-        }
-        XlmpMessage::License(value) => {
-            let rights_known = contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Rights(rights)
-                    if rights.manifest_hash == value.license.rights_manifest_hash)
-            });
-            let parent_known = value.license.supersedes.as_ref().is_none_or(|parent| {
-                contains(&|candidate| {
-                    matches!(candidate, XlmpMessage::License(license)
-                        if &license.license.license_id == parent)
-                })
-            });
-            if !rights_known || !parent_known {
-                return Err(ApiError::Invalid(
-                    "license requires accepted rights and valid supersession lineage".into(),
-                ));
-            }
-        }
-        XlmpMessage::Capsule(value) => {
-            let claim_known = contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Claim(claim)
-                    if claim.claim_id == value.capsule.claim_id
-                        && claim.claim.theory_id == value.capsule.theory_id)
-            });
-            let proof_known = value.capsule.proof_id.as_ref().is_none_or(|proof_id| {
-                contains(&|candidate| {
-                    matches!(candidate, XlmpMessage::ProofCandidate(proof)
-                        if &proof.proof_id == proof_id
-                            && proof.proof.claim_id == value.capsule.claim_id
-                            && proof.artifact_id == value.capsule.artifact_id)
-                })
-            });
-            let contribution_known = contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Contribution(contribution)
-                    if contribution.manifest_hash == value.capsule.contribution_manifest_hash)
-            });
-            let rights_known = contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Rights(rights)
-                    if rights.manifest_hash == value.capsule.rights_manifest_hash)
-            });
-            if !claim_known || !proof_known || !contribution_known || !rights_known {
-                return Err(ApiError::Invalid(
-                    "capsule requires accepted claim, proof, contribution, and rights objects"
-                        .into(),
-                ));
-            }
-        }
-        XlmpMessage::Publish(value) => {
-            let certificate_finalized = contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Finalize(finalized)
-                    if finalized.certificate_id == value.publication.certificate_id
-                        && finalized.claim_id == value.publication.claim_id)
-            });
-            let certificate_matches = contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Certificate(certificate)
-                    if certificate.certificate.certificate_id == value.publication.certificate_id
-                        && certificate.certificate.claim_id == value.publication.claim_id
-                        && certificate.certificate.proof_id == value.publication.proof_id
-                        && certificate.certificate.artifact_id == value.publication.artifact_id)
-            });
-            let capsule_matches = contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Capsule(capsule)
-                    if capsule.capsule.claim_id == value.publication.claim_id
-                        && capsule.capsule.proof_id.as_ref() == Some(&value.publication.proof_id)
-                        && capsule.capsule.artifact_id == value.publication.artifact_id
-                        && capsule.capsule.rights_manifest_hash
-                            == value.publication.rights_manifest_hash)
-            });
-            let licenses_known = value.publication.license_ids.iter().all(|license_id| {
-                contains(&|candidate| {
-                    matches!(candidate, XlmpMessage::License(license)
-                        if &license.license.license_id == license_id)
-                })
-            });
-            let quarantined = contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Quarantine(quarantine)
-                    if quarantine.record.certificate_id == value.publication.certificate_id
-                        || quarantine.record.affected_claim_id == value.publication.claim_id)
-            });
-            if !certificate_finalized
-                || !certificate_matches
-                || !capsule_matches
-                || !licenses_known
-                || quarantined
-            {
-                return Err(ApiError::Invalid(
-                    "publication requires matching finalized certificate, capsule, and licenses"
-                        .into(),
-                ));
-            }
-        }
-        XlmpMessage::Revenue(value) => {
-            if !contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Publish(publication)
-                    if publication.publication.claim_id == value.event.claim_id)
-            }) {
-                return Err(ApiError::Invalid(
-                    "revenue must reference accepted published research".into(),
-                ));
-            }
-        }
-        XlmpMessage::DependencyDividend(value) => {
-            let revenue_matches = contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Revenue(revenue)
-                    if revenue.event.revenue_event_id == value.dividend.revenue_event_id
-                        && revenue.event.claim_id == value.dividend.downstream_claim_id)
-            });
-            let upstream_known = contains(&|candidate| {
-                matches!(candidate, XlmpMessage::Claim(claim)
-                    if claim.claim_id == value.dividend.upstream_claim_id)
-            });
-            if !revenue_matches || !upstream_known {
-                return Err(ApiError::Invalid(
-                    "dependency dividend requires matching settled revenue and upstream claim"
-                        .into(),
-                ));
-            }
-        }
-        XlmpMessage::Availability(value) => {
-            if !contains(&|candidate| {
-                matches!(candidate, XlmpMessage::ProofCandidate(proof)
-                    if proof.artifact_id == value.receipt.artifact_id)
-                    || matches!(candidate, XlmpMessage::Capsule(capsule)
-                        if capsule.capsule.artifact_id == value.receipt.artifact_id)
-            }) {
-                return Err(ApiError::Invalid(
-                    "availability receipt must reference an accepted artifact".into(),
-                ));
-            }
-        }
-        _ => {}
-    }
-    Ok(())
-}
-
 async fn health() -> Json<HealthResponse> {
     Json(HealthResponse {
         status: "ok",
@@ -708,6 +376,13 @@ async fn accept_xlmp_message(
     Json(StrictXlmpEnvelope(envelope)): Json<StrictXlmpEnvelope>,
 ) -> Result<(StatusCode, Json<XlmpEnvelope>), ApiError> {
     authenticate_envelope(&state, &envelope)?;
+    if matches!(&envelope.message, XlmpMessage::Finalize(value) if value.finalized_at > Utc::now())
+        || matches!(&envelope.message, XlmpMessage::Publish(value) if value.publication.published_at > Utc::now())
+    {
+        return Err(ApiError::Invalid(
+            "finalization or publication time is in the future".into(),
+        ));
+    }
     let mut commits = state.observation_commits.write().await;
     match &envelope.message {
         XlmpMessage::ObservationCommit(commit) => {
@@ -720,6 +395,11 @@ async fn accept_xlmp_message(
         }
         XlmpMessage::ObservationReveal(reveal) => {
             let observation = &reveal.observation;
+            let jobs = state.jobs.read().await;
+            let job = jobs
+                .get(observation.job_id.as_str())
+                .ok_or(ApiError::NotFound)?;
+            validate_job_observation(job, observation)?;
             authenticate_node_sender(&state, &observation.node_id, &envelope.sender)?;
             verify_ed25519_detached(
                 &envelope.sender,
@@ -760,27 +440,18 @@ async fn accept_xlmp_message(
         }
         XlmpMessage::Certificate(certificate_message) => {
             let history = state.messages.read().await;
-            let all_observations_previously_authenticated = certificate_message
-                .certificate
-                .observation_receipt_ids
-                .iter()
-                .all(|receipt_id| {
-                    history.values().any(|prior| {
-                        matches!(
-                            &prior.message,
-                            XlmpMessage::ObservationReveal(reveal)
-                                if &reveal.observation.receipt_id == receipt_id
-                                    && reveal.observation.job_id
-                                        == certificate_message.certificate.job_id
-                        )
-                    })
-                });
-            if !all_observations_previously_authenticated {
-                return Err(ApiError::Invalid(
-                    "certificate references an observation not authenticated through XLMP ingress"
-                        .to_owned(),
-                ));
-            }
+            let jobs = state.jobs.read().await;
+            let job = jobs
+                .get(certificate_message.certificate.job_id.as_str())
+                .ok_or_else(|| {
+                    ApiError::Invalid("certificate requires an accepted verification job".into())
+                })?;
+            validate_certificate_evidence(
+                job,
+                &certificate_message.certificate,
+                &history,
+                Utc::now(),
+            )?;
         }
         XlmpMessage::ResearchCertificate(certificate_message) => {
             let history = state.messages.read().await;
@@ -804,7 +475,17 @@ async fn accept_xlmp_message(
         _ => {}
     }
     let mut messages = state.messages.write().await;
-    validate_native_relationships(&messages, &envelope.message)?;
+    let mut projection = state.projection.write().await;
+    let mut next_projection = projection.clone();
+    next_projection
+        .apply(&envelope)
+        .map_err(|error| match error {
+            xlemma_xlmp::ProjectionError::DuplicateMessage(_)
+            | xlemma_xlmp::ProjectionError::DuplicateObject => {
+                ApiError::Conflict(error.to_string())
+            }
+            _ => ApiError::Invalid(error.to_string()),
+        })?;
     let message_id = envelope.message_id.to_string();
     if messages.contains_key(&message_id) {
         return Err(ApiError::Conflict(
@@ -814,6 +495,7 @@ async fn accept_xlmp_message(
     state.persist(ApiJournalEvent::MessageAccepted {
         envelope: envelope.clone(),
     })?;
+    *projection = next_projection;
     messages.insert(message_id, envelope.clone());
     if let XlmpMessage::ObservationCommit(commit) = &envelope.message {
         commits.insert(commit.receipt_id.to_string(), commit.clone());
@@ -1269,6 +951,132 @@ async fn get_job(
         .ok_or(ApiError::NotFound)
 }
 
+fn validate_job_observation(
+    job: &VerificationJobRecord,
+    observation: &ObservationReceipt,
+) -> Result<(), ApiError> {
+    if observation.job_id != job.job_id {
+        return Err(ApiError::Invalid(
+            "observation belongs to another job".into(),
+        ));
+    }
+    let authorized_member = job
+        .committee_members
+        .iter()
+        .find(|member| member.node_id == observation.node_id)
+        .ok_or(ApiError::Unauthorized)?;
+    if authorized_member.verified_user_id != observation.verified_user_id
+        || authorized_member.operator_id != observation.operator_id
+        || authorized_member.operator_cluster_id != observation.operator_cluster_id
+        || authorized_member.user_credential_id != observation.user_credential_id
+        || authorized_member.operator_credential_id != observation.operator_credential_id
+        || authorized_member.node_credential_id != observation.node_credential_id
+        || authorized_member.credential_chain_root != observation.credential_chain_root
+        || authorized_member.infrastructure_provider != observation.infrastructure_provider
+        || authorized_member.region != observation.region
+    {
+        return Err(ApiError::Invalid(
+            "observation identity does not match the committed committee member".to_owned(),
+        ));
+    }
+    if observation.artifact_root != job.artifact_root {
+        return Err(ApiError::Invalid(
+            "observation artifact root does not match the verification job".to_owned(),
+        ));
+    }
+    Ok(())
+}
+
+fn validate_certificate_evidence(
+    job: &VerificationJobRecord,
+    certificate: &PoIRCertificate,
+    history: &BTreeMap<String, XlmpEnvelope>,
+    now: DateTime<Utc>,
+) -> Result<(), ApiError> {
+    certificate
+        .validate_integrity()
+        .map_err(|error| ApiError::Invalid(error.to_string()))?;
+    // Include every accepted observation, including dissent omitted by a caller
+    // and receipts authenticated through the job-specific observation endpoint.
+    let mut observations = BTreeMap::new();
+    for observation in &job.observations {
+        observations.insert(observation.receipt_id.clone(), observation.clone());
+    }
+    for envelope in history.values() {
+        if let XlmpMessage::ObservationReveal(reveal) = &envelope.message {
+            if reveal.observation.job_id == job.job_id {
+                observations.insert(
+                    reveal.observation.receipt_id.clone(),
+                    reveal.observation.clone(),
+                );
+            }
+        }
+    }
+    let observations: Vec<_> = observations.into_values().collect();
+    for observation in &observations {
+        validate_job_observation(job, observation)?;
+    }
+    let outcome = evaluate_formal_consensus(&job.policy, &observations)
+        .map_err(|error| ApiError::Invalid(error.to_string()))?;
+    let expected_receipts: BTreeSet<_> = observations.iter().map(|r| &r.receipt_id).collect();
+    let expected_clusters: BTreeSet<_> = observations
+        .iter()
+        .map(|r| &r.operator_cluster_id)
+        .collect();
+    let expected_families: BTreeSet<_> = observations
+        .iter()
+        .filter_map(|r| r.checker_family)
+        .collect();
+    let challenge_end = i64::try_from(job.policy.challenge_period_seconds)
+        .ok()
+        .and_then(chrono::Duration::try_seconds)
+        .and_then(|duration| certificate.issued_at.checked_add_signed(duration));
+    let proof_matches = history.values().any(|envelope| {
+        matches!(&envelope.message, XlmpMessage::ProofCandidate(proof)
+            if proof.job_id == job.job_id && proof.proof_id == certificate.proof_id
+                && proof.proof.claim_id == job.claim_id && proof.artifact_id == job.artifact_id)
+    });
+    if outcome.status != xlemma_core::FormalStatus::Reproduced
+        || certificate.job_id != job.job_id
+        || certificate.theory_id != job.theory_id
+        || certificate.claim_id != job.claim_id
+        || certificate.artifact_id != job.artifact_id
+        || certificate.verification_policy_id != job.policy_id
+        || certificate
+            .observation_receipt_ids
+            .iter()
+            .collect::<BTreeSet<_>>()
+            != expected_receipts
+        || certificate
+            .operator_cluster_ids
+            .iter()
+            .collect::<BTreeSet<_>>()
+            != expected_clusters
+        || certificate
+            .checker_families
+            .iter()
+            .copied()
+            .collect::<BTreeSet<_>>()
+            != expected_families
+        || outcome.artifact_root.as_ref() != Some(&certificate.artifact_root)
+        || outcome.environment_root.as_ref() != Some(&certificate.environment_root)
+        || outcome.dependency_root.as_ref() != Some(&certificate.dependency_root)
+        || outcome.axiom_set_root.as_ref() != Some(&certificate.axiom_set_root)
+        || certificate.issued_at > now
+        || certificate.issued_at < job.created_at
+        || observations
+            .iter()
+            .any(|r| r.revealed_at > certificate.issued_at)
+        || challenge_end != Some(certificate.challenge_window_ends_at)
+        || !proof_matches
+    {
+        return Err(ApiError::Invalid(
+            "certificate does not match the complete authorized job evidence".into(),
+        ));
+    }
+    Ok(())
+}
+
 async fn add_observation(
     State(state): State<AppState>,
     Path(job_id): Path<String>,
@@ -1316,30 +1124,7 @@ async fn add_observation(
             "verification job no longer accepts observations".to_owned(),
         ));
     }
-    let authorized_member = job
-        .committee_members
-        .iter()
-        .find(|member| member.node_id == observation.node_id)
-        .ok_or(ApiError::Unauthorized)?;
-    if authorized_member.verified_user_id != observation.verified_user_id
-        || authorized_member.operator_id != observation.operator_id
-        || authorized_member.operator_cluster_id != observation.operator_cluster_id
-        || authorized_member.user_credential_id != observation.user_credential_id
-        || authorized_member.operator_credential_id != observation.operator_credential_id
-        || authorized_member.node_credential_id != observation.node_credential_id
-        || authorized_member.credential_chain_root != observation.credential_chain_root
-        || authorized_member.infrastructure_provider != observation.infrastructure_provider
-        || authorized_member.region != observation.region
-    {
-        return Err(ApiError::Invalid(
-            "observation identity does not match the committed committee member".to_owned(),
-        ));
-    }
-    if observation.artifact_root != job.artifact_root {
-        return Err(ApiError::Invalid(
-            "observation artifact root does not match the verification job".to_owned(),
-        ));
-    }
+    validate_job_observation(job, &observation)?;
     if job.observations.iter().any(|existing| {
         existing.node_id == observation.node_id
             || existing.receipt_id == observation.receipt_id
@@ -1429,12 +1214,37 @@ mod tests {
         );
     }
 
+    fn test_theory() -> TheoryManifest {
+        serde_json::from_str(include_str!("../../../examples/no-arbitrage/theory.json")).unwrap()
+    }
+
+    async fn accept_test_theory(state: &AppState) {
+        let key = SigningKey::from_bytes(&[7_u8; 32]);
+        let theory = test_theory();
+        let mut envelope = XlmpEnvelope::new(
+            None,
+            signer_id(&key),
+            Utc::now(),
+            XlmpMessage::Theory(xlemma_xlmp::TheoryMessage {
+                theory_id: theory.derive_theory_id().unwrap(),
+                theory,
+            }),
+            "pending-signature",
+        )
+        .unwrap();
+        sign_envelope(&key, &mut envelope);
+        let _accepted =
+            accept_xlmp_message(State(state.clone()), Json(StrictXlmpEnvelope(envelope)))
+                .await
+                .unwrap();
+    }
+
     fn claim_envelope() -> (XlmpEnvelope, String) {
         let key = SigningKey::from_bytes(&[7_u8; 32]);
         let sender = signer_id(&key);
         let claim = ClaimManifest {
             protocol_version: XLMP_VERSION.to_owned(),
-            theory_id: TheoryId::derive(&"api-test-theory").unwrap(),
+            theory_id: test_theory().derive_theory_id().unwrap(),
             canonical_elaborated_type: "forall p : Prop, p -> p".into(),
             declaration_name: "XLemma.Api.identity".into(),
             source_artifact: None,
@@ -1484,6 +1294,7 @@ mod tests {
             jobs: Arc::default(),
             messages: Arc::default(),
             observation_commits: Arc::default(),
+            projection: Arc::default(),
             auth_token: "test-auth-token-that-is-at-least-32-bytes".into(),
             trusted_signers: Arc::new(BTreeSet::from([signer.clone()])),
             node_signers: Arc::new(BTreeMap::from([(node_id, signer)])),
@@ -1497,6 +1308,7 @@ mod tests {
             jobs: Arc::new(RwLock::new(recovered.jobs)),
             messages: Arc::new(RwLock::new(recovered.messages)),
             observation_commits: Arc::new(RwLock::new(recovered.observation_commits)),
+            projection: Arc::new(RwLock::new(recovered.projection)),
             auth_token: "test-auth-token-that-is-at-least-32-bytes".into(),
             trusted_signers: Arc::new(BTreeSet::from([trusted_signer])),
             node_signers: Arc::default(),
@@ -1504,11 +1316,195 @@ mod tests {
         }
     }
 
+    fn certificate_fixture() -> (
+        VerificationJobRecord,
+        PoIRCertificate,
+        BTreeMap<String, XlmpEnvelope>,
+    ) {
+        let observations: Vec<ObservationReceipt> = serde_json::from_str(include_str!(
+            "../../../examples/no-arbitrage/observations.json"
+        ))
+        .unwrap();
+        let selection: xlemma_core::CommitteeSelection = serde_json::from_str(include_str!(
+            "../../../examples/node-network/committee-selection.json"
+        ))
+        .unwrap();
+        let policy: FormalConsensusPolicy =
+            serde_json::from_str(include_str!("../../../examples/no-arbitrage/policy.json"))
+                .unwrap();
+        let proof: ProofManifest =
+            serde_json::from_str(include_str!("../../../examples/no-arbitrage/proof.json"))
+                .unwrap();
+        let members = observations
+            .iter()
+            .map(|r| {
+                let mut member = selection.members[0].clone();
+                member.node_id = r.node_id.clone();
+                member.verified_user_id = r.verified_user_id.clone();
+                member.operator_id = r.operator_id.clone();
+                member.operator_cluster_id = r.operator_cluster_id.clone();
+                member.user_credential_id = r.user_credential_id.clone();
+                member.operator_credential_id = r.operator_credential_id.clone();
+                member.node_credential_id = r.node_credential_id.clone();
+                member.credential_chain_root = r.credential_chain_root.clone();
+                member.infrastructure_provider = r.infrastructure_provider.clone();
+                member.region = r.region.clone();
+                member
+            })
+            .collect();
+        let now = Utc::now();
+        let job = VerificationJobRecord {
+            job_id: observations[0].job_id.clone(),
+            researcher_id: ResearcherId::derive(&"certificate-researcher").unwrap(),
+            claim_id: proof.claim_id.clone(),
+            theory_id: test_theory().derive_theory_id().unwrap(),
+            artifact_id: proof.artifact_id.clone(),
+            artifact_root: observations[0].artifact_root.clone(),
+            policy_id: PolicyId::derive(&policy).unwrap(),
+            policy,
+            committee_members: members,
+            maximum_budget_minor_units: 100,
+            settlement_asset: "USDC".into(),
+            state: VerificationState::CheckersRevealed,
+            created_at: observations[0].committed_at - chrono::Duration::hours(1),
+            updated_at: now,
+            observations,
+        };
+        let first = &job.observations[0];
+        let mut certificate = PoIRCertificate {
+            certificate_id: xlemma_core::CertificateId::derive(&"pending").unwrap(),
+            job_id: job.job_id.clone(),
+            theory_id: job.theory_id.clone(),
+            claim_id: job.claim_id.clone(),
+            proof_id: proof.derive_proof_id().unwrap(),
+            artifact_id: job.artifact_id.clone(),
+            verification_policy_id: job.policy_id.clone(),
+            observation_receipt_ids: job
+                .observations
+                .iter()
+                .map(|r| r.receipt_id.clone())
+                .collect(),
+            checker_families: job
+                .observations
+                .iter()
+                .filter_map(|r| r.checker_family)
+                .collect(),
+            operator_cluster_ids: job
+                .observations
+                .iter()
+                .map(|r| r.operator_cluster_id.clone())
+                .collect(),
+            artifact_root: first.artifact_root.clone(),
+            environment_root: first.environment_root.clone(),
+            dependency_root: first.dependency_root.clone(),
+            axiom_set_root: first.axiom_set_root.clone(),
+            formal_status: xlemma_core::FormalStatus::Certified,
+            assurance_level: xlemma_core::AssuranceLevel::FormallyCertified,
+            issued_at: now,
+            challenge_window_ends_at: now + chrono::Duration::seconds(86_400),
+            aggregate_signature: "test-committee-signature".into(),
+        };
+        certificate.certificate_id = certificate.derive_certificate_id().unwrap();
+        let envelope = XlmpEnvelope::new(
+            None,
+            "test-sender",
+            now,
+            XlmpMessage::ProofCandidate(xlemma_xlmp::ProofCandidateMessage {
+                job_id: job.job_id.clone(),
+                proof_id: certificate.proof_id.clone(),
+                artifact_id: proof.artifact_id.clone(),
+                proof,
+            }),
+            "test-signature",
+        )
+        .unwrap();
+        (
+            job,
+            certificate,
+            BTreeMap::from([(envelope.message_id.to_string(), envelope)]),
+        )
+    }
+
+    #[test]
+    fn formal_certificate_requires_complete_policy_bound_evidence() {
+        let (job, certificate, history) = certificate_fixture();
+        assert!(validate_certificate_evidence(&job, &certificate, &history, Utc::now()).is_ok());
+        for mutation in 0..9 {
+            let mut changed = certificate.clone();
+            match mutation {
+                0 => {
+                    changed.observation_receipt_ids.pop();
+                }
+                1 => changed.artifact_root = "blake3:substituted".into(),
+                2 => changed.environment_root = "blake3:substituted".into(),
+                3 => changed.verification_policy_id = PolicyId::derive(&"weaker").unwrap(),
+                4 => {
+                    changed.operator_cluster_ids[0] =
+                        OperatorClusterId::derive(&"fabricated").unwrap()
+                }
+                5 => changed.challenge_window_ends_at -= chrono::Duration::seconds(1),
+                6 => changed.theory_id = TheoryId::derive(&"other-theory").unwrap(),
+                7 => changed.dependency_root = "blake3:substituted".into(),
+                _ => changed.axiom_set_root = "blake3:substituted".into(),
+            }
+            changed.certificate_id = changed.derive_certificate_id().unwrap();
+            assert!(
+                validate_certificate_evidence(&job, &changed, &history, Utc::now()).is_err(),
+                "mutation {mutation}"
+            );
+        }
+        let mut unauthorized = job.clone();
+        unauthorized.committee_members[0].operator_id =
+            OperatorId::derive(&"other-operator").unwrap();
+        assert!(
+            validate_certificate_evidence(&unauthorized, &certificate, &history, Utc::now())
+                .is_err()
+        );
+        let mut dissent = job.clone();
+        let receipt = &mut dissent.observations[0];
+        receipt.verdict = xlemma_core::ObservationVerdict::Fail;
+        receipt.observation_root = receipt.expected_observation_root().unwrap();
+        receipt.commitment = xlemma_core::observation_commitment(
+            &receipt.job_id,
+            receipt.verdict,
+            &receipt.observation_root,
+            receipt.reveal_salt.as_bytes(),
+        );
+        receipt.receipt_id = receipt.expected_receipt_id().unwrap();
+        assert!(receipt.validate_integrity().is_ok());
+        assert!(
+            validate_certificate_evidence(&dissent, &certificate, &history, Utc::now()).is_err()
+        );
+    }
+
+    #[test]
+    fn certificate_content_changes_require_a_new_identity() {
+        let (_, mut certificate, _) = certificate_fixture();
+        assert!(certificate.validate_integrity().is_ok());
+        certificate.artifact_root = "blake3:altered".into();
+        assert!(certificate.validate_integrity().is_err());
+    }
+
+    #[tokio::test]
+    async fn orphan_claim_is_rejected_without_mutating_api_projection() {
+        let (envelope, sender) = claim_envelope();
+        let state = AppState::for_test(sender);
+        let root = state.projection.read().await.state_root().unwrap();
+        assert!(
+            accept_xlmp_message(State(state.clone()), Json(StrictXlmpEnvelope(envelope)))
+                .await
+                .is_err()
+        );
+        assert!(state.messages.read().await.is_empty());
+        assert_eq!(state.projection.read().await.state_root().unwrap(), root);
+    }
+
     #[tokio::test]
     async fn xlmp_ingress_is_append_only_and_retrievable() {
         let (envelope, sender) = claim_envelope();
         let state = AppState::for_test(sender);
         let message_id = envelope.message_id.to_string();
+        accept_test_theory(&state).await;
 
         let accepted = accept_xlmp_message(
             State(state.clone()),
@@ -1547,6 +1543,7 @@ mod tests {
             Utc::now().timestamp_nanos_opt().unwrap_or_default()
         ));
         let state = journal_state(&path, sender.clone());
+        accept_test_theory(&state).await;
         let _accepted = accept_xlmp_message(
             State(state.clone()),
             Json(StrictXlmpEnvelope(envelope.clone())),
@@ -1601,6 +1598,7 @@ mod tests {
             jobs: Arc::default(),
             messages: Arc::default(),
             observation_commits: Arc::default(),
+            projection: Arc::default(),
             auth_token: "test-auth-token-that-is-at-least-32-bytes".into(),
             trusted_signers: Arc::new(BTreeSet::from([node_signer.clone(), wrong_signer.clone()])),
             node_signers: Arc::new(BTreeMap::from([(node_id.clone(), node_signer)])),

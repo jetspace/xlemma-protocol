@@ -23,6 +23,7 @@ fmt:
 	cargo fmt --all -- --check
 
 validate:
+	python3 -m unittest discover -s scripts -p 'test_*.py'
 	python3 scripts/validate_repo.py
 
 simulate:

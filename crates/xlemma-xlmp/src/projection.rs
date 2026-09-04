@@ -124,8 +124,10 @@ impl ProtocolProjection {
             }
             XlmpMessage::Certificate(message) => {
                 let proof = require_key(&self.proofs, &message.certificate.proof_id, "proof")?;
+                let claim = require_key(&self.claims, &message.certificate.claim_id, "claim")?;
                 if proof.claim_id != message.certificate.claim_id
                     || proof.artifact_id != message.certificate.artifact_id
+                    || claim.theory_id != message.certificate.theory_id
                     || !message.certificate.has_independent_reproduction()
                 {
                     return Err(ProjectionError::ReferenceMismatch("PoIR certificate"));
@@ -147,6 +149,20 @@ impl ProtocolProjection {
                     message.challenge.supersedes.as_ref(),
                     "challenge",
                 )?;
+                if let Some(parent) = &message.challenge.supersedes {
+                    let prior = &self.challenges[parent];
+                    if prior.certificate_id != message.challenge.certificate_id
+                        || prior.challenger != message.challenge.challenger
+                        || prior.kind != message.challenge.kind
+                        || prior.opened_at != message.challenge.opened_at
+                        || self
+                            .challenges
+                            .values()
+                            .any(|c| c.supersedes.as_ref() == Some(parent))
+                    {
+                        return Err(ProjectionError::InvalidSupersession("challenge"));
+                    }
+                }
                 insert_unique(
                     &mut self.challenges,
                     message.challenge.challenge_id.clone(),
@@ -160,11 +176,11 @@ impl ProtocolProjection {
                     "certificate",
                 )?;
                 if certificate.claim_id != message.record.affected_claim_id
-                    || message
-                        .record
-                        .challenge_id
-                        .as_ref()
-                        .is_some_and(|id| !self.challenges.contains_key(id))
+                    || message.record.challenge_id.as_ref().is_some_and(|id| {
+                        self.challenges.get(id).is_none_or(|challenge| {
+                            challenge.certificate_id != message.record.certificate_id
+                        })
+                    })
                 {
                     return Err(ProjectionError::ReferenceMismatch("quarantine"));
                 }
@@ -173,6 +189,11 @@ impl ProtocolProjection {
                     message.record.supersedes.as_ref(),
                     "quarantine",
                 )?;
+                if message.record.supersedes.as_ref().is_some_and(|parent| {
+                    self.quarantines[parent].certificate_id != message.record.certificate_id
+                }) {
+                    return Err(ProjectionError::InvalidSupersession("quarantine"));
+                }
                 insert_unique(
                     &mut self.quarantines,
                     message.record.quarantine_id.clone(),
@@ -294,8 +315,23 @@ impl ProtocolProjection {
                 )?;
             }
             XlmpMessage::Capsule(message) => {
-                require_key(&self.claims, &message.capsule.claim_id, "claim")?;
+                let claim = require_key(&self.claims, &message.capsule.claim_id, "claim")?;
                 require_key(&self.theories, &message.capsule.theory_id, "theory")?;
+                let roots = self
+                    .claim_message(&message.capsule.claim_id)
+                    .ok_or(ProjectionError::MissingPrerequisite("claim roots"))?;
+                if claim.theory_id != message.capsule.theory_id
+                    || roots.0 != message.capsule.contribution_manifest_hash
+                    || roots.1 != message.capsule.rights_manifest_hash
+                    || message.capsule.proof_id.as_ref().is_some_and(|id| {
+                        self.proofs.get(id).is_some_and(|proof| {
+                            proof.claim_id != message.capsule.claim_id
+                                || proof.artifact_id != message.capsule.artifact_id
+                        })
+                    })
+                {
+                    return Err(ProjectionError::ReferenceMismatch("capsule"));
+                }
                 if message
                     .capsule
                     .proof_id
@@ -329,7 +365,7 @@ impl ProtocolProjection {
                     &message.publication.certificate_id,
                     "certificate",
                 )?;
-                require_key(
+                let finalization = require_key(
                     &self.finalizations,
                     &message.publication.certificate_id,
                     "finalization",
@@ -340,11 +376,11 @@ impl ProtocolProjection {
                         && capsule.artifact_id == message.publication.artifact_id
                         && capsule.rights_manifest_hash == message.publication.rights_manifest_hash
                 });
-                let licenses_known = message
-                    .publication
-                    .license_ids
-                    .iter()
-                    .all(|id| self.licenses.contains_key(id));
+                let licenses_known = message.publication.license_ids.iter().all(|id| {
+                    self.licenses.get(id).is_some_and(|license| {
+                        license.rights_manifest_hash == message.publication.rights_manifest_hash
+                    })
+                });
                 let quarantined = self.quarantines.values().any(|record| {
                     record.certificate_id == message.publication.certificate_id
                         || record.affected_claim_id == message.publication.claim_id
@@ -355,6 +391,8 @@ impl ProtocolProjection {
                     || !capsule_matches
                     || !licenses_known
                     || quarantined
+                    || self.has_unresolved_challenge(&message.publication.certificate_id)
+                    || message.publication.published_at < finalization.finalized_at
                 {
                     return Err(ProjectionError::ReferenceMismatch("publication"));
                 }
@@ -656,7 +694,7 @@ mod tests {
             ReceiptId::derive(&"observation-a").unwrap(),
             ReceiptId::derive(&"observation-b").unwrap(),
         ];
-        let certificate = PoIRCertificate {
+        let mut certificate = PoIRCertificate {
             certificate_id: CertificateId::derive(&"certificate").unwrap(),
             job_id: job_id.clone(),
             theory_id: theory_id.clone(),
@@ -680,6 +718,7 @@ mod tests {
             challenge_window_ends_at: at + Duration::hours(1),
             aggregate_signature: "committee-signature".into(),
         };
+        certificate.certificate_id = certificate.derive_certificate_id().unwrap();
         let license = {
             let mut value = License {
                 license_id: LicenseId::derive(&"placeholder").unwrap(),
@@ -962,6 +1001,38 @@ mod tests {
             XlmpMessage::Quarantine(QuarantineMessage { record: quarantine }),
         ];
         let envelopes = messages.into_iter().map(envelope).collect::<Vec<_>>();
+        let capsule_index = envelopes
+            .iter()
+            .position(|e| matches!(e.message, XlmpMessage::Capsule(_)))
+            .unwrap();
+        let mut before_capsule = ProtocolProjection::replay(&envelopes[..capsule_index]).unwrap();
+        let mut substituted = envelopes[capsule_index].message.clone();
+        if let XlmpMessage::Capsule(message) = &mut substituted {
+            message.capsule.artifact_id = ArtifactId::derive(&"unrelated-artifact").unwrap();
+            message.capsule.lemma_id = message.capsule.derive_lemma_id().unwrap();
+        }
+        let original_root = before_capsule.state_root().unwrap();
+        assert!(matches!(
+            before_capsule.apply(&envelope(substituted)),
+            Err(ProjectionError::ReferenceMismatch("capsule"))
+        ));
+        assert_eq!(before_capsule.state_root().unwrap(), original_root);
+
+        let publication_index = envelopes
+            .iter()
+            .position(|e| matches!(e.message, XlmpMessage::Publish(_)))
+            .unwrap();
+        let mut before_publication =
+            ProtocolProjection::replay(&envelopes[..publication_index]).unwrap();
+        let mut early = publication.clone();
+        early.published_at = at;
+        early.publication_id = early.derive_publication_id().unwrap();
+        assert!(matches!(
+            before_publication.apply(&envelope(XlmpMessage::Publish(PublishMessage {
+                publication: early
+            }))),
+            Err(ProjectionError::ReferenceMismatch("publication"))
+        ));
         let mut projection = ProtocolProjection::replay(&envelopes).unwrap();
 
         assert_eq!(

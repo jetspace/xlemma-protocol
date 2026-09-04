@@ -321,3 +321,38 @@ Slashing requires objectively provable misconduct: equivocation, false artifact 
 - The concrete HTTPS, filesystem-storage, and x402 implementations are bounded
   reference adapters. They do not supply distributed finality, replicated
   availability, live facilitator assurance, or production key custody.
+
+## September 2026 audit follow-up
+
+The repository audit and remaining integration gaps are recorded in
+[`REPOSITORY_AUDIT.md`](REPOSITORY_AUDIT.md). Additional enforced controls:
+
+- Formal certificate IDs bind all non-signature content. API issuance validates
+  the complete authenticated job evidence, including dissent, committee identity,
+  exact roots, policy and challenge duration; policies cannot disable exact-root
+  agreement. The single shared projection also validates restart replay.
+- x402 settlement requires an exact locally issued authorization and consumes
+  the underlying network/payment identifier. Recomputed wrapper IDs and renewed
+  wrappers cannot bypass replay protection. A failed external call remains
+  consumed because the payment may already have settled. Durable reconciliation
+  is still required before retrying or replacing a process.
+- Unix journal writers take an exclusive advisory lock, reject symlinks and
+  non-regular files, require complete bounded newline-terminated records, and
+  stop acknowledging writes after any uncertain I/O. Hash chains alone cannot
+  resist an attacker who can replace the entire journal and recompute its hashes;
+  externally anchored checkpoints and protected backups remain necessary.
+- Storage retrieval verifies manifest identity and aggregate declared size
+  before payload I/O, limits reads to declared sizes, and rejects non-regular
+  descriptors. Host filesystem ownership remains trusted; this is not a complete
+  defense against a concurrent attacker replacing ancestor directories.
+- ASTRA native compute receipts receive new content IDs and signatures over the
+  native structure. Impossible cached-token counts and overflowing charges fail.
+  Signer adapters must implement `sign_compute_receipt` separately from the
+  provider-specific `sign_receipt` operation.
+- Revenue compounding skips allocations rounded to zero and checks the exact
+  amount consumed by a vault and the final router balance. This verifies asset
+  movement, not the honesty of a caller-selected vault's credit program.
+- Release archives and manifests share an inventory that excludes common local
+  secrets, key files, environment files except `.env.example`, runtime artifacts,
+  and agent configuration. Arbitrarily named unpublished material still requires
+  an explicit release review; filename filters are not a data-classification system.

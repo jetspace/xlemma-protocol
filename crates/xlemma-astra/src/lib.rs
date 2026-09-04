@@ -155,6 +155,8 @@ pub enum AstraError {
     Parse(#[from] serde_json::Error),
     #[error("ASTRA compute receipt signing failed")]
     ReceiptSigning,
+    #[error("ASTRA metering, pricing, or receipt identity is invalid")]
+    InvalidMetering,
 }
 
 #[async_trait]
@@ -185,6 +187,10 @@ pub struct OpenAiAstraClient {
 
 pub trait AstraReceiptSigner: Send + Sync {
     fn sign_receipt(&self, unsigned_receipt: &AstraComputeReceipt) -> Result<String, AstraError>;
+    /// Sign the native XLMP receipt after conversion and ID derivation. A
+    /// signature over the provider receipt cannot authenticate this structure.
+    fn sign_compute_receipt(&self, unsigned_receipt: &ComputeReceipt)
+        -> Result<String, AstraError>;
 }
 
 impl OpenAiAstraClient {
@@ -290,7 +296,7 @@ impl OpenAiAstraClient {
         result: &AstraRawResult,
         candidate_roots: Vec<String>,
     ) -> Result<AstraComputeReceipt, AstraError> {
-        let charged_units = estimate_charge_minor_units(&self.config, &result.usage);
+        let charged_units = estimate_charge_minor_units(&self.config, &result.usage)?;
         let receipt_material = serde_json::json!({
             "job_id": job_id,
             "response_id": result.response_id,
@@ -301,7 +307,7 @@ impl OpenAiAstraClient {
         });
         let mut receipt = AstraComputeReceipt {
             receipt_id: ReceiptId::derive(&receipt_material)
-                .expect("receipt material is serializable"),
+                .map_err(|_| AstraError::InvalidMetering)?,
             job_id,
             provider: "openai".to_owned(),
             model_id: result.model.clone(),
@@ -456,7 +462,13 @@ impl OpenAiAstraClient {
             .await
             .map_err(|error| adapter_error(error.to_string()))?;
         let root = hash_text(&candidate.lean_source);
-        protocol_artifact(receipt, service, root, "text/x-lean")
+        protocol_artifact(
+            receipt,
+            service,
+            root,
+            "text/x-lean",
+            self.receipt_signer.as_ref(),
+        )
     }
 }
 
@@ -484,7 +496,13 @@ impl ResearchProver for OpenAiAstraClient {
             .await
             .map_err(|error| adapter_error(error.to_string()))?;
         let root = hash_text(&candidate.lean_statement);
-        protocol_artifact(receipt, ComputeService::Formalization, root, "text/x-lean")
+        protocol_artifact(
+            receipt,
+            ComputeService::Formalization,
+            root,
+            "text/x-lean",
+            self.receipt_signer.as_ref(),
+        )
     }
 
     async fn propose(&self, request: ProverRequest) -> Result<ProverArtifact, AdapterError> {
@@ -523,7 +541,13 @@ impl ResearchProver for OpenAiAstraClient {
             .await
             .map_err(|error| adapter_error(error.to_string()))?;
         let root = hash_text(&explanation.latex);
-        protocol_artifact(receipt, ComputeService::Explanation, root, "text/x-tex")
+        protocol_artifact(
+            receipt,
+            ComputeService::Explanation,
+            root,
+            "text/x-tex",
+            self.receipt_signer.as_ref(),
+        )
     }
 }
 
@@ -557,6 +581,7 @@ fn protocol_artifact(
     service: ComputeService,
     artifact_root: String,
     media_type: &str,
+    signer: &dyn AstraReceiptSigner,
 ) -> Result<ProverArtifact, AdapterError> {
     let artifact_id = ArtifactId::derive(&(
         "xlmp-prover-artifact-v1",
@@ -574,7 +599,7 @@ fn protocol_artifact(
         ("wall_time_ms".to_owned(), receipt.wall_time_ms),
         ("retry_count".to_owned(), u64::from(receipt.retry_count)),
     ]);
-    let protocol_receipt = ComputeReceipt {
+    let mut protocol_receipt = ComputeReceipt {
         receipt_id: receipt.receipt_id,
         job_id: receipt.job_id,
         quote_id: None,
@@ -592,8 +617,17 @@ fn protocol_artifact(
         charged_amount: receipt.charged_amount,
         output_artifact_roots: receipt.candidate_artifact_roots,
         completed_at: receipt.generated_at,
-        signature: receipt.signature,
+        signature: String::new(),
     };
+    protocol_receipt.receipt_id = protocol_receipt
+        .derive_receipt_id()
+        .map_err(|error| adapter_error(error.to_string()))?;
+    protocol_receipt.signature = signer
+        .sign_compute_receipt(&protocol_receipt)
+        .map_err(|error| adapter_error(error.to_string()))?;
+    protocol_receipt
+        .validate_integrity()
+        .map_err(|error| adapter_error(error.to_string()))?;
     Ok(ProverArtifact {
         artifact_id,
         // A provider-produced candidate cannot assign the final proof identity;
@@ -790,18 +824,34 @@ fn hash_text(text: &str) -> String {
     format!("blake3:{}", blake3::hash(text.as_bytes()).to_hex())
 }
 
-fn estimate_charge_minor_units(config: &AstraConfig, usage: &ResponseUsage) -> u128 {
-    let uncached_input = usage.input_tokens.saturating_sub(usage.cached_input_tokens);
+fn estimate_charge_minor_units(
+    config: &AstraConfig,
+    usage: &ResponseUsage,
+) -> Result<u128, AstraError> {
+    const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
+    if usage.cached_input_tokens > usage.input_tokens
+        || usage.input_tokens > MAX_SAFE_INTEGER
+        || usage.output_tokens > MAX_SAFE_INTEGER
+    {
+        return Err(AstraError::InvalidMetering);
+    }
+    let uncached_input = usage.input_tokens - usage.cached_input_tokens;
     let input = u128::from(uncached_input)
-        .saturating_mul(config.price_input_per_million_minor_units)
+        .checked_mul(config.price_input_per_million_minor_units)
+        .ok_or(AstraError::InvalidMetering)?
         / 1_000_000;
     let cached = u128::from(usage.cached_input_tokens)
-        .saturating_mul(config.price_cached_input_per_million_minor_units)
+        .checked_mul(config.price_cached_input_per_million_minor_units)
+        .ok_or(AstraError::InvalidMetering)?
         / 1_000_000;
     let output = u128::from(usage.output_tokens)
-        .saturating_mul(config.price_output_per_million_minor_units)
+        .checked_mul(config.price_output_per_million_minor_units)
+        .ok_or(AstraError::InvalidMetering)?
         / 1_000_000;
-    input.saturating_add(cached).saturating_add(output)
+    input
+        .checked_add(cached)
+        .and_then(|total| total.checked_add(output))
+        .ok_or(AstraError::InvalidMetering)
 }
 
 #[cfg(test)]
@@ -858,7 +908,92 @@ mod tests {
             cached_input_tokens: 500_000,
             output_tokens: 100_000,
         };
-        assert_eq!(estimate_charge_minor_units(&config, &usage), 10_500_000);
+        assert_eq!(
+            estimate_charge_minor_units(&config, &usage).unwrap(),
+            10_500_000
+        );
+        assert!(estimate_charge_minor_units(
+            &config,
+            &ResponseUsage {
+                input_tokens: 1,
+                cached_input_tokens: 2,
+                output_tokens: 0,
+            }
+        )
+        .is_err());
+        assert!(estimate_charge_minor_units(
+            &config,
+            &ResponseUsage {
+                input_tokens: u64::MAX,
+                cached_input_tokens: 0,
+                output_tokens: 0,
+            }
+        )
+        .is_err());
+        let mut overflow = config.clone();
+        overflow.price_input_per_million_minor_units = u128::MAX;
+        assert!(estimate_charge_minor_units(&overflow, &usage).is_err());
+    }
+
+    struct TestSigner;
+    impl AstraReceiptSigner for TestSigner {
+        fn sign_receipt(&self, _receipt: &AstraComputeReceipt) -> Result<String, AstraError> {
+            Ok("provider-receipt-signature".into())
+        }
+        fn sign_compute_receipt(&self, receipt: &ComputeReceipt) -> Result<String, AstraError> {
+            assert_eq!(receipt.receipt_id, receipt.derive_receipt_id().unwrap());
+            assert!(receipt.signature.is_empty());
+            Ok("native-receipt-signature".into())
+        }
+    }
+
+    #[test]
+    fn converted_provider_receipt_passes_native_xlmp_ingress() {
+        let old_id = ReceiptId::derive(&"provider-receipt").unwrap();
+        let receipt = AstraComputeReceipt {
+            receipt_id: old_id.clone(),
+            job_id: JobId::derive(&"job").unwrap(),
+            provider: "test-provider".into(),
+            model_id: "test-model".into(),
+            model_snapshot: None,
+            reasoning_effort: Some("high".into()),
+            request_hash: "blake3:request".into(),
+            context_root: "blake3:context".into(),
+            input_units: 100,
+            cached_input_units: 50,
+            output_units: 10,
+            tool_calls: 0,
+            wall_time_ms: 100,
+            retry_count: 0,
+            charged_amount: Amount::new(100, "USDC", 6),
+            candidate_artifact_roots: vec!["blake3:output".into()],
+            generated_at: Utc::now(),
+            signature: "provider-receipt-signature".into(),
+        };
+        let artifact = protocol_artifact(
+            receipt,
+            ComputeService::ProofSearch,
+            "blake3:output".into(),
+            "text/x-lean",
+            &TestSigner,
+        )
+        .unwrap();
+        assert_ne!(artifact.compute_receipt.receipt_id, old_id);
+        assert_eq!(
+            artifact.compute_receipt.signature,
+            "native-receipt-signature"
+        );
+        let envelope = xlemma_xlmp::XlmpEnvelope::new(
+            None,
+            "test-sender",
+            Utc::now(),
+            xlemma_xlmp::XlmpMessage::ComputeReceipt(xlemma_xlmp::ComputeReceiptMessage {
+                receipt: artifact.compute_receipt,
+            }),
+            "envelope-signature",
+        )
+        .unwrap();
+        assert!(envelope.validate_integrity().is_ok());
     }
 
     #[test]

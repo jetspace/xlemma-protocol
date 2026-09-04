@@ -172,3 +172,18 @@ Every major concept requested or developed in the design is mapped to its primar
 | Production readiness gates | `docs/PRODUCTION_CHECKLIST.md` | Formal, economic, contract, privacy, legal and operations checklist |
 | Prior art and protocol differentiation | `docs/PRIOR_ART_AND_DIFFERENTIATION.md` | Comparative positioning and defensibility |
 | Snapshot validation status | `docs/VALIDATION_REPORT.md` | Executed checks and explicit unexecuted native suites |
+
+## Audit regression coverage
+
+| Requirement | Implementation and evidence |
+|---|---|
+| Certificates cannot invent or omit checker evidence | `xlemma-api::validate_certificate_evidence`, `formal_certificate_requires_complete_policy_bound_evidence` |
+| Certificate content changes require a new ID | `PoIRCertificate::derive_certificate_id`, XLMP integrity validation, `certificate_content_changes_require_a_new_identity` |
+| API and recovery preserve the same prerequisite graph | Shared `ProtocolProjection`, orphan ingress/restart tests, capsule substitution and publication-order regressions |
+| Failed persistence cannot be acknowledged later | `event_store` partial-line, failed-write, exclusive-writer and symlink tests |
+| Rewrapping or a lost response cannot repeat payment | x402 issued-record check and consumed network/payment IDs; `uncertain_external_settlement_cannot_be_retried` |
+| Retrieval applies resource budgets before reads | `validate_manifest_limits`, `retrieval_checks_declared_budget_before_opening_payloads` |
+| Native ASTRA receipts actually enter XLMP | `converted_provider_receipt_passes_native_xlmp_ingress`; separate native signing operation |
+| Cash routing cannot trap dust or unconsumed compounding funds | `RevenueRouter` dust/no-op-vault and callback reentrancy tests |
+| Packaging excludes common local credentials | Shared `scripts/source_inventory.py`, Python inventory regressions, structural CI |
+| Participant journeys run in CI | Lean job's participant conformance step, `scripts/simulate_use_cases.py` |

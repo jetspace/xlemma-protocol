@@ -185,7 +185,9 @@ impl<S: AvailabilityReceiptSigner> FilesystemStorageAdapter<S> {
                 )
                 .to_hex()
             ),
-            available_until: observed_at + self.retention,
+            available_until: observed_at
+                .checked_add_signed(self.retention)
+                .ok_or(StorageError::InvalidBundle)?,
             observed_at,
             signature: String::new(),
         };
@@ -264,6 +266,11 @@ impl<S: AvailabilityReceiptSigner> FilesystemStorageAdapter<S> {
             return Err(StorageError::BundleTooLarge);
         }
         let manifest: ArtifactManifest = serde_json::from_slice(&manifest_bytes)?;
+        // Validate declared limits and identity before reading any payload.
+        validate_manifest_limits(&manifest)?;
+        if manifest.derive_artifact_id()? != artifact_id {
+            return Err(StorageError::InvalidBundle);
+        }
         let mut payloads = Vec::with_capacity(manifest.entries.len());
         for entry in &manifest.entries {
             validate_relative_path(Path::new(&entry.path))?;
@@ -273,12 +280,15 @@ impl<S: AvailabilityReceiptSigner> FilesystemStorageAdapter<S> {
                 return Err(StorageError::OutsideRoot(path.display().to_string()));
             }
             let mut file = open_regular_file_without_following_symlinks(&path)?;
+            if file.metadata()?.len() != entry.byte_length {
+                return Err(StorageError::InvalidBundle);
+            }
             let mut bytes = Vec::new();
             Read::by_ref(&mut file)
-                .take(MAX_BUNDLE_FILE_BYTES + 1)
+                .take(entry.byte_length + 1)
                 .read_to_end(&mut bytes)?;
-            if bytes.len() as u64 > MAX_BUNDLE_FILE_BYTES {
-                return Err(StorageError::BundleTooLarge);
+            if bytes.len() as u64 != entry.byte_length {
+                return Err(StorageError::InvalidBundle);
             }
             payloads.push(ArtifactPayload {
                 path: entry.path.clone(),
@@ -315,6 +325,7 @@ fn storage_adapter_error(error: StorageError) -> AdapterError {
 
 pub fn validate_stored_bundle(bundle: &StoredArtifactBundle) -> Result<(), StorageError> {
     bundle.artifact_id.validate()?;
+    validate_manifest_limits(&bundle.manifest)?;
     if bundle.manifest.derive_artifact_id()? != bundle.artifact_id
         || bundle.payloads.len() != bundle.manifest.entries.len()
         || bundle.payloads.len() > MAX_BUNDLE_ENTRIES
@@ -354,6 +365,25 @@ pub fn validate_stored_bundle(bundle: &StoredArtifactBundle) -> Result<(), Stora
             || total > MAX_BUNDLE_BYTES
         {
             return Err(StorageError::InvalidBundle);
+        }
+    }
+    Ok(())
+}
+
+fn validate_manifest_limits(manifest: &ArtifactManifest) -> Result<(), StorageError> {
+    if manifest.entries.is_empty() {
+        return Err(StorageError::EmptyBundle);
+    }
+    if manifest.entries.len() > MAX_BUNDLE_ENTRIES {
+        return Err(StorageError::BundleTooLarge);
+    }
+    let mut total = 0_u64;
+    for entry in &manifest.entries {
+        total = total
+            .checked_add(entry.byte_length)
+            .ok_or(StorageError::BundleTooLarge)?;
+        if entry.byte_length > MAX_BUNDLE_FILE_BYTES || total > MAX_BUNDLE_BYTES {
+            return Err(StorageError::BundleTooLarge);
         }
     }
     Ok(())
@@ -486,9 +516,16 @@ fn open_regular_file_without_following_symlinks(path: &Path) -> Result<File, std
     #[cfg(unix)]
     {
         use std::os::unix::fs::OpenOptionsExt;
-        options.custom_flags(libc::O_NOFOLLOW);
+        options.custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK);
     }
-    options.open(path)
+    let file = options.open(path)?;
+    if !file.metadata()?.is_file() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "bundle input is not a regular file",
+        ));
+    }
+    Ok(file)
 }
 
 #[cfg(unix)]
@@ -856,5 +893,37 @@ mod tests {
 
         fs::remove_dir_all(source).unwrap();
         fs::remove_dir_all(storage_root).unwrap();
+    }
+    #[test]
+    fn retrieval_checks_declared_budget_before_opening_payloads() {
+        let root = temp_root("oversized-declaration");
+        let adapter = FilesystemStorageAdapter::new(
+            root.clone(),
+            NodeId::derive(&"storage").unwrap(),
+            OperatorClusterId::derive(&"operator").unwrap(),
+            "provider".into(),
+            "region".into(),
+            Duration::days(1),
+            TestReceiptSigner,
+        )
+        .unwrap();
+        let mut manifest: ArtifactManifest =
+            serde_json::from_str(include_str!("../../../examples/no-arbitrage/artifact.json"))
+                .unwrap();
+        manifest.entries[0].byte_length = MAX_BUNDLE_FILE_BYTES + 1;
+        // No payload files exist: the declared budget must fail before any open.
+        let id = ArtifactId::derive(&"oversized-store").unwrap();
+        let directory = adapter.artifact_directory(&id);
+        fs::create_dir(&directory).unwrap();
+        fs::write(
+            directory.join(".xlemma-manifest.json"),
+            serde_json::to_vec(&manifest).unwrap(),
+        )
+        .unwrap();
+        assert!(matches!(
+            adapter.get_bundle(id),
+            Err(StorageError::BundleTooLarge)
+        ));
+        fs::remove_dir_all(root).unwrap();
     }
 }

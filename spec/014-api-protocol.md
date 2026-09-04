@@ -47,3 +47,26 @@ DRAFT → CLAIM_COMMITTED → QUOTED → FUNDED → ASSIGNED
 A changed formal claim, proof object, artifact root, theory, or trust policy MUST create a new object/job rather than mutate a running job.
 
 API responses SHOULD include stable IDs, state, policy, timestamps, and receipt links. Error responses MUST distinguish mathematical failure, checker error, insufficient quorum, payment failure, and divergence.
+
+## Reference ingress and recovery requirements
+
+The API and journal replay use the same `ProtocolProjection` validator. A claim
+requires its accepted theory; proofs require their claim; certificates require
+their proof; capsules bind the exact claim, theory, artifact, rights and
+contribution roots. Publication requires matching licenses and finalization,
+and cannot precede finalization or bypass an unresolved challenge.
+
+Formal certificate ingress MUST resolve the immutable verification job and
+check the complete accepted receipt set against its committee roster and formal
+policy. Receipts accepted through either observation endpoint participate.
+Omitting dissent, substituting roots or a policy, inventing operator clusters,
+or shortening the policy challenge period MUST fail. Caller timestamps MUST
+NOT advance live finalization or publication into the future.
+
+On Unix, the local journal uses a nonblocking exclusive advisory file lock,
+refuses symlink/non-regular journal files, and creates files with mode 0600.
+An incomplete final line fails recovery. Any write or fsync failure disables
+further appends for that writer; recovery is an operator action. This does not
+provide cross-host consensus, rollback protection, or a distributed outbox.
+Historical records failing the strengthened checks MUST NOT be silently
+rewritten: preserve the original journal and rebuild a reviewed valid history.

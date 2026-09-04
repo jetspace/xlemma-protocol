@@ -320,3 +320,15 @@ An XLMP/1 implementation is conforming only if it:
 The reference Rust crate is `xlemma-xlmp`. The JSON Schema authority is
 `schemas/xlmp-envelope.schema.json`; neither artifact is privileged over the
 normative rules in this specification.
+
+## Formal certificate content identity
+
+`PoIRCertificate.certificate_id` MUST use the `CertificateId` domain-separated
+JCS derivation over the complete certificate object excluding only
+`certificate_id` and `aggregate_signature`. Every evidence root, receipt and
+operator list, policy, assurance label, and timestamp is identity material.
+Structural validation is distinct from authenticating and evaluating the job's
+complete independently produced observation set. The latter is mandatory before
+an API accepts the certificate. An arbitrary well-formed CertificateID is not
+sufficient. This tightens the draft reference encoding; earlier certificates
+with label-derived IDs are not valid under this profile.

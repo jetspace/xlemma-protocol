@@ -1,7 +1,7 @@
 {
   "protocol_version": "XLMP/1",
   "report_version": "xlemma-use-case-simulation-v2",
-  "generated_at": "2026-09-04T20:00:00Z",
+  "generated_at": "2026-09-04T19:14:02.084276Z",
   "summary": {
     "scenario_count": 11,
     "passed_scenarios": 11,
@@ -9,7 +9,7 @@
     "gate_count": 20,
     "passed_gates": 20,
     "failed_gates": 0,
-    "rust_test_count": 173
+    "rust_test_count": 184
   },
   "gates": [
     {
