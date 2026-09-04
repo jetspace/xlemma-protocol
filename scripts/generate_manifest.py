@@ -12,13 +12,17 @@ EXCLUDED_PARTS = {".git", "target", ".lake", "out", "cache", "__pycache__"}
 
 
 def source_files() -> list[Path]:
-    return sorted(
-        path
-        for path in ROOT.rglob("*")
-        if path.is_file()
-        and path != MANIFEST
-        and not any(part in EXCLUDED_PARTS for part in path.relative_to(ROOT).parts)
-    )
+    files: list[Path] = []
+    for path in ROOT.rglob("*"):
+        if path.is_symlink():
+            raise RuntimeError(f"refusing symlink in source manifest: {path.relative_to(ROOT)}")
+        if (
+            path.is_file()
+            and path != MANIFEST
+            and not any(part in EXCLUDED_PARTS for part in path.relative_to(ROOT).parts)
+        ):
+            files.append(path)
+    return sorted(files)
 
 
 def sha256(path: Path) -> str:

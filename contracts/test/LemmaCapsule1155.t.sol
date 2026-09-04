@@ -17,13 +17,7 @@ contract LemmaCapsule1155Test is Test {
     function testProofCapsuleIsUniqueAndNonTransferable() public {
         uint256 tokenId = 1;
         token.mintType(
-            holder,
-            tokenId,
-            1,
-            LemmaCapsule1155.TokenKind.ProofCapsule,
-            keccak256("manifest"),
-            originator,
-            ""
+            holder, tokenId, 1, LemmaCapsule1155.TokenKind.ProofCapsule, keccak256("manifest"), originator, ""
         );
 
         vm.prank(holder);

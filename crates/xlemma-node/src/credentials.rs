@@ -3,10 +3,12 @@
 use chrono::{DateTime, Utc};
 use std::collections::BTreeMap;
 use thiserror::Error;
+use xlemma_consensus::CommitteeAdmissionVerifier;
 use xlemma_core::{
-    canonical_json_hash, CredentialReference, CredentialRevocation, CredentialRevocationId,
-    CredentialTier, NodeCredential, NodeCredentialChain, NodeCredentialId, NodeRole,
-    OperatorCredential, OperatorCredentialId, UserCredential, UserCredentialId,
+    canonical_json_hash, CommitteeRequirement, CredentialReference, CredentialRevocation,
+    CredentialRevocationId, CredentialTier, EligibleNode, NodeCredential, NodeCredentialChain,
+    NodeCredentialId, NodeRole, OperatorCredential, OperatorCredentialId, UserCredential,
+    UserCredentialId,
 };
 
 /// Cryptographic verification is deliberately adapter-owned. Implementations
@@ -47,6 +49,43 @@ pub struct CredentialRegistry {
     operators: BTreeMap<OperatorCredentialId, OperatorCredential>,
     nodes: BTreeMap<NodeCredentialId, NodeCredential>,
     revocations: BTreeMap<CredentialRevocationId, CredentialRevocation>,
+}
+
+/// Bridges append-only credential registration and cryptographic proof checks
+/// into committee sortition. A candidate is never admitted from structural
+/// credential strings alone.
+pub struct RegistryCommitteeAdmission<'a, V> {
+    registry: &'a CredentialRegistry,
+    proof_verifier: &'a V,
+}
+
+impl<'a, V> RegistryCommitteeAdmission<'a, V> {
+    pub fn new(registry: &'a CredentialRegistry, proof_verifier: &'a V) -> Self {
+        Self {
+            registry,
+            proof_verifier,
+        }
+    }
+}
+
+impl<V: CredentialProofVerifier> CommitteeAdmissionVerifier for RegistryCommitteeAdmission<'_, V> {
+    fn verify_candidate(
+        &self,
+        node: &EligibleNode,
+        requirement: &CommitteeRequirement,
+        selected_at: DateTime<Utc>,
+    ) -> bool {
+        self.registry
+            .validate_chain(
+                &node.credential_chain,
+                requirement.role,
+                requirement.minimum_credential_tier,
+                &requirement.required_qualifications,
+                selected_at,
+                self.proof_verifier,
+            )
+            .is_ok()
+    }
 }
 
 impl CredentialRegistry {

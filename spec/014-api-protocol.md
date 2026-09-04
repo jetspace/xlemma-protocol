@@ -4,8 +4,17 @@ The HTTP API is an XLMP transport adapter. The canonical ingress is `POST /xlmp/
 
 Before accepting a message as authenticated, a deployment MUST verify its
 signature against the configured XLMP signature profile and sender identity.
-The prototype Rust ingress checks canonical content identity and append-only
-storage only; it is not a production authentication boundary.
+The Rust reference ingress requires an API bearer token, verifies the baseline
+Ed25519 XLMP profile against an explicit signer allowlist, binds observation
+signers one-to-one to NodeIDs and committed committee identities, rejects
+unknown or non-canonical typed XLMP fields, and requires a prior signed commit.
+Committee reveals must match the exact stored job roster and server-side trust
+policy. Production deployments must replace its in-memory state with a durable
+transactional nonce/message/job store and implement key rotation.
+
+Payment offers MUST be derived from authorized server-side job and quote state.
+The reference HTTP server does not expose a payment-offer constructor; the
+provider-neutral `xlemma-x402` codec remains available to a payment adapter.
 
 The protocol-level lifecycle is `CLAIM → COMMIT → FORMALIZE → PROVE → REPRODUCE → CERTIFY → CHALLENGE → FINALIZE → PUBLISH → REUSE → REWARD → REVALIDATE`. The implementation-level verification sequence below refines part of that lifecycle:
 

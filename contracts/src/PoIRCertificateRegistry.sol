@@ -40,16 +40,11 @@ contract PoIRCertificateRegistry is AccessControl {
     mapping(bytes32 => Certificate) public certificates;
 
     event Submitted(
-        bytes32 indexed certificateId,
-        bytes32 indexed claimId,
-        bytes32 indexed policyId,
-        uint64 challengeEndsAt
+        bytes32 indexed certificateId, bytes32 indexed claimId, bytes32 indexed policyId, uint64 challengeEndsAt
     );
     event Challenged(bytes32 indexed certificateId, bytes32 indexed evidenceRoot);
     event ChallengeDismissed(
-        bytes32 indexed certificateId,
-        bytes32 indexed resolutionEvidenceRoot,
-        uint64 newChallengeEndsAt
+        bytes32 indexed certificateId, bytes32 indexed resolutionEvidenceRoot, uint64 newChallengeEndsAt
     );
     event Finalized(bytes32 indexed certificateId);
     event Quarantined(bytes32 indexed certificateId, bytes32 indexed evidenceRoot);
@@ -69,6 +64,20 @@ contract PoIRCertificateRegistry is AccessControl {
         _grantRole(RESOLVER_ROLE, administrator);
     }
 
+    function deriveCertificateId(
+        bytes32 claimId,
+        bytes32 proofId,
+        bytes32 artifactRoot,
+        bytes32 policyId,
+        bytes32 observationRoot,
+        bytes32 dissentRoot,
+        uint64 challengePeriod
+    ) public pure returns (bytes32) {
+        return keccak256(
+            abi.encode(claimId, proofId, artifactRoot, policyId, observationRoot, dissentRoot, challengePeriod)
+        );
+    }
+
     function submit(
         bytes32 certificateId,
         bytes32 claimId,
@@ -81,9 +90,12 @@ contract PoIRCertificateRegistry is AccessControl {
     ) external onlyRole(AGGREGATOR_ROLE) {
         if (certificates[certificateId].state != CertificateState.Unset) revert InvalidState();
         if (
-            certificateId == bytes32(0) || claimId == bytes32(0) ||
-            artifactRoot == bytes32(0) || policyId == bytes32(0) ||
-            observationRoot == bytes32(0) || challengePeriod < MINIMUM_CHALLENGE_PERIOD
+            certificateId == bytes32(0)
+                || certificateId
+                    != deriveCertificateId(
+                        claimId, proofId, artifactRoot, policyId, observationRoot, dissentRoot, challengePeriod
+                    ) || claimId == bytes32(0) || proofId == bytes32(0) || artifactRoot == bytes32(0)
+                || policyId == bytes32(0) || observationRoot == bytes32(0) || challengePeriod < MINIMUM_CHALLENGE_PERIOD
         ) revert InvalidInput();
 
         uint64 submittedAt = uint64(block.timestamp);
@@ -104,10 +116,7 @@ contract PoIRCertificateRegistry is AccessControl {
         emit Submitted(certificateId, claimId, policyId, challengeEndsAt);
     }
 
-    function challenge(bytes32 certificateId, bytes32 evidenceRoot)
-        external
-        onlyRole(CHALLENGER_ROLE)
-    {
+    function challenge(bytes32 certificateId, bytes32 evidenceRoot) external onlyRole(CHALLENGER_ROLE) {
         Certificate storage certificate = certificates[certificateId];
         if (certificate.state == CertificateState.Unset) revert MissingCertificate();
         if (certificate.state != CertificateState.Pending) revert InvalidState();
@@ -119,32 +128,25 @@ contract PoIRCertificateRegistry is AccessControl {
     }
 
     /// @notice Dismisses a failed challenge and opens a fresh safety window.
-    function dismissChallenge(
-        bytes32 certificateId,
-        bytes32 resolutionEvidenceRoot,
-        uint64 renewedChallengePeriod
-    ) external onlyRole(RESOLVER_ROLE) {
+    function dismissChallenge(bytes32 certificateId, bytes32 resolutionEvidenceRoot, uint64 renewedChallengePeriod)
+        external
+        onlyRole(RESOLVER_ROLE)
+    {
         Certificate storage certificate = certificates[certificateId];
         if (certificate.state != CertificateState.Challenged) revert InvalidState();
-        if (
-            resolutionEvidenceRoot == bytes32(0) ||
-            renewedChallengePeriod < MINIMUM_CHALLENGE_PERIOD
-        ) revert InvalidInput();
+        if (resolutionEvidenceRoot == bytes32(0) || renewedChallengePeriod < MINIMUM_CHALLENGE_PERIOD) {
+            revert InvalidInput();
+        }
         certificate.resolutionEvidenceRoot = resolutionEvidenceRoot;
         certificate.challengeEndsAt = uint64(block.timestamp) + renewedChallengePeriod;
         certificate.state = CertificateState.Pending;
-        emit ChallengeDismissed(
-            certificateId,
-            resolutionEvidenceRoot,
-            certificate.challengeEndsAt
-        );
+        emit ChallengeDismissed(certificateId, resolutionEvidenceRoot, certificate.challengeEndsAt);
     }
 
-    function resolveChallenge(
-        bytes32 certificateId,
-        bool reject,
-        bytes32 resolutionEvidenceRoot
-    ) external onlyRole(RESOLVER_ROLE) {
+    function resolveChallenge(bytes32 certificateId, bool reject, bytes32 resolutionEvidenceRoot)
+        external
+        onlyRole(RESOLVER_ROLE)
+    {
         Certificate storage certificate = certificates[certificateId];
         if (certificate.state != CertificateState.Challenged) revert InvalidState();
         if (resolutionEvidenceRoot == bytes32(0)) revert InvalidInput();
@@ -168,10 +170,7 @@ contract PoIRCertificateRegistry is AccessControl {
     }
 
     /// @notice Emergency fail-closed path for newly discovered checker compromise.
-    function quarantine(bytes32 certificateId, bytes32 evidenceRoot)
-        external
-        onlyRole(RESOLVER_ROLE)
-    {
+    function quarantine(bytes32 certificateId, bytes32 evidenceRoot) external onlyRole(RESOLVER_ROLE) {
         Certificate storage certificate = certificates[certificateId];
         if (certificate.state == CertificateState.Unset) revert MissingCertificate();
         if (evidenceRoot == bytes32(0)) revert InvalidInput();
@@ -180,14 +179,13 @@ contract PoIRCertificateRegistry is AccessControl {
         emit Quarantined(certificateId, evidenceRoot);
     }
 
-    function isFinalFor(bytes32 certificateId, bytes32 claimId, bytes32 policyId)
+    function isFinalFor(bytes32 certificateId, bytes32 claimId, bytes32 artifactRoot, bytes32 policyId)
         external
         view
         returns (bool)
     {
         Certificate storage certificate = certificates[certificateId];
-        return certificate.state == CertificateState.Final
-            && certificate.claimId == claimId
-            && certificate.policyId == policyId;
+        return certificate.state == CertificateState.Final && certificate.claimId == claimId
+            && certificate.artifactRoot == artifactRoot && certificate.policyId == policyId;
     }
 }

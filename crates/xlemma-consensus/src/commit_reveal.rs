@@ -28,8 +28,8 @@ mod tests {
     fn commitment_binds_verdict_and_root() {
         let job = JobId::derive(&"job").unwrap();
         let salt = "secret";
-        let receipt = ObservationReceipt {
-            receipt_id: ReceiptId::derive(&"receipt").unwrap(),
+        let mut receipt = ObservationReceipt {
+            receipt_id: ReceiptId::derive(&"pending-receipt").unwrap(),
             job_id: job.clone(),
             node_id: NodeId::derive(&"node").unwrap(),
             verified_user_id: VerifiedUserId::derive(&"user").unwrap(),
@@ -50,19 +50,22 @@ mod tests {
             dependency_root: "dependencies".into(),
             axiom_set_root: "axioms".into(),
             execution_trace_root: "trace".into(),
-            observation_root: "observation".into(),
+            observation_root: String::new(),
             verdict: ObservationVerdict::Pass,
-            commitment: observation_commitment(
-                &job,
-                ObservationVerdict::Pass,
-                "observation",
-                salt.as_bytes(),
-            ),
+            commitment: String::new(),
             reveal_salt: salt.into(),
             committed_at: Utc::now(),
             revealed_at: Utc::now(),
             signature: "test".into(),
         };
+        receipt.observation_root = receipt.expected_observation_root().unwrap();
+        receipt.commitment = observation_commitment(
+            &job,
+            ObservationVerdict::Pass,
+            &receipt.observation_root,
+            salt.as_bytes(),
+        );
+        receipt.receipt_id = receipt.expected_receipt_id().unwrap();
         assert!(verify_reveal(&receipt, salt.as_bytes()));
         assert!(!verify_reveal(&receipt, b"wrong"));
     }

@@ -24,6 +24,7 @@ contract NodeBondRegistry is AccessControl, ReentrancyGuard {
 
     IERC20 public immutable bondAsset;
     uint64 public immutable unbondDelay;
+    uint256 public totalBonded;
     mapping(bytes32 => Node) public nodes;
 
     event Registered(bytes32 indexed nodeId, address indexed owner, bytes32 operatorClusterId);
@@ -39,6 +40,7 @@ contract NodeBondRegistry is AccessControl, ReentrancyGuard {
     error InvalidAmount();
     error InvalidState();
     error DelayOpen();
+    error UnsupportedAssetBehavior();
 
     constructor(IERC20 bondAsset_, address administrator, uint64 unbondDelay_) {
         if (address(bondAsset_) == address(0) || administrator == address(0)) {
@@ -67,6 +69,7 @@ contract NodeBondRegistry is AccessControl, ReentrancyGuard {
             // Operator identity is immutable for a NodeID. A changed operator
             // must register a new NodeID and rebuild reputation.
             if (node.operatorClusterId != operatorClusterId) revert InvalidState();
+            if (node.pendingUnbond != 0) revert InvalidState();
         }
         node.rolesRoot = rolesRoot;
         node.active = true;
@@ -93,8 +96,13 @@ contract NodeBondRegistry is AccessControl, ReentrancyGuard {
         Node storage node = nodes[nodeId];
         if (node.owner != msg.sender) revert Unauthorized();
         if (amount == 0) revert InvalidAmount();
+        uint256 beforeBalance = bondAsset.balanceOf(address(this));
         bondAsset.safeTransferFrom(msg.sender, address(this), amount);
+        if (bondAsset.balanceOf(address(this)) != beforeBalance + amount) {
+            revert UnsupportedAssetBehavior();
+        }
         node.bonded += amount;
+        totalBonded += amount;
         emit Bonded(nodeId, amount);
     }
 
@@ -120,7 +128,8 @@ contract NodeBondRegistry is AccessControl, ReentrancyGuard {
         node.pendingUnbond = 0;
         node.unbondAvailableAt = 0;
         node.bonded -= amount;
-        bondAsset.safeTransfer(msg.sender, amount);
+        totalBonded -= amount;
+        _pushExact(msg.sender, amount);
         emit UnbondWithdrawn(nodeId, amount);
     }
 
@@ -132,17 +141,27 @@ contract NodeBondRegistry is AccessControl, ReentrancyGuard {
         nonReentrant
     {
         Node storage node = nodes[nodeId];
-        if (
-            amount == 0 || amount > node.bonded || evidenceRoot == bytes32(0) ||
-            recipient == address(0)
-        ) revert InvalidAmount();
+        if (amount == 0 || amount > node.bonded || evidenceRoot == bytes32(0) || recipient == address(0)) {
+            revert InvalidAmount();
+        }
         node.bonded -= amount;
+        totalBonded -= amount;
         if (node.pendingUnbond > node.bonded) {
             node.pendingUnbond = node.bonded;
         }
         node.active = false;
-        bondAsset.safeTransfer(recipient, amount);
+        _pushExact(recipient, amount);
         emit ActiveStateChanged(nodeId, false);
         emit Slashed(nodeId, amount, evidenceRoot, recipient);
+    }
+
+    function _pushExact(address recipient, uint256 amount) internal {
+        uint256 beforeRegistry = bondAsset.balanceOf(address(this));
+        uint256 beforeRecipient = bondAsset.balanceOf(recipient);
+        bondAsset.safeTransfer(recipient, amount);
+        if (
+            bondAsset.balanceOf(address(this)) + amount != beforeRegistry
+                || bondAsset.balanceOf(recipient) != beforeRecipient + amount
+        ) revert UnsupportedAssetBehavior();
     }
 }

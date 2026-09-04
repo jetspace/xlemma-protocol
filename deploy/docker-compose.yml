@@ -5,11 +5,12 @@ services:
       dockerfile: Dockerfile
     environment:
       XLEMMA_BIND: 0.0.0.0:8080
+      XLEMMA_API_AUTH_TOKEN: ${XLEMMA_API_AUTH_TOKEN:?set a random API bearer token of at least 32 characters}
+      XLEMMA_TRUSTED_SIGNERS: ${XLEMMA_TRUSTED_SIGNERS:?set comma-separated ed25519 signer identifiers}
+      XLEMMA_TRUSTED_NODE_SIGNERS: ${XLEMMA_TRUSTED_NODE_SIGNERS:?set a JSON map from NodeID to Ed25519 signer}
       RUST_LOG: info,xlemma_api=debug
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-6-astra}
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     read_only: true
     tmpfs:
       - /tmp:size=256m,noexec,nosuid,nodev
@@ -21,14 +22,12 @@ services:
         condition: service_healthy
       nats:
         condition: service_started
-      minio:
-        condition: service_started
 
   postgres:
-    image: postgres:17-alpine
+    image: postgres:17.11-alpine3.24@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73
     environment:
       POSTGRES_USER: xlemma
-      POSTGRES_PASSWORD: xlemma-local-only
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set a random database password}
       POSTGRES_DB: xlemma
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U xlemma"]
@@ -39,23 +38,11 @@ services:
       - postgres-data:/var/lib/postgresql/data
 
   nats:
-    image: nats:2.11-alpine
-    command: ["-js", "-sd", "/data"]
+    image: nats:2.12.15-alpine3.22@sha256:b270f5e2428354c0335612694d7dd2fb588148e567a5757fdff325ef9c9332e6
+    command: ["-js", "-sd", "/data", "--user", "${NATS_USER:?set a NATS user}", "--pass", "${NATS_PASSWORD:?set a NATS password}"]
     volumes:
       - nats-data:/data
-
-  minio:
-    image: minio/minio:latest
-    command: server /data --console-address :9001
-    environment:
-      MINIO_ROOT_USER: xlemma-local
-      MINIO_ROOT_PASSWORD: xlemma-local-password
-    ports:
-      - "9001:9001"
-    volumes:
-      - minio-data:/data
 
 volumes:
   postgres-data:
   nats-data:
-  minio-data:

@@ -51,7 +51,7 @@ Controls: TheoryID, exact challenge, pinned toolchain, dependency lock, artifact
 
 ### Malicious Lean metaprogram or build script
 
-Controls: no-network sandbox, read-only root, explicit writable paths, process/memory/CPU/time limits, seccomp or equivalent, immutable build image, artifact size limits, and checker replay outside the sandbox. The included local runner is not a production sandbox.
+Controls: no-network sandbox, read-only root, explicit writable paths, process/memory/CPU/time limits, seccomp or equivalent, immutable build image, artifact size limits, bounded receipt output, and checker replay outside the sandbox. `LocalCommandRunner` refuses all execution; a separately administered `SandboxRunner` and receipt signer are mandatory.
 
 ### Shared checker implementation defect
 
@@ -76,7 +76,7 @@ history and removes eligibility; it does not rewrite old observations.
 
 ### False node-market advertisement or discovery manipulation
 
-Controls: content-derived AdvertisementIDs, signed bounded validity windows,
+Controls: content-derived AdvertisementIDs, cryptographically verified bounded validity windows,
 monotonic append-only supersession, exact price units/assets/decimals, checked
 integer arithmetic, capacity and latency constraints, checker-family binding,
 evidence-backed reputation snapshots and bonds, reproducible ordered discovery
@@ -104,11 +104,11 @@ Controls: commit-reveal, execution-trace roots, timing analysis, custody challen
 
 ### Front-running a proof or bounty
 
-Controls: claim and solution commitments, encrypted submissions, reveal deadlines, and exact artifact/salt/solver binding.
+Controls: content-derived proof, certificate, and bounty identifiers; account-namespaced vault registration; claim and solution commitments; encrypted submissions; reveal deadlines; and exact artifact/salt/solver/certificate binding.
 
 ### Research-credit insolvency
 
-Controls: backing ≥ total supply, atomic burn-and-release, no issuance against token price or expected profits, external asset reconciliation, pause circuit breaker, and invariant tests.
+Controls: backing ≥ total supply, vault-address-only mint/burn authority, internally owned authorization records, atomic burn-and-release, exact-balance rejection of fee/rebase behavior, no issuance against token price or expected profits, external asset reconciliation, and invariant tests.
 
 ### Payment replay or duplicate settlement
 
@@ -120,11 +120,12 @@ Controls: the XLMP protocol name, major version, MessageID, signer, policy roots
 
 ### Forged or unauthenticated XLMP envelope
 
-Controls: deployment-approved signature profiles, sender-key resolution,
-domain-separated signing bytes, replay/idempotency policy, and append-only
-MessageID storage. The prototype HTTP ingress checks content integrity and a
-nonempty signature field but does not authenticate it; it MUST remain behind
-an authenticating gateway until signature verification is implemented.
+Controls: mandatory API bearer authentication outside `/health`, an explicit
+Ed25519 sender allowlist, a NodeID-to-signer map, domain-separated signing
+bytes, cryptographically verified inner observation signatures, prior signed
+commit lookup, job-specific committee-roster matching, body/concurrency limits,
+and append-only MessageID storage. The reference nonce and state stores remain
+in-memory and must be replaced by durable transactional stores before HA use.
 
 ### Revenue fabrication
 
@@ -136,7 +137,7 @@ Controls: only final proof-term dependencies, equivalence clusters, fixed upstre
 
 ### Novelty cartel or popularity contest
 
-Controls: independent corpus evidence, capped reviewer weights, calibration scoring, conflict disclosure, minority reports, challenge periods, and later replacement by observed impact.
+Controls: cryptographically verified review and calibration evidence, unique reviewer nodes and operator clusters, independent corpus evidence, capped reviewer weights, conflict disclosure, minority reports, challenge periods, and later replacement by observed impact.
 
 ### Rights laundering
 
@@ -166,7 +167,7 @@ Slashing requires objectively provable misconduct: equivocation, false artifact 
 - Rights disputes can exceed what on-chain evidence resolves.
 - Stable backing can face issuer, chain, bridge, custody, and regulatory risk.
 - Succinct proof systems add their own trusted setup, circuit, and implementation assumptions.
-- The prototype HTTP ingress does not yet authenticate XLMP signatures.
+- The prototype HTTP ingress uses one baseline Ed25519 profile; production key rotation, threshold keys, durable replay state, and issuer-backed key resolution remain deployment work.
 - Public beacon/VRF authentication and decentralized eligible-set publication are not yet integrated into the prototype service.
 - Capacity, latency, hardware, reputation evidence, and operator clustering still require independent measurement and challenge infrastructure.
 - The reference credential registry supplies deterministic structure and an adapter boundary; production issuer, delegation-signature, key-resolution, privacy, and accumulator-proof implementations remain deployment work.

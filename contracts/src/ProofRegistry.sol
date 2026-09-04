@@ -42,6 +42,7 @@ contract ProofRegistry is AccessControl {
     event RecordQuarantined(bytes32 indexed recordId, bytes32 evidenceRoot);
     event RecordRevoked(bytes32 indexed recordId, bytes32 evidenceRoot);
     event RecordSuperseded(bytes32 indexed oldRecordId, bytes32 indexed newRecordId);
+    event RecordCertified(bytes32 indexed recordId, bytes32 certificateRoot);
 
     error RecordExists();
     error RecordMissing();
@@ -59,12 +60,32 @@ contract ProofRegistry is AccessControl {
         return records[recordId];
     }
 
+    function deriveRecordId(Record calldata proposed) public pure returns (bytes32) {
+        return keccak256(
+            abi.encode(
+                proposed.theoryId,
+                proposed.claimId,
+                proposed.proofId,
+                proposed.artifactRoot,
+                proposed.policyId,
+                proposed.parentRecordId
+            )
+        );
+    }
+
     function commitRecord(bytes32 recordId, Record calldata proposed) external {
-        if (recordId == bytes32(0) || proposed.claimId == bytes32(0) || proposed.artifactRoot == bytes32(0)) {
+        if (
+            recordId == bytes32(0) || recordId != deriveRecordId(proposed) || proposed.theoryId == bytes32(0)
+                || proposed.claimId == bytes32(0) || proposed.proofId == bytes32(0)
+                || proposed.artifactRoot == bytes32(0) || proposed.policyId == bytes32(0)
+        ) {
             revert InvalidInput();
         }
         if (records[recordId].createdAt != 0) revert RecordExists();
         if (proposed.status != FormalStatus.Committed) revert InvalidTransition();
+        if (proposed.parentRecordId != bytes32(0) && records[proposed.parentRecordId].createdAt == 0) {
+            revert RecordMissing();
+        }
 
         records[recordId] = Record({
             theoryId: proposed.theoryId,
@@ -84,25 +105,24 @@ contract ProofRegistry is AccessControl {
     /// @notice Attaches the first independent reproduction certificate.
     ///         Later assurance upgrades SHOULD create a child record so the
     ///         original certificate remains immutable and independently auditable.
-    function attachCertificate(
-        bytes32 recordId,
-        bytes32 certificateRoot,
-        FormalStatus status,
-        uint64 challengeEndsAt
-    ) external onlyRole(CERTIFIER_ROLE) {
+    function attachCertificate(bytes32 recordId, bytes32 certificateRoot, FormalStatus status, uint64 challengeEndsAt)
+        external
+        onlyRole(CERTIFIER_ROLE)
+    {
         Record storage record = records[recordId];
         if (record.createdAt == 0) revert RecordMissing();
         if (record.status != FormalStatus.Committed || record.certificateRoot != bytes32(0)) {
             revert InvalidTransition();
         }
         if (
-            certificateRoot == bytes32(0) ||
-            (
-                status != FormalStatus.Reproduced &&
-                status != FormalStatus.Certified &&
-                status != FormalStatus.Rejected &&
-                status != FormalStatus.Divergent
-            )
+            certificateRoot == bytes32(0)
+                || (status != FormalStatus.Reproduced
+                    && status != FormalStatus.Rejected
+                    && status != FormalStatus.Divergent)
+        ) revert InvalidTransition();
+        if (
+            status == FormalStatus.Reproduced && challengeEndsAt <= block.timestamp || status != FormalStatus.Reproduced
+                && challengeEndsAt != 0
         ) revert InvalidTransition();
         record.certificateRoot = certificateRoot;
         record.status = status;
@@ -110,10 +130,18 @@ contract ProofRegistry is AccessControl {
         emit CertificateAttached(recordId, certificateRoot, status);
     }
 
-    function quarantine(bytes32 recordId, bytes32 evidenceRoot)
-        external
-        onlyRole(QUARANTINE_ROLE)
-    {
+    function finalizeCertificate(bytes32 recordId) external {
+        Record storage record = records[recordId];
+        if (record.createdAt == 0) revert RecordMissing();
+        if (
+            record.status != FormalStatus.Reproduced || record.challengeEndsAt == 0
+                || block.timestamp <= record.challengeEndsAt
+        ) revert InvalidTransition();
+        record.status = FormalStatus.Certified;
+        emit RecordCertified(recordId, record.certificateRoot);
+    }
+
+    function quarantine(bytes32 recordId, bytes32 evidenceRoot) external onlyRole(QUARANTINE_ROLE) {
         Record storage record = records[recordId];
         if (record.createdAt == 0) revert RecordMissing();
         if (evidenceRoot == bytes32(0)) revert InvalidInput();
@@ -121,10 +149,7 @@ contract ProofRegistry is AccessControl {
         emit RecordQuarantined(recordId, evidenceRoot);
     }
 
-    function revoke(bytes32 recordId, bytes32 evidenceRoot)
-        external
-        onlyRole(QUARANTINE_ROLE)
-    {
+    function revoke(bytes32 recordId, bytes32 evidenceRoot) external onlyRole(QUARANTINE_ROLE) {
         Record storage record = records[recordId];
         if (record.createdAt == 0) revert RecordMissing();
         if (evidenceRoot == bytes32(0)) revert InvalidInput();
@@ -132,19 +157,18 @@ contract ProofRegistry is AccessControl {
         emit RecordRevoked(recordId, evidenceRoot);
     }
 
-    function supersede(bytes32 oldRecordId, bytes32 newRecordId)
-        external
-        onlyRole(CERTIFIER_ROLE)
-    {
+    function supersede(bytes32 oldRecordId, bytes32 newRecordId) external onlyRole(CERTIFIER_ROLE) {
         if (oldRecordId == newRecordId) revert InvalidInput();
         Record storage oldRecord = records[oldRecordId];
         Record storage newRecord = records[newRecordId];
         if (oldRecord.createdAt == 0 || newRecord.createdAt == 0) revert RecordMissing();
-        if (oldRecord.status == FormalStatus.Superseded || newRecord.parentRecordId != bytes32(0)) {
+        if (
+            oldRecord.status == FormalStatus.Superseded || newRecord.parentRecordId != oldRecordId
+                || newRecord.createdAt < oldRecord.createdAt
+        ) {
             revert InvalidTransition();
         }
         oldRecord.status = FormalStatus.Superseded;
-        newRecord.parentRecordId = oldRecordId;
         emit RecordSuperseded(oldRecordId, newRecordId);
     }
 }

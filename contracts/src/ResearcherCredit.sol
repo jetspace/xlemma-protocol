@@ -7,44 +7,39 @@ import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 /// @notice Fully backed, restricted-transfer research service credit.
 /// @dev It is not a proof-validity vote and does not carry profit rights.
 contract ResearcherCredit is ERC20, AccessControl {
-    bytes32 public constant VAULT_ROLE = keccak256("VAULT_ROLE");
     bytes32 public constant TRANSFER_ENDPOINT_ROLE = keccak256("TRANSFER_ENDPOINT_ROLE");
 
     error InvalidAddress();
     error RestrictedTransfer(address from, address to);
 
     uint8 private immutable _creditDecimals;
+    address public immutable vault;
 
-    constructor(
-        string memory name_,
-        string memory symbol_,
-        uint8 decimals_,
-        address vault,
-        address administrator
-    ) ERC20(name_, symbol_) {
-        if (vault == address(0) || administrator == address(0)) revert InvalidAddress();
+    constructor(string memory name_, string memory symbol_, uint8 decimals_, address vault_, address administrator)
+        ERC20(name_, symbol_)
+    {
+        if (vault_ == address(0) || administrator == address(0)) revert InvalidAddress();
         _creditDecimals = decimals_;
+        vault = vault_;
         _grantRole(DEFAULT_ADMIN_ROLE, administrator);
-        _grantRole(VAULT_ROLE, vault);
-        _grantRole(TRANSFER_ENDPOINT_ROLE, vault);
+        _grantRole(TRANSFER_ENDPOINT_ROLE, vault_);
     }
 
     function decimals() public view override returns (uint8) {
         return _creditDecimals;
     }
 
-    function mint(address to, uint256 amount) external onlyRole(VAULT_ROLE) {
+    function mint(address to, uint256 amount) external {
+        if (msg.sender != vault) revert AccessControlUnauthorizedAccount(msg.sender, bytes32(0));
         _mint(to, amount);
     }
 
-    function burn(address from, uint256 amount) external onlyRole(VAULT_ROLE) {
+    function burn(address from, uint256 amount) external {
+        if (msg.sender != vault) revert AccessControlUnauthorizedAccount(msg.sender, bytes32(0));
         _burn(from, amount);
     }
 
-    function setTransferEndpoint(address endpoint, bool allowed)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setTransferEndpoint(address endpoint, bool allowed) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (endpoint == address(0)) revert InvalidAddress();
         if (allowed) {
             _grantRole(TRANSFER_ENDPOINT_ROLE, endpoint);
@@ -55,8 +50,7 @@ contract ResearcherCredit is ERC20, AccessControl {
 
     function _update(address from, address to, uint256 value) internal override {
         bool mintOrBurn = from == address(0) || to == address(0);
-        bool endpointTransfer =
-            hasRole(TRANSFER_ENDPOINT_ROLE, from) || hasRole(TRANSFER_ENDPOINT_ROLE, to);
+        bool endpointTransfer = hasRole(TRANSFER_ENDPOINT_ROLE, from) || hasRole(TRANSFER_ENDPOINT_ROLE, to);
         if (!mintOrBurn && !endpointTransfer) {
             revert RestrictedTransfer(from, to);
         }

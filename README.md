@@ -405,6 +405,16 @@ cargo run -p xlemma-cli -- derive-id user-credential examples/node-network/user-
 cargo run -p xlemma-cli -- credential-chain-root examples/node-network/credential-chain.json
 ```
 
+Before starting the API, replace every security placeholder in `.env`.
+`XLEMMA_API_AUTH_TOKEN` must contain at least 32 random bytes;
+`XLEMMA_TRUSTED_SIGNERS` authorizes baseline `ed25519:<base64url-public-key>`
+identities, and `XLEMMA_TRUSTED_NODE_SIGNERS` is the JSON NodeID-to-signer map.
+Only `/health` is unauthenticated. Observation submission requires a signed
+XLMP commit, a cryptographically signed reveal, and an exact match to the job's
+committed checker roster. Distinct NodeIDs must use distinct trusted signing
+keys, and authenticated API inputs reject unknown or non-canonical XLMP fields.
+The reference state is in-memory and is not HA-safe.
+
 Lean and Solidity toolchains are optional for the structural validator and required for their respective modules.
 
 ## Non-negotiable invariants

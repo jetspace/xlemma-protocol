@@ -11,11 +11,7 @@ contract ProofRegistryTest is Test {
         registry = new ProofRegistry(address(this));
     }
 
-    function _record(bytes32 claimId, bytes32 artifactRoot)
-        internal
-        pure
-        returns (ProofRegistry.Record memory)
-    {
+    function _record(bytes32 claimId, bytes32 artifactRoot) internal pure returns (ProofRegistry.Record memory) {
         return ProofRegistry.Record({
             theoryId: keccak256("theory"),
             claimId: claimId,
@@ -31,15 +27,13 @@ contract ProofRegistryTest is Test {
     }
 
     function testRecordIsAppendOnlyAndCertificateAttachesOnce() public {
-        bytes32 recordId = keccak256("record-1");
-        registry.commitRecord(
-            recordId,
-            _record(keccak256("claim-1"), keccak256("artifact-1"))
-        );
+        ProofRegistry.Record memory proposed = _record(keccak256("claim-1"), keccak256("artifact-1"));
+        bytes32 recordId = registry.deriveRecordId(proposed);
+        registry.commitRecord(recordId, proposed);
         registry.attachCertificate(
             recordId,
             keccak256("certificate-root"),
-            ProofRegistry.FormalStatus.Certified,
+            ProofRegistry.FormalStatus.Reproduced,
             uint64(block.timestamp + 1 days)
         );
 
@@ -47,22 +41,23 @@ contract ProofRegistryTest is Test {
         registry.attachCertificate(
             recordId,
             keccak256("other-certificate"),
-            ProofRegistry.FormalStatus.Certified,
+            ProofRegistry.FormalStatus.Reproduced,
             uint64(block.timestamp + 1 days)
         );
+
+        vm.warp(block.timestamp + 1 days + 1);
+        registry.finalizeCertificate(recordId);
+        assertEq(uint256(registry.getRecord(recordId).status), uint256(ProofRegistry.FormalStatus.Certified));
     }
 
     function testCorrectionCreatesSupersessionEdge() public {
-        bytes32 oldId = keccak256("old-record");
-        bytes32 newId = keccak256("new-record");
-        registry.commitRecord(
-            oldId,
-            _record(keccak256("claim-old"), keccak256("artifact-old"))
-        );
-        registry.commitRecord(
-            newId,
-            _record(keccak256("claim-new"), keccak256("artifact-new"))
-        );
+        ProofRegistry.Record memory oldProposed = _record(keccak256("claim-old"), keccak256("artifact-old"));
+        bytes32 oldId = registry.deriveRecordId(oldProposed);
+        registry.commitRecord(oldId, oldProposed);
+        ProofRegistry.Record memory newProposed = _record(keccak256("claim-new"), keccak256("artifact-new"));
+        newProposed.parentRecordId = oldId;
+        bytes32 newId = registry.deriveRecordId(newProposed);
+        registry.commitRecord(newId, newProposed);
 
         registry.supersede(oldId, newId);
 
@@ -70,26 +65,18 @@ contract ProofRegistryTest is Test {
         ProofRegistry.Record memory newRecord = registry.getRecord(newId);
         assertEq(oldRecord.parentRecordId, bytes32(0));
         assertEq(newRecord.parentRecordId, oldId);
-        assertEq(
-            uint256(oldRecord.status),
-            uint256(ProofRegistry.FormalStatus.Superseded)
-        );
+        assertEq(uint256(oldRecord.status), uint256(ProofRegistry.FormalStatus.Superseded));
     }
 
     function testQuarantineDoesNotDeleteRecord() public {
-        bytes32 recordId = keccak256("quarantine-record");
         bytes32 claimId = keccak256("claim-q");
-        registry.commitRecord(
-            recordId,
-            _record(claimId, keccak256("artifact-q"))
-        );
+        ProofRegistry.Record memory proposed = _record(claimId, keccak256("artifact-q"));
+        bytes32 recordId = registry.deriveRecordId(proposed);
+        registry.commitRecord(recordId, proposed);
         registry.quarantine(recordId, keccak256("evidence"));
 
         ProofRegistry.Record memory record = registry.getRecord(recordId);
         assertEq(record.claimId, claimId);
-        assertEq(
-            uint256(record.status),
-            uint256(ProofRegistry.FormalStatus.Quarantined)
-        );
+        assertEq(uint256(record.status), uint256(ProofRegistry.FormalStatus.Quarantined));
     }
 }

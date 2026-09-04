@@ -7,11 +7,16 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeSet,
-    fs,
+    fs::{self, File, OpenOptions},
+    io::Read,
     path::{Component, Path, PathBuf},
 };
 use thiserror::Error;
 use xlemma_core::{ArtifactEntry, ArtifactId, ArtifactManifest, AvailabilityReceipt, XLMP_VERSION};
+
+pub const MAX_BUNDLE_ENTRIES: usize = 4_096;
+pub const MAX_BUNDLE_FILE_BYTES: u64 = 64 * 1024 * 1024;
+pub const MAX_BUNDLE_BYTES: u64 = 256 * 1024 * 1024;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BundleInput {
@@ -34,6 +39,10 @@ pub struct AvailabilityPolicy {
     pub required_regions: usize,
 }
 
+pub trait AvailabilityReceiptVerifier {
+    fn verify(&self, receipt: &AvailabilityReceipt) -> bool;
+}
+
 #[derive(Debug, Error)]
 pub enum StorageError {
     #[error("bundle must contain at least one file")]
@@ -48,6 +57,8 @@ pub enum StorageError {
     Symlink(String),
     #[error("bundle entry is not a regular file: {0}")]
     NotFile(String),
+    #[error("bundle exceeds the configured entry or byte limit")]
+    BundleTooLarge,
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
     #[error("artifact identifier failed: {0}")]
@@ -75,11 +86,18 @@ pub fn build_bundle_manifest(
     if inputs.is_empty() {
         return Err(StorageError::EmptyBundle);
     }
+    if inputs.len() > MAX_BUNDLE_ENTRIES {
+        return Err(StorageError::BundleTooLarge);
+    }
+    if fs::symlink_metadata(root)?.file_type().is_symlink() {
+        return Err(StorageError::Symlink(root.display().to_string()));
+    }
     let canonical_root = fs::canonicalize(root)?;
     let lean_toolchain = lean_toolchain.into();
     let dependency_lock_hash = dependency_lock_hash.into();
     let mut seen_paths = BTreeSet::new();
     let mut entries = Vec::new();
+    let mut bundle_bytes = 0_u64;
 
     for input in inputs {
         validate_relative_path(&input.relative_path)?;
@@ -88,6 +106,9 @@ pub fn build_bundle_manifest(
             return Err(StorageError::DuplicatePath(normalized_path));
         }
         let full_path = root.join(&input.relative_path);
+        if input.media_type.trim().is_empty() {
+            return Err(StorageError::NotFile(full_path.display().to_string()));
+        }
         let metadata = fs::symlink_metadata(&full_path)?;
         if metadata.file_type().is_symlink() {
             return Err(StorageError::Symlink(full_path.display().to_string()));
@@ -95,11 +116,32 @@ pub fn build_bundle_manifest(
         if !metadata.is_file() {
             return Err(StorageError::NotFile(full_path.display().to_string()));
         }
+        if metadata.len() > MAX_BUNDLE_FILE_BYTES {
+            return Err(StorageError::BundleTooLarge);
+        }
+        bundle_bytes = bundle_bytes
+            .checked_add(metadata.len())
+            .ok_or(StorageError::BundleTooLarge)?;
+        if bundle_bytes > MAX_BUNDLE_BYTES {
+            return Err(StorageError::BundleTooLarge);
+        }
         let canonical_file = fs::canonicalize(&full_path)?;
         if !canonical_file.starts_with(&canonical_root) {
             return Err(StorageError::OutsideRoot(full_path.display().to_string()));
         }
-        let bytes = fs::read(&canonical_file)?;
+        let mut file = open_regular_file_without_following_symlinks(&full_path)?;
+        let opened_metadata = file.metadata()?;
+        if !opened_metadata.is_file() || !same_file(&metadata, &opened_metadata) {
+            return Err(StorageError::Symlink(full_path.display().to_string()));
+        }
+        let mut bytes = Vec::with_capacity(opened_metadata.len() as usize);
+        file.by_ref()
+            .take(MAX_BUNDLE_FILE_BYTES + 1)
+            .read_to_end(&mut bytes)?;
+        if bytes.len() as u64 != opened_metadata.len() || bytes.len() as u64 > MAX_BUNDLE_FILE_BYTES
+        {
+            return Err(StorageError::BundleTooLarge);
+        }
         entries.push(ArtifactEntry {
             path: normalized_path,
             media_type: input.media_type.clone(),
@@ -149,18 +191,62 @@ pub fn build_bundle_manifest(
     })
 }
 
+fn open_regular_file_without_following_symlinks(path: &Path) -> Result<File, std::io::Error> {
+    let mut options = OpenOptions::new();
+    options.read(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.custom_flags(libc::O_NOFOLLOW);
+    }
+    options.open(path)
+}
+
+#[cfg(unix)]
+fn same_file(before: &fs::Metadata, after: &fs::Metadata) -> bool {
+    use std::os::unix::fs::MetadataExt;
+    before.dev() == after.dev() && before.ino() == after.ino()
+}
+
+#[cfg(not(unix))]
+fn same_file(before: &fs::Metadata, after: &fs::Metadata) -> bool {
+    before.len() == after.len()
+        && before.modified().ok() == after.modified().ok()
+        && before.is_file() == after.is_file()
+}
+
 pub fn availability_satisfied(
     artifact_id: &ArtifactId,
     now: DateTime<Utc>,
     policy: &AvailabilityPolicy,
     receipts: &[AvailabilityReceipt],
+    verifier: &impl AvailabilityReceiptVerifier,
 ) -> bool {
+    if policy.required_replicas == 0
+        || policy.required_operator_clusters == 0
+        || policy.required_providers == 0
+        || policy.required_regions == 0
+    {
+        return false;
+    }
+    let mut receipt_ids = BTreeSet::new();
+    let mut node_ids = BTreeSet::new();
     let valid: Vec<_> = receipts
         .iter()
         .filter(|receipt| {
             receipt.artifact_id == *artifact_id
                 && receipt.available_until > now
                 && receipt.observed_at <= now
+                && receipt.receipt_id.validate().is_ok()
+                && receipt.storage_node_id.validate().is_ok()
+                && receipt.operator_cluster_id.validate().is_ok()
+                && !receipt.provider.trim().is_empty()
+                && !receipt.region.trim().is_empty()
+                && !receipt.custody_challenge_root.trim().is_empty()
+                && !receipt.signature.trim().is_empty()
+                && verifier.verify(receipt)
+                && receipt_ids.insert(receipt.receipt_id.clone())
+                && node_ids.insert(receipt.storage_node_id.clone())
         })
         .collect();
     let operators: BTreeSet<_> = valid
@@ -202,6 +288,14 @@ mod tests {
     use chrono::Duration;
     use std::time::{SystemTime, UNIX_EPOCH};
     use xlemma_core::{NodeId, OperatorClusterId, ReceiptId};
+
+    struct AcceptTestReceipts;
+
+    impl AvailabilityReceiptVerifier for AcceptTestReceipts {
+        fn verify(&self, _receipt: &AvailabilityReceipt) -> bool {
+            true
+        }
+    }
 
     fn temp_root(label: &str) -> PathBuf {
         let nonce = SystemTime::now()
@@ -311,7 +405,8 @@ mod tests {
             &artifact_id,
             now,
             &policy,
-            &receipts
+            &receipts,
+            &AcceptTestReceipts
         ));
     }
 }

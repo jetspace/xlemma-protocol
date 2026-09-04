@@ -88,7 +88,7 @@ Every major concept requested or developed in the design is mapped to its primar
 | Watcher/challenger nodes | `spec/013-governance-disputes.md` | certificate and bond registries |
 | Verification state machine | `spec/014-api-protocol.md` | `VerificationState`, `ensure_transition` |
 | x402 XLMP binding | `spec/008-x402-transport.md` | `XlmpPaymentExtension` and schema |
-| HTTP 402 offer construction | `spec/008-x402-transport.md` | `xlemma-api` payment-required endpoint and `xlemma-x402` header codec |
+| HTTP 402 offer construction | `spec/008-x402-transport.md` | `xlemma-x402` header codec; deployment service must derive offers from authorized server-side job/quote state |
 | x402 exact | same | `PaymentScheme::Exact` |
 | x402 upto | same | `PaymentScheme::Upto` |
 | x402 batch settlement | same | `PaymentScheme::BatchSettlement` |

@@ -62,6 +62,8 @@ pub enum FormalConsensusError {
     InvalidTiming,
     #[error("receipt contains malformed identity or an empty credential-chain root")]
     InvalidIdentity,
+    #[error("receipt content identity, commitment, or canonical evidence root is invalid")]
+    InvalidReceiptIntegrity,
     #[error("formal consensus policy is invalid: {0}")]
     InvalidPolicy(String),
 }
@@ -76,7 +78,7 @@ pub fn evaluate_formal_consensus(
     if receipts.is_empty() {
         return Err(FormalConsensusError::Empty);
     }
-    validate_policy(policy)?;
+    validate_formal_consensus_policy(policy)?;
 
     let job_id = receipts[0].job_id.clone();
     let mut nodes = BTreeSet::new();
@@ -89,6 +91,9 @@ pub fn evaluate_formal_consensus(
     let mut reasons = Vec::new();
 
     for receipt in receipts {
+        if receipt.validate_integrity().is_err() {
+            return Err(FormalConsensusError::InvalidReceiptIntegrity);
+        }
         if receipt.job_id != job_id {
             return Err(FormalConsensusError::MixedJobs);
         }
@@ -218,7 +223,10 @@ pub fn evaluate_formal_consensus(
         } else if !required_evidence_complete || abstain_count > 0 {
             FormalStatus::Unchecked
         } else if pass_count == receipts.len() {
-            FormalStatus::Certified
+            // Exact independent reproduction is established here. A separate
+            // certificate state machine must keep it challengeable for the
+            // policy period before upgrading it to Certified.
+            FormalStatus::Reproduced
         } else if fail_count == receipts.len() {
             FormalStatus::Rejected
         } else {
@@ -246,16 +254,20 @@ pub fn evaluate_formal_consensus(
     })
 }
 
-fn validate_policy(policy: &FormalConsensusPolicy) -> Result<(), FormalConsensusError> {
+pub fn validate_formal_consensus_policy(
+    policy: &FormalConsensusPolicy,
+) -> Result<(), FormalConsensusError> {
     if policy.minimum_verified_users == 0
         || policy.minimum_operators == 0
         || policy.minimum_operator_clusters == 0
         || policy.minimum_infrastructure_providers == 0
         || policy.minimum_regions == 0
+        || policy.required_family_counts.is_empty()
         || policy
             .required_family_counts
             .values()
-            .all(|count| *count == 0)
+            .any(|count| *count == 0)
+        || policy.challenge_period_seconds < 3_600
     {
         return Err(FormalConsensusError::InvalidPolicy(
             "non-zero checker and independence requirements are mandatory".to_owned(),
@@ -284,8 +296,8 @@ mod tests {
         family: CheckerFamily,
         verdict: ObservationVerdict,
     ) -> ObservationReceipt {
-        ObservationReceipt {
-            receipt_id: ReceiptId::derive(&format!("receipt-{index}")).unwrap(),
+        let mut receipt = ObservationReceipt {
+            receipt_id: ReceiptId::derive(&format!("pending-receipt-{index}")).unwrap(),
             job_id: JobId::derive(&"job").unwrap(),
             node_id: NodeId::derive(&format!("node-{index}")).unwrap(),
             verified_user_id: VerifiedUserId::derive(&format!("user-{index}")).unwrap(),
@@ -316,14 +328,23 @@ mod tests {
             dependency_root: "dependencies".into(),
             axiom_set_root: "axioms".into(),
             execution_trace_root: format!("trace-{index}"),
-            observation_root: format!("observation-{index}"),
+            observation_root: String::new(),
             verdict,
-            commitment: "commitment".into(),
+            commitment: String::new(),
             reveal_salt: "salt".into(),
             committed_at: Utc::now(),
             revealed_at: Utc::now(),
             signature: "signature".into(),
-        }
+        };
+        receipt.observation_root = receipt.expected_observation_root().unwrap();
+        receipt.commitment = xlemma_core::observation_commitment(
+            &receipt.job_id,
+            receipt.verdict,
+            &receipt.observation_root,
+            receipt.reveal_salt.as_bytes(),
+        );
+        receipt.receipt_id = receipt.expected_receipt_id().unwrap();
+        receipt
     }
 
     fn policy() -> FormalConsensusPolicy {
@@ -345,6 +366,17 @@ mod tests {
         }
     }
 
+    fn rebind_receipt(receipt: &mut ObservationReceipt) {
+        receipt.observation_root = receipt.expected_observation_root().unwrap();
+        receipt.commitment = xlemma_core::observation_commitment(
+            &receipt.job_id,
+            receipt.verdict,
+            &receipt.observation_root,
+            receipt.reveal_salt.as_bytes(),
+        );
+        receipt.receipt_id = receipt.expected_receipt_id().unwrap();
+    }
+
     #[test]
     fn gold_quorum_certifies_only_unanimous_exact_reproduction() {
         let receipts = vec![
@@ -353,7 +385,7 @@ mod tests {
             receipt(3, CheckerFamily::Nanoda, ObservationVerdict::Pass),
         ];
         let result = evaluate_formal_consensus(&policy(), &receipts).unwrap();
-        assert_eq!(result.status, FormalStatus::Certified);
+        assert_eq!(result.status, FormalStatus::Reproduced);
         assert_eq!(result.infrastructure_providers, 2);
         assert_eq!(result.regions, 2);
     }
@@ -379,6 +411,7 @@ mod tests {
         for receipt in &mut receipts {
             receipt.infrastructure_provider = "same-provider".into();
             receipt.region = "same-region".into();
+            rebind_receipt(receipt);
         }
         let result = evaluate_formal_consensus(&policy(), &receipts).unwrap();
         assert_eq!(result.status, FormalStatus::Unchecked);
@@ -391,6 +424,7 @@ mod tests {
             receipt(2, CheckerFamily::LeanKernel, ObservationVerdict::Pass),
         ];
         receipts[1].verified_user_id = receipts[0].verified_user_id.clone();
+        rebind_receipt(&mut receipts[1]);
         assert!(matches!(
             evaluate_formal_consensus(&policy(), &receipts),
             Err(FormalConsensusError::DuplicateVerifiedUser)

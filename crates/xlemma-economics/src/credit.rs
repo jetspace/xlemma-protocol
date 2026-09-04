@@ -1,24 +1,44 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
+use std::collections::BTreeMap;
 use thiserror::Error;
 use xlemma_core::{Amount, MoneyError, ResearcherId};
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct BackedCreditLedger {
-    pub researcher_id: ResearcherId,
-    pub settlement_asset: String,
-    pub credit_asset: String,
-    pub decimals: u8,
-    pub backing_units: u128,
-    pub outstanding_credit_units: u128,
-    pub locked_credit_units: u128,
+    researcher_id: ResearcherId,
+    settlement_asset: String,
+    credit_asset: String,
+    decimals: u8,
+    backing_units: u128,
+    outstanding_credit_units: u128,
+    locked_credit_units: u128,
+    authorizations: BTreeMap<String, CreditAuthorization>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct CreditAuthorization {
-    pub authorization_id: String,
-    pub maximum_units: u128,
-    pub settled_units: u128,
-    pub closed: bool,
+    authorization_id: String,
+    maximum_units: u128,
+    settled_units: u128,
+    closed: bool,
+}
+
+impl CreditAuthorization {
+    pub fn authorization_id(&self) -> &str {
+        &self.authorization_id
+    }
+
+    pub fn maximum_units(&self) -> u128 {
+        self.maximum_units
+    }
+
+    pub fn settled_units(&self) -> u128 {
+        self.settled_units
+    }
+
+    pub fn is_closed(&self) -> bool {
+        self.closed
+    }
 }
 
 #[derive(Debug, Error)]
@@ -33,6 +53,10 @@ pub enum CreditError {
     ExceedsAuthorization,
     #[error("authorization is already closed")]
     AuthorizationClosed,
+    #[error("authorization identifier is empty or already exists")]
+    InvalidAuthorizationId,
+    #[error("authorization does not exist")]
+    UnknownAuthorization,
     #[error(transparent)]
     Money(#[from] MoneyError),
 }
@@ -52,6 +76,7 @@ impl BackedCreditLedger {
             backing_units: 0,
             outstanding_credit_units: 0,
             locked_credit_units: 0,
+            authorizations: BTreeMap::new(),
         }
     }
 
@@ -83,6 +108,11 @@ impl BackedCreditLedger {
         maximum: &Amount,
     ) -> Result<CreditAuthorization, CreditError> {
         self.ensure_credit_amount(maximum)?;
+        let authorization_id = authorization_id.into();
+        if authorization_id.trim().is_empty() || self.authorizations.contains_key(&authorization_id)
+        {
+            return Err(CreditError::InvalidAuthorizationId);
+        }
         let unlocked = self
             .outstanding_credit_units
             .checked_sub(self.locked_credit_units)
@@ -97,22 +127,29 @@ impl BackedCreditLedger {
         if next_locked > self.outstanding_credit_units {
             return Err(CreditError::UnderCollateralized);
         }
-        self.locked_credit_units = next_locked;
-        Ok(CreditAuthorization {
-            authorization_id: authorization_id.into(),
+        let authorization = CreditAuthorization {
+            authorization_id: authorization_id.clone(),
             maximum_units: maximum.units,
             settled_units: 0,
             closed: false,
-        })
+        };
+        self.locked_credit_units = next_locked;
+        self.authorizations
+            .insert(authorization_id, authorization.clone());
+        Ok(authorization)
     }
 
     /// Burns only actual credits consumed, releases corresponding stable
     /// backing to service nodes, and unlocks the unused authorization.
     pub fn settle(
         &mut self,
-        authorization: &mut CreditAuthorization,
+        authorization_id: &str,
         actual: &Amount,
     ) -> Result<Amount, CreditError> {
+        let authorization = self
+            .authorizations
+            .get(authorization_id)
+            .ok_or(CreditError::UnknownAuthorization)?;
         if authorization.closed {
             return Err(CreditError::AuthorizationClosed);
         }
@@ -140,6 +177,10 @@ impl BackedCreditLedger {
         self.locked_credit_units = next_locked;
         self.outstanding_credit_units = next_outstanding;
         self.backing_units = next_backing;
+        let authorization = self
+            .authorizations
+            .get_mut(authorization_id)
+            .ok_or(CreditError::UnknownAuthorization)?;
         authorization.settled_units = actual.units;
         authorization.closed = true;
 
@@ -151,7 +192,11 @@ impl BackedCreditLedger {
     }
 
     /// Releases an unused authorization without burning credits or backing.
-    pub fn cancel(&mut self, authorization: &mut CreditAuthorization) -> Result<(), CreditError> {
+    pub fn cancel(&mut self, authorization_id: &str) -> Result<(), CreditError> {
+        let authorization = self
+            .authorizations
+            .get(authorization_id)
+            .ok_or(CreditError::UnknownAuthorization)?;
         if authorization.closed {
             return Err(CreditError::AuthorizationClosed);
         }
@@ -160,9 +205,45 @@ impl BackedCreditLedger {
             .checked_sub(authorization.maximum_units)
             .ok_or(CreditError::UnderCollateralized)?;
         self.locked_credit_units = next_locked;
+        let authorization = self
+            .authorizations
+            .get_mut(authorization_id)
+            .ok_or(CreditError::UnknownAuthorization)?;
         authorization.settled_units = 0;
         authorization.closed = true;
         self.ensure_solvent()
+    }
+
+    pub fn authorization(&self, authorization_id: &str) -> Option<&CreditAuthorization> {
+        self.authorizations.get(authorization_id)
+    }
+
+    pub fn researcher_id(&self) -> &ResearcherId {
+        &self.researcher_id
+    }
+
+    pub fn settlement_asset(&self) -> &str {
+        &self.settlement_asset
+    }
+
+    pub fn credit_asset(&self) -> &str {
+        &self.credit_asset
+    }
+
+    pub fn decimals(&self) -> u8 {
+        self.decimals
+    }
+
+    pub fn backing_units(&self) -> u128 {
+        self.backing_units
+    }
+
+    pub fn outstanding_credit_units(&self) -> u128 {
+        self.outstanding_credit_units
+    }
+
+    pub fn locked_credit_units(&self) -> u128 {
+        self.locked_credit_units
     }
 
     pub fn reserve_ratio_bps(&self) -> u128 {
@@ -210,16 +291,38 @@ mod tests {
         ledger
             .deposit_and_mint(&Amount::new(1_000_000_000, "USDC", 6))
             .unwrap();
-        let mut auth = ledger
+        let auth = ledger
             .authorize("proof-job", &Amount::new(125_000_000, "R-IAN", 6))
             .unwrap();
+        assert_eq!(auth.authorization_id(), "proof-job");
         let payout = ledger
-            .settle(&mut auth, &Amount::new(40_000_000, "R-IAN", 6))
+            .settle("proof-job", &Amount::new(40_000_000, "R-IAN", 6))
             .unwrap();
         assert_eq!(payout.units, 40_000_000);
-        assert_eq!(ledger.backing_units, 960_000_000);
-        assert_eq!(ledger.outstanding_credit_units, 960_000_000);
-        assert_eq!(ledger.locked_credit_units, 0);
+        assert_eq!(ledger.backing_units(), 960_000_000);
+        assert_eq!(ledger.outstanding_credit_units(), 960_000_000);
+        assert_eq!(ledger.locked_credit_units(), 0);
         ledger.ensure_solvent().unwrap();
+    }
+
+    #[test]
+    fn forged_or_cloned_authorization_cannot_unlock_another_reservation() {
+        let researcher = ResearcherId::derive(&"researcher").unwrap();
+        let mut ledger = BackedCreditLedger::new(researcher, "USDC", "R-IAN", 6);
+        ledger
+            .deposit_and_mint(&Amount::new(100, "USDC", 6))
+            .unwrap();
+        let snapshot = ledger
+            .authorize("job-a", &Amount::new(80, "R-IAN", 6))
+            .unwrap();
+
+        assert!(matches!(
+            ledger.settle("job-b", &Amount::new(10, "R-IAN", 6)),
+            Err(CreditError::UnknownAuthorization)
+        ));
+        assert_eq!(snapshot.maximum_units(), 80);
+        assert_eq!(ledger.locked_credit_units(), 80);
+        ledger.cancel("job-a").unwrap();
+        assert!(ledger.authorization("job-a").unwrap().is_closed());
     }
 }

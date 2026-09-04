@@ -27,7 +27,7 @@ contract RevenueRouter is ReentrancyGuard {
         uint16 shareBps;
     }
 
-    mapping(bytes32 => bool) public processedRevenueEvents;
+    mapping(address => mapping(bytes32 => bool)) public processedRevenueEvents;
 
     event RevenueRouted(
         bytes32 indexed revenueEventId,
@@ -41,13 +41,12 @@ contract RevenueRouter is ReentrancyGuard {
     error InvalidShares();
     error InvalidRecipient();
     error IncompatibleVaultAsset();
+    error UnsupportedAssetBehavior();
 
-    function route(
-        bytes32 revenueEventId,
-        IERC20 asset,
-        uint256 amount,
-        CashRecipient[] calldata recipients
-    ) external nonReentrant {
+    function route(bytes32 revenueEventId, IERC20 asset, uint256 amount, CashRecipient[] calldata recipients)
+        external
+        nonReentrant
+    {
         CompoundRecipient[] memory noCompound = new CompoundRecipient[](0);
         _route(revenueEventId, asset, amount, recipients, noCompound);
     }
@@ -72,8 +71,8 @@ contract RevenueRouter is ReentrancyGuard {
         CompoundRecipient[] memory compoundRecipients
     ) internal {
         if (
-            revenueEventId == bytes32(0) || processedRevenueEvents[revenueEventId] ||
-            address(asset) == address(0)
+            revenueEventId == bytes32(0) || processedRevenueEvents[msg.sender][revenueEventId]
+                || address(asset) == address(0)
         ) revert InvalidEvent();
         if (amount == 0 || cashRecipients.length + compoundRecipients.length == 0) {
             revert InvalidShares();
@@ -85,49 +84,50 @@ contract RevenueRouter is ReentrancyGuard {
             totalBps += cashRecipients[i].shareBps;
         }
         for (uint256 i = 0; i < compoundRecipients.length; ++i) {
-            if (
-                address(compoundRecipients[i].vault) == address(0) ||
-                compoundRecipients[i].beneficiary == address(0)
-            ) revert InvalidRecipient();
-            if (
-                address(compoundRecipients[i].vault.settlementAsset()) != address(asset)
-            ) revert IncompatibleVaultAsset();
+            if (address(compoundRecipients[i].vault) == address(0) || compoundRecipients[i].beneficiary == address(0)) {
+                revert InvalidRecipient();
+            }
+            if (address(compoundRecipients[i].vault.settlementAsset()) != address(asset)) {
+                revert IncompatibleVaultAsset();
+            }
             totalBps += compoundRecipients[i].shareBps;
         }
         if (totalBps != BPS) revert InvalidShares();
 
-        processedRevenueEvents[revenueEventId] = true;
+        processedRevenueEvents[msg.sender][revenueEventId] = true;
+        uint256 beforeBalance = asset.balanceOf(address(this));
         asset.safeTransferFrom(msg.sender, address(this), amount);
+        if (asset.balanceOf(address(this)) != beforeBalance + amount) {
+            revert UnsupportedAssetBehavior();
+        }
 
         uint256 paid;
         uint256 cursor;
         uint256 recipientCount = cashRecipients.length + compoundRecipients.length;
         for (uint256 i = 0; i < cashRecipients.length; ++i) {
-            uint256 allocation = ++cursor == recipientCount
-                ? amount - paid
-                : amount * cashRecipients[i].shareBps / BPS;
+            uint256 allocation = ++cursor == recipientCount ? amount - paid : amount * cashRecipients[i].shareBps / BPS;
             paid += allocation;
-            asset.safeTransfer(cashRecipients[i].account, allocation);
+            _pushExact(asset, cashRecipients[i].account, allocation);
         }
         for (uint256 i = 0; i < compoundRecipients.length; ++i) {
-            uint256 allocation = ++cursor == recipientCount
-                ? amount - paid
-                : amount * compoundRecipients[i].shareBps / BPS;
+            uint256 allocation =
+                ++cursor == recipientCount ? amount - paid : amount * compoundRecipients[i].shareBps / BPS;
             paid += allocation;
             asset.forceApprove(address(compoundRecipients[i].vault), allocation);
-            compoundRecipients[i].vault.compoundRevenue(
-                allocation,
-                compoundRecipients[i].beneficiary
-            );
+            compoundRecipients[i].vault.compoundRevenue(allocation, compoundRecipients[i].beneficiary);
             asset.forceApprove(address(compoundRecipients[i].vault), 0);
         }
 
-        emit RevenueRouted(
-            revenueEventId,
-            address(asset),
-            amount,
-            cashRecipients.length,
-            compoundRecipients.length
-        );
+        emit RevenueRouted(revenueEventId, address(asset), amount, cashRecipients.length, compoundRecipients.length);
+    }
+
+    function _pushExact(IERC20 asset, address recipient, uint256 amount) internal {
+        uint256 beforeRouter = asset.balanceOf(address(this));
+        uint256 beforeRecipient = asset.balanceOf(recipient);
+        asset.safeTransfer(recipient, amount);
+        if (
+            asset.balanceOf(address(this)) + amount != beforeRouter
+                || asset.balanceOf(recipient) != beforeRecipient + amount
+        ) revert UnsupportedAssetBehavior();
     }
 }

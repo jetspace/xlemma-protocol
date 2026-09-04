@@ -34,7 +34,7 @@ UserCredential; it is not silently equated with VerifiedUserID. See XLIP-020.
 
 ## Canonicalization
 
-JSON manifests SHOULD use RFC 8785 or an independently tested equivalent. Lean expressions require a dedicated versioned canonical encoding that resolves names, universes, binders, implicit arguments, and type information.
+JSON manifests used for identifiers or signatures MUST use RFC 8785 JCS. Integer values outside the exact IEEE-754 range MUST be encoded as decimal strings or rejected. Lean expressions require a dedicated versioned canonical encoding that resolves names, universes, binders, implicit arguments, and type information.
 
 ## Equivalence
 

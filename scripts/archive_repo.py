@@ -10,11 +10,12 @@ EXCLUDED_PARTS = {"target", ".git", ".lake", "out", "cache", "__pycache__"}
 
 
 def main() -> None:
-    files = [
-        path
-        for path in ROOT.rglob("*")
-        if path.is_file() and not any(part in EXCLUDED_PARTS for part in path.parts)
-    ]
+    files = []
+    for path in ROOT.rglob("*"):
+        if path.is_symlink():
+            raise RuntimeError(f"refusing symlink in source archive: {path.relative_to(ROOT)}")
+        if path.is_file() and not any(part in EXCLUDED_PARTS for part in path.parts):
+            files.append(path)
     with ZipFile(OUTPUT, "w", ZIP_DEFLATED, compresslevel=9) as archive:
         for path in sorted(files):
             relative = Path(ROOT.name) / path.relative_to(ROOT)

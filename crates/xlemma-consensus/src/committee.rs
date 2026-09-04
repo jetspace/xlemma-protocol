@@ -14,6 +14,18 @@ pub const MAX_COMMITTEE_SLOTS: usize = 32;
 pub const MAX_ELIGIBLE_NODES: usize = 1_024;
 pub const MAX_SORTITION_SEARCH_STATES: usize = 1_000_000;
 
+/// Admission is cryptographic and registry-backed, not a structural string
+/// check. The consensus crate deliberately requires a verifier supplied by the
+/// deployment instead of shipping a permissive production default.
+pub trait CommitteeAdmissionVerifier {
+    fn verify_candidate(
+        &self,
+        node: &EligibleNode,
+        requirement: &xlemma_core::CommitteeRequirement,
+        selected_at: DateTime<Utc>,
+    ) -> bool;
+}
+
 #[derive(Debug, Error)]
 pub enum CommitteeError {
     #[error("sortition randomness reveal must not be empty")]
@@ -79,6 +91,7 @@ pub fn select_committee(
     request: &CommitteeSortitionRequest,
     revealed_seed: &[u8],
     nodes: &[EligibleNode],
+    admission_verifier: &impl CommitteeAdmissionVerifier,
     selected_at: DateTime<Utc>,
 ) -> Result<CommitteeSelection, CommitteeError> {
     validate_request(request)?;
@@ -141,7 +154,9 @@ pub fn select_committee(
             let requirement = &request.requirements[slot.requirement_index];
             let mut candidates = nodes
                 .iter()
-                .filter(|node| node_is_eligible(request, requirement, node, selected_at))
+                .filter(|node| {
+                    node_is_eligible(request, requirement, node, admission_verifier, selected_at)
+                })
                 .map(|node| RankedCandidate {
                     rank: rank_candidate(request, revealed_seed, *slot, node),
                     node,
@@ -245,9 +260,16 @@ pub fn verify_committee_selection(
     request: &CommitteeSortitionRequest,
     revealed_seed: &[u8],
     nodes: &[EligibleNode],
+    admission_verifier: &impl CommitteeAdmissionVerifier,
     selection: &CommitteeSelection,
 ) -> Result<(), CommitteeError> {
-    let reproduced = select_committee(request, revealed_seed, nodes, selection.selected_at)?;
+    let reproduced = select_committee(
+        request,
+        revealed_seed,
+        nodes,
+        admission_verifier,
+        selection.selected_at,
+    )?;
     if &reproduced == selection {
         Ok(())
     } else {
@@ -296,6 +318,7 @@ fn node_is_eligible(
     request: &CommitteeSortitionRequest,
     requirement: &xlemma_core::CommitteeRequirement,
     node: &EligibleNode,
+    admission_verifier: &impl CommitteeAdmissionVerifier,
     selected_at: DateTime<Utc>,
 ) -> bool {
     node.active
@@ -330,6 +353,7 @@ fn node_is_eligible(
                 selected_at,
             )
             .is_ok()
+        && admission_verifier.verify_candidate(node, requirement, selected_at)
 }
 
 fn rank_candidate(
@@ -495,6 +519,19 @@ mod tests {
         ReputationId, ReputationMetric, ReputationRequirement, ReputationRequirements, SortitionId,
         UserCredential, UserCredentialId,
     };
+
+    struct AcceptTestAdmission;
+
+    impl CommitteeAdmissionVerifier for AcceptTestAdmission {
+        fn verify_candidate(
+            &self,
+            _node: &EligibleNode,
+            _requirement: &CommitteeRequirement,
+            _selected_at: DateTime<Utc>,
+        ) -> bool {
+            true
+        }
+    }
 
     fn metric(score_bps: u16) -> ReputationMetric {
         ReputationMetric {
@@ -678,17 +715,36 @@ mod tests {
         ];
         let request = request(&nodes, vec![requirement(role, 2)]);
         let selected_at = Utc::now();
-        let left =
-            select_committee(&request, b"future-beacon-reveal", &nodes, selected_at).unwrap();
-        let right =
-            select_committee(&request, b"future-beacon-reveal", &nodes, selected_at).unwrap();
+        let left = select_committee(
+            &request,
+            b"future-beacon-reveal",
+            &nodes,
+            &AcceptTestAdmission,
+            selected_at,
+        )
+        .unwrap();
+        let right = select_committee(
+            &request,
+            b"future-beacon-reveal",
+            &nodes,
+            &AcceptTestAdmission,
+            selected_at,
+        )
+        .unwrap();
         assert_eq!(left, right);
         assert_eq!(left.members.len(), 2);
         assert_ne!(
             left.members[0].operator_cluster_id,
             left.members[1].operator_cluster_id
         );
-        verify_committee_selection(&request, b"future-beacon-reveal", &nodes, &left).unwrap();
+        verify_committee_selection(
+            &request,
+            b"future-beacon-reveal",
+            &nodes,
+            &AcceptTestAdmission,
+            &left,
+        )
+        .unwrap();
     }
 
     #[test]
@@ -709,7 +765,13 @@ mod tests {
         request.minimum_distinct_providers = 1;
         request.minimum_distinct_regions = 1;
         assert!(matches!(
-            select_committee(&request, b"future-beacon-reveal", &nodes, Utc::now()),
+            select_committee(
+                &request,
+                b"future-beacon-reveal",
+                &nodes,
+                &AcceptTestAdmission,
+                Utc::now()
+            ),
             Err(CommitteeError::NoIndependentCommittee)
         ));
     }
@@ -739,7 +801,13 @@ mod tests {
 
         let request = request(&nodes, vec![requirement(role, 2)]);
         assert!(matches!(
-            select_committee(&request, b"future-beacon-reveal", &nodes, Utc::now()),
+            select_committee(
+                &request,
+                b"future-beacon-reveal",
+                &nodes,
+                &AcceptTestAdmission,
+                Utc::now()
+            ),
             Err(CommitteeError::NoIndependentCommittee)
         ));
     }
@@ -762,8 +830,14 @@ mod tests {
         let mut request = request(&nodes, vec![requirement(role, 1)]);
         request.minimum_distinct_providers = 1;
         request.minimum_distinct_regions = 1;
-        let selection =
-            select_committee(&request, b"future-beacon-reveal", &nodes, Utc::now()).unwrap();
+        let selection = select_committee(
+            &request,
+            b"future-beacon-reveal",
+            &nodes,
+            &AcceptTestAdmission,
+            Utc::now(),
+        )
+        .unwrap();
         assert_eq!(selection.members[0].node_id, nodes[1].node_id);
     }
 
@@ -781,7 +855,13 @@ mod tests {
         sortition_request.minimum_distinct_providers = 1;
         sortition_request.minimum_distinct_regions = 1;
         assert!(matches!(
-            select_committee(&sortition_request, b"wrong", &nodes, Utc::now()),
+            select_committee(
+                &sortition_request,
+                b"wrong",
+                &nodes,
+                &AcceptTestAdmission,
+                Utc::now()
+            ),
             Err(CommitteeError::RandomnessMismatch)
         ));
 
@@ -792,6 +872,7 @@ mod tests {
                 &sortition_request,
                 b"future-beacon-reveal",
                 &mutated_nodes,
+                &AcceptTestAdmission,
                 Utc::now()
             ),
             Err(CommitteeError::EligibleSetMismatch)
@@ -806,6 +887,7 @@ mod tests {
                 &duplicate_request,
                 b"future-beacon-reveal",
                 &duplicate_nodes,
+                &AcceptTestAdmission,
                 Utc::now()
             ),
             Err(CommitteeError::DuplicateEligibleNode)
@@ -832,6 +914,7 @@ mod tests {
                 &sortition_request,
                 b"future-beacon-reveal",
                 &nodes,
+                &AcceptTestAdmission,
                 Utc::now()
             ),
             Err(CommitteeError::NoIndependentCommittee)
@@ -860,12 +943,20 @@ mod tests {
             &request,
             b"future-beacon-reveal",
             &nodes,
+            &AcceptTestAdmission,
             expected.selected_at,
         )
         .unwrap();
         assert_eq!(selection, expected);
 
         nodes.reverse();
-        verify_committee_selection(&request, b"future-beacon-reveal", &nodes, &selection).unwrap();
+        verify_committee_selection(
+            &request,
+            b"future-beacon-reveal",
+            &nodes,
+            &AcceptTestAdmission,
+            &selection,
+        )
+        .unwrap();
     }
 }

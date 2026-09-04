@@ -6,7 +6,7 @@ Every box is a release gate. The reference repository intentionally leaves many 
 
 - [x] Resolve the Rust workspace with the pinned toolchain and commit `Cargo.lock`.
 - [ ] Complete independent dependency and license review of the locked Rust graph before a release tag.
-- [ ] Pin OpenZeppelin, forge-std, Lean, checker, container, and system dependency revisions by immutable version or digest.
+- [ ] Pin Lean, checker, and system dependency revisions by immutable version or digest; reverify the already pinned OpenZeppelin, forge-std, Rust, Postgres, NATS, and container-base revisions at release time.
 - [ ] Generate and retain software bills of materials and provenance attestations for API, node, checker, and contract builds.
 - [ ] Reproduce release artifacts from a clean environment and compare digests.
 - [ ] Require protected-branch CI and signed release tags.
@@ -14,7 +14,7 @@ Every box is a release gate. The reference repository intentionally leaves many 
 ## Protocol and identifiers
 
 - [ ] XLMP/1 envelope and all required message vectors independently implemented.
-- [ ] Unsupported XLMP versions, unknown required fields, and adapter downgrades fail closed.
+- [x] Reference HTTP ingress rejects unsupported XLMP versions, unknown/non-canonical typed fields, invalid signatures, and untrusted signers.
 - [ ] HTTP and one non-HTTP transport preserve identical MessageIDs.
 - [ ] Canonical serialization frozen and independently implemented.
 - [ ] RFC 8785-compatible behavior covered by published vectors.
@@ -22,7 +22,7 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] ProofID derived from a stable exported proof object.
 - [ ] Artifact identities exclude mutable provenance fields.
 - [ ] Domain separation reviewed cryptographically.
-- [ ] Signature domains bind network, contract, nonce, expiry, policy, and artifact.
+- [ ] Every signature domain binds all context required by its transport, including network/contract where applicable, nonce, expiry, policy, and artifact.
 - [ ] Append-only correction/supersession semantics tested.
 
 ## Verifier and checker assurance
@@ -75,7 +75,7 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] Stake is capped eligibility collateral, not formal vote weight.
 - [ ] Provider and region diversity enforced.
 - [ ] Commit-reveal resists copying and withholding.
-- [ ] Node signatures, membership, timing, and roots are verified.
+- [x] Reference HTTP observation path verifies node signatures, exact roster membership, timing, prior commitment, and content-bound roots.
 - [ ] Honest dissent is paid and preserved.
 - [ ] Objective slashing evidence and appeal process defined.
 - [ ] Watcher network is independent of primary aggregator.
@@ -119,7 +119,7 @@ Every box is a release gate. The reference repository intentionally leaves many 
 
 ## Smart contracts
 
-- [ ] Foundry unit, fuzz, and invariant tests pass.
+- [x] Included Foundry unit, fuzz, and invariant tests pass with the pinned reference dependencies.
 - [ ] Static analysis and symbolic execution reviewed.
 - [ ] Two independent audits completed.
 - [ ] Public security contest completed for material value.

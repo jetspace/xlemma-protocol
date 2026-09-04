@@ -4,16 +4,15 @@
 //! independently identified formal systems can implement the same verification
 //! contract without changing xLemma research state.
 //!
-//! `LocalCommandRunner` is a development utility. Production nodes MUST run
-//! hostile proof artifacts in a hardened, no-network sandbox and export proof
-//! objects for replay outside that sandbox.
+//! Hostile proof artifacts must run in a hardened, no-network sandbox and
+//! export proof objects for replay outside that sandbox. The local runner is
+//! deliberately fail-closed because a subprocess is not a security boundary.
 
 use async_trait::async_trait;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeMap, path::PathBuf, process::Stdio};
+use std::{collections::BTreeMap, path::PathBuf};
 use thiserror::Error;
-use tokio::{io::AsyncReadExt, process::Command, time::timeout};
 use xlemma_core::{
     ArtifactId, CheckerExecution, CheckerFamily, ClaimId, JobId, LeanVerificationReceipt, NodeId,
     ObservationVerdict, OperatorClusterId, PolicyId, ProofId, ReceiptId, TheoryId,
@@ -46,6 +45,8 @@ pub struct LeanVerificationRequest {
     pub dependency_root: String,
     pub axiom_policy_id: PolicyId,
     pub permitted_axioms: Vec<String>,
+    pub official_checker_binary_digest: String,
+    pub independent_checker_binary_digest: String,
     pub sandbox_policy: SandboxPolicy,
 }
 
@@ -76,6 +77,10 @@ pub enum LeanVerificationError {
     Io(#[from] std::io::Error),
     #[error("command exceeded sandbox timeout")]
     Timeout,
+    #[error("local subprocess execution is disabled; configure a hardened sandbox adapter")]
+    UnsafeLocalExecution,
+    #[error("sandbox returned output larger than the receipt limit")]
+    OutputTooLarge,
     #[error("build failed: {0}")]
     BuildFailed(String),
     #[error("trusted challenge did not match")]
@@ -84,6 +89,8 @@ pub enum LeanVerificationError {
     UnpermittedAxiom(String),
     #[error("checker family diverged")]
     CheckerDivergence,
+    #[error("verification receipt signing failed")]
+    ReceiptSigning,
 }
 
 #[async_trait]
@@ -95,67 +102,27 @@ pub trait SandboxRunner: Send + Sync {
     ) -> Result<CommandResult, LeanVerificationError>;
 }
 
-/// Development-only command runner. It enforces a wall-clock timeout but does
-/// not provide process, filesystem, seccomp, container, or network isolation.
+/// Deliberately disabled local runner. Implement `SandboxRunner` with a
+/// separately administered sandbox (container/VM, no network, read-only root,
+/// cgroups/rlimits and a seccomp profile) before processing untrusted proofs.
 pub struct LocalCommandRunner;
 
 #[async_trait]
 impl SandboxRunner for LocalCommandRunner {
     async fn run(
         &self,
-        policy: &SandboxPolicy,
-        command: &CommandSpec,
+        _policy: &SandboxPolicy,
+        _command: &CommandSpec,
     ) -> Result<CommandResult, LeanVerificationError> {
-        let mut child = Command::new(&command.program)
-            .args(&command.arguments)
-            .current_dir(&command.working_directory)
-            .env_clear()
-            .envs(&command.environment)
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .kill_on_drop(true)
-            .spawn()?;
-
-        let mut stdout = child.stdout.take().expect("stdout was piped");
-        let mut stderr = child.stderr.take().expect("stderr was piped");
-        let mut stdout_bytes = Vec::new();
-        let mut stderr_bytes = Vec::new();
-        let wait = async {
-            let (stdout_result, stderr_result, status_result) = tokio::join!(
-                stdout.read_to_end(&mut stdout_bytes),
-                stderr.read_to_end(&mut stderr_bytes),
-                child.wait(),
-            );
-            stdout_result?;
-            stderr_result?;
-            let status = status_result?;
-            Ok::<_, std::io::Error>(status)
-        };
-
-        let status =
-            match timeout(std::time::Duration::from_secs(policy.timeout_seconds), wait).await {
-                Ok(result) => result?,
-                Err(_) => return Err(LeanVerificationError::Timeout),
-            };
-
-        let mut trace_hasher = blake3::Hasher::new();
-        trace_hasher.update(b"xlemma-command-trace-v1\0");
-        trace_hasher.update(command.program.as_bytes());
-        for argument in &command.arguments {
-            trace_hasher.update(b"\0");
-            trace_hasher.update(argument.as_bytes());
-        }
-        trace_hasher.update(&stdout_bytes);
-        trace_hasher.update(&stderr_bytes);
-
-        Ok(CommandResult {
-            exit_code: status.code(),
-            stdout: String::from_utf8_lossy(&stdout_bytes).into_owned(),
-            stderr: String::from_utf8_lossy(&stderr_bytes).into_owned(),
-            timed_out: false,
-            trace_root: format!("blake3:{}", trace_hasher.finalize().to_hex()),
-        })
+        Err(LeanVerificationError::UnsafeLocalExecution)
     }
+}
+
+pub trait VerificationReceiptSigner: Send + Sync {
+    fn sign_receipt(
+        &self,
+        unsigned_receipt: &LeanVerificationReceipt,
+    ) -> Result<String, LeanVerificationError>;
 }
 
 #[derive(Clone, Debug)]
@@ -166,20 +133,23 @@ pub struct CheckerNodeIdentity {
     pub region: String,
 }
 
-pub struct LeanVerifier<R> {
+pub struct LeanVerifier<R, S> {
     runner: R,
+    receipt_signer: S,
     official_kernel: CheckerNodeIdentity,
     independent_checker: CheckerNodeIdentity,
 }
 
-impl<R: SandboxRunner> LeanVerifier<R> {
+impl<R: SandboxRunner, S: VerificationReceiptSigner> LeanVerifier<R, S> {
     pub fn new(
         runner: R,
+        receipt_signer: S,
         official_kernel: CheckerNodeIdentity,
         independent_checker: CheckerNodeIdentity,
     ) -> Self {
         Self {
             runner,
+            receipt_signer,
             official_kernel,
             independent_checker,
         }
@@ -189,7 +159,10 @@ impl<R: SandboxRunner> LeanVerifier<R> {
         &self,
         request: &LeanVerificationRequest,
     ) -> Result<LeanVerificationReceipt, LeanVerificationError> {
-        if !request.sandbox_policy.network_disabled || !request.sandbox_policy.read_only_root {
+        if !valid_sandbox_policy(&request.sandbox_policy)
+            || !valid_sha256_digest(&request.official_checker_binary_digest)
+            || !valid_sha256_digest(&request.independent_checker_binary_digest)
+        {
             return Err(LeanVerificationError::UnsafeSandboxPolicy);
         }
 
@@ -212,7 +185,9 @@ impl<R: SandboxRunner> LeanVerifier<R> {
             )
             .await?;
         if build.exit_code != Some(0) {
-            return Err(LeanVerificationError::BuildFailed(build.stderr));
+            return Err(LeanVerificationError::BuildFailed(
+                build.stderr.chars().take(4_096).collect(),
+            ));
         }
 
         let kernel = self
@@ -252,6 +227,15 @@ impl<R: SandboxRunner> LeanVerifier<R> {
             )
             .await?;
 
+        for result in [&build, &kernel, &comparator] {
+            if result.stdout.len() > MAX_RECEIPT_OUTPUT_BYTES
+                || result.stderr.len() > MAX_RECEIPT_OUTPUT_BYTES
+                || result.trace_root.trim().is_empty()
+            {
+                return Err(LeanVerificationError::OutputTooLarge);
+            }
+        }
+
         let kernel_verdict = verdict_from_exit(kernel.exit_code);
         let independent_verdict = verdict_from_exit(comparator.exit_code);
         if kernel_verdict != independent_verdict {
@@ -281,7 +265,7 @@ impl<R: SandboxRunner> LeanVerifier<R> {
                 checker_family: CheckerFamily::LeanKernel,
                 checker_name: "lean4checker".to_owned(),
                 checker_version: request.lean_toolchain.clone(),
-                binary_digest: "CONFIGURE_AT_DEPLOYMENT".to_owned(),
+                binary_digest: request.official_checker_binary_digest.clone(),
                 node_id: self.official_kernel.node_id.clone(),
                 operator_cluster_id: self.official_kernel.operator_cluster_id.clone(),
                 infrastructure_provider: Some(self.official_kernel.infrastructure_provider.clone()),
@@ -292,8 +276,8 @@ impl<R: SandboxRunner> LeanVerifier<R> {
             CheckerExecution {
                 checker_family: CheckerFamily::Nanoda,
                 checker_name: "nanoda-via-comparator".to_owned(),
-                checker_version: "CONFIGURE_AT_DEPLOYMENT".to_owned(),
-                binary_digest: "CONFIGURE_AT_DEPLOYMENT".to_owned(),
+                checker_version: request.lean_toolchain.clone(),
+                binary_digest: request.independent_checker_binary_digest.clone(),
                 node_id: self.independent_checker.node_id.clone(),
                 operator_cluster_id: self.independent_checker.operator_cluster_id.clone(),
                 infrastructure_provider: Some(
@@ -314,7 +298,7 @@ impl<R: SandboxRunner> LeanVerifier<R> {
             "axioms": observed_axioms,
         });
 
-        Ok(LeanVerificationReceipt {
+        let mut receipt = LeanVerificationReceipt {
             receipt_id: ReceiptId::derive(&receipt_material)
                 .expect("verification receipt is serializable"),
             job_id: request.job_id.clone(),
@@ -331,9 +315,39 @@ impl<R: SandboxRunner> LeanVerifier<R> {
             checker_executions,
             verdict: kernel_verdict,
             verified_at: Utc::now(),
-            aggregate_signature: "UNSIGNED_REFERENCE_RECEIPT".to_owned(),
-        })
+            aggregate_signature: String::new(),
+        };
+        receipt.aggregate_signature = self.receipt_signer.sign_receipt(&receipt)?;
+        if receipt.aggregate_signature.trim().is_empty() {
+            return Err(LeanVerificationError::ReceiptSigning);
+        }
+        Ok(receipt)
     }
+}
+
+const MAX_RECEIPT_OUTPUT_BYTES: usize = 1024 * 1024;
+
+fn valid_sandbox_policy(policy: &SandboxPolicy) -> bool {
+    policy.network_disabled
+        && policy.read_only_root
+        && valid_sha256_digest(&policy.image_digest)
+        && policy.cpu_limit_millis > 0
+        && policy.memory_limit_bytes > 0
+        && policy.process_limit > 0
+        && policy.timeout_seconds > 0
+        && policy
+            .seccomp_profile_hash
+            .as_deref()
+            .is_some_and(valid_sha256_digest)
+        && policy.writable_paths.iter().all(|path| {
+            path.starts_with("/tmp/xlemma-") && !path.split('/').any(|part| part == "..")
+        })
+}
+
+fn valid_sha256_digest(value: &str) -> bool {
+    value
+        .strip_prefix("sha256:")
+        .is_some_and(|hex| hex.len() == 64 && hex.bytes().all(|byte| byte.is_ascii_hexdigit()))
 }
 
 fn verdict_from_exit(code: Option<i32>) -> ObservationVerdict {

@@ -31,6 +31,8 @@ Required properties include:
 - artifact repacking with identical content/environment yields the same identity;
 - unsafe or symlink-escaping bundle paths always fail.
 - any mutation of signed XLMP identity material invalidates its MessageID;
+- unknown, aliased, or dropped XLMP fields fail strict typed ingress;
+- one trusted signing key cannot impersonate two committee NodeIDs;
 - every supported transport decodes to the same canonical XLMP envelope;
 - no payment, finality, prover, verifier, or storage adapter can advance an XLMP state without the required protocol evidence.
 
@@ -120,7 +122,10 @@ Additional invariants:
 - waterfall shares equal 10,000 basis points;
 - duplicate contributors cannot capture rounding or double allocations;
 - a bounty cannot pay before a final matching claim/policy certificate;
+- a bounty cannot substitute a different artifact under a matching claim/policy certificate;
+- caller-selected proof, certificate, bounty, or revenue identifiers cannot overwrite another record;
 - a quarantined certificate cannot release a bounty;
+- no administrator path can mint unbacked research credits;
 - dependency rewards never exceed downstream net revenue or policy cap;
 - no protocol path books token appreciation as revenue.
 

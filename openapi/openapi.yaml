@@ -10,9 +10,12 @@ info:
     novelty review, and lemma capsules.
 servers:
   - url: http://localhost:8080
+security:
+  - bearerAuth: []
 paths:
   /health:
     get:
+      security: []
       operationId: health
       responses:
         "200":
@@ -29,7 +32,7 @@ paths:
   /xlmp/v1/messages:
     post:
       operationId: acceptXlmpMessage
-      summary: Validate canonical content identity and append an XLMP/1 message
+      summary: Verify an authorized Ed25519 signature and append an XLMP/1 message
       requestBody:
         required: true
         content:
@@ -353,38 +356,15 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: ../schemas/observation.schema.json }
+            schema: { $ref: ../schemas/xlmp-envelope.schema.json }
       responses:
         "200": { description: Observation appended }
         "409": { $ref: "#/components/responses/Conflict" }
-  /v1/verification-jobs/{jobId}/payment-required:
-    post:
-      operationId: createVerificationPaymentOffer
-      summary: Construct an optional x402 payment-adapter offer for an XLMP job
-      parameters:
-        - $ref: "#/components/parameters/JobId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/PaymentOfferRequest" }
-      responses:
-        "402": { $ref: "#/components/responses/PaymentRequired" }
-        "404": { description: Verification job not found }
   /v1/verification-jobs/{jobId}/evaluate:
     post:
       operationId: evaluateVerificationJob
       parameters:
         - $ref: "#/components/parameters/JobId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [policy]
-              properties:
-                policy: { $ref: ../schemas/formal-consensus-policy.schema.json }
       responses:
         "200": { description: Formal consensus outcome }
   /v1/compute/offers:
@@ -460,6 +440,11 @@ paths:
         "200": { description: License manifest and settlement receipt }
         "402": { $ref: "#/components/responses/PaymentRequired" }
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque-256-bit-token
   parameters:
     ResearcherId:
       in: path
@@ -520,13 +505,19 @@ components:
         deadline: { type: string, format: date-time }
     CreateVerificationJob:
       type: object
-      required: [researcher_id, claim_id, theory_id, artifact_id, policy_id, maximum_budget_minor_units, settlement_asset]
+      required: [researcher_id, claim_id, theory_id, artifact_id, artifact_root, policy, committee_members, maximum_budget_minor_units, settlement_asset]
       properties:
         researcher_id: { type: string }
         claim_id: { type: string }
         theory_id: { type: string }
         artifact_id: { type: string }
-        policy_id: { type: string }
+        artifact_root: { type: string, minLength: 16 }
+        policy: { $ref: ../schemas/formal-consensus-policy.schema.json }
+        committee_members:
+          type: array
+          minItems: 1
+          maxItems: 32
+          items: { $ref: ../schemas/committee-selection.schema.json#/properties/members/items }
         maximum_budget_minor_units: { type: integer, minimum: 1 }
         settlement_asset: { type: string }
     VerificationJob:
@@ -540,24 +531,6 @@ components:
           enum: [draft, claim_committed, quoted, funded, assigned, formalizing, candidate_ready, building, checkers_committed, checkers_revealed, passed, failed, divergent, challenged, finalized, rejected, quarantined, published, revalidated, superseded]
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
-    PaymentOfferRequest:
-      type: object
-      additionalProperties: false
-      required: [xlmp_message_id, compute_quote_id, amount, asset, network, pay_to, max_timeout_seconds, artifact_commitment, model_policy, rights_manifest_hash, revenue_route_hash, delivery_mode, valid_until]
-      properties:
-        xlmp_message_id: { type: string, pattern: "^xlmessage:blake3:[0-9a-f]{64}$" }
-        compute_quote_id: { type: string, pattern: "^xlquote:blake3:[0-9a-f]{64}$" }
-        amount: { type: string, pattern: "^[1-9][0-9]*$" }
-        asset: { type: string, minLength: 1 }
-        network: { type: string, minLength: 1 }
-        pay_to: { type: string, minLength: 1 }
-        max_timeout_seconds: { type: integer, minimum: 1 }
-        artifact_commitment: { type: string, minLength: 16 }
-        model_policy: { type: string, minLength: 1 }
-        rights_manifest_hash: { type: string, minLength: 16 }
-        revenue_route_hash: { type: string, minLength: 16 }
-        delivery_mode: { type: string, minLength: 1 }
-        valid_until: { type: string, format: date-time }
   responses:
     PaymentRequired:
       description: Optional x402 payment authorization required

@@ -5,16 +5,14 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ResearchVault} from "./ResearchVault.sol";
 
 contract ResearchVaultFactory {
-    event ResearchVaultCreated(
-        bytes32 indexed researcherId,
-        address indexed researcher,
-        address vault,
-        address credit
-    );
+    event ResearchVaultCreated(bytes32 indexed researcherId, address indexed researcher, address vault, address credit);
 
-    mapping(bytes32 => address) public vaultByResearcherId;
+    /// ResearcherIDs are namespaced by the self-registering account so an
+    /// unrelated address cannot front-run and occupy another account's slot.
+    mapping(address => mapping(bytes32 => address)) public vaultByResearcher;
 
     error ResearcherAlreadyRegistered();
+    error UnauthorizedRegistration();
 
     function createVault(
         bytes32 researcherId,
@@ -25,18 +23,15 @@ contract ResearchVaultFactory {
         string calldata creditName,
         string calldata creditSymbol
     ) external returns (ResearchVault vault) {
-        if (vaultByResearcherId[researcherId] != address(0)) {
+        if (
+            researcherId == bytes32(0) || researcher == address(0) || msg.sender != researcher
+                || administrator != researcher
+        ) revert UnauthorizedRegistration();
+        if (vaultByResearcher[researcher][researcherId] != address(0)) {
             revert ResearcherAlreadyRegistered();
         }
-        vault = new ResearchVault(
-            settlementAsset,
-            assetDecimals,
-            researcher,
-            administrator,
-            creditName,
-            creditSymbol
-        );
-        vaultByResearcherId[researcherId] = address(vault);
+        vault = new ResearchVault(settlementAsset, assetDecimals, researcher, administrator, creditName, creditSymbol);
+        vaultByResearcher[researcher][researcherId] = address(vault);
         emit ResearchVaultCreated(researcherId, researcher, address(vault), address(vault.credit()));
     }
 }

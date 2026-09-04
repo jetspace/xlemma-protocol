@@ -1,4 +1,6 @@
+use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use chrono::{DateTime, Utc};
+use ed25519_dalek::{Signature, VerifyingKey};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use xlemma_core::{
@@ -552,6 +554,10 @@ pub enum XlmpError {
     ServiceMatchIdMismatch,
     #[error("XLMP observation reveal does not match its prior commitment")]
     ObservationCommitMismatch,
+    #[error("XLMP observation receipt integrity failed: {0}")]
+    ObservationIntegrity(String),
+    #[error("XLMP Ed25519 signature profile is malformed or invalid")]
+    InvalidCryptographicSignature,
     #[error("XLMP credential or revocation content is structurally invalid")]
     CredentialIntegrity,
     #[error("XLMP observation lacks its credential-chain binding")]
@@ -694,6 +700,10 @@ impl XlmpEnvelope {
             {
                 return Err(XlmpError::ObservationIdentity);
             }
+            XlmpMessage::ObservationReveal(message) => message
+                .observation
+                .validate_integrity()
+                .map_err(|error| XlmpError::ObservationIntegrity(error.to_string()))?,
             _ => {}
         }
         match &self.message {
@@ -750,10 +760,68 @@ fn derive_message_id(
     })
 }
 
+/// Verifies the baseline self-certifying XLMP Ed25519 signature profile.
+///
+/// `sender` is `ed25519:<base64url-no-pad public key>` and `signature` is
+/// `ed25519:<base64url-no-pad 64-byte signature>`. Services must additionally
+/// authorize the sender with an explicit trust or credential registry.
+pub fn verify_ed25519_signature(envelope: &XlmpEnvelope) -> Result<(), XlmpError> {
+    envelope.validate_integrity()?;
+    verify_ed25519_detached(
+        &envelope.sender,
+        &envelope.signature,
+        &envelope.signing_bytes()?,
+    )
+}
+
+/// Validates that a signer identifier contains a well-formed Ed25519 public
+/// key before it is admitted to a deployment trust registry.
+pub fn validate_ed25519_signer(signer: &str) -> Result<(), XlmpError> {
+    parse_ed25519_public_key(signer).map(|_| ())
+}
+
+fn parse_ed25519_public_key(signer: &str) -> Result<VerifyingKey, XlmpError> {
+    let public_key = signer
+        .strip_prefix("ed25519:")
+        .ok_or(XlmpError::InvalidCryptographicSignature)
+        .and_then(|encoded| {
+            URL_SAFE_NO_PAD
+                .decode(encoded)
+                .map_err(|_| XlmpError::InvalidCryptographicSignature)
+        })?;
+    let public_key: [u8; 32] = public_key
+        .try_into()
+        .map_err(|_| XlmpError::InvalidCryptographicSignature)?;
+    VerifyingKey::from_bytes(&public_key).map_err(|_| XlmpError::InvalidCryptographicSignature)
+}
+
+pub fn verify_ed25519_detached(
+    signer: &str,
+    encoded_signature: &str,
+    message: &[u8],
+) -> Result<(), XlmpError> {
+    let signature = encoded_signature
+        .strip_prefix("ed25519:")
+        .ok_or(XlmpError::InvalidCryptographicSignature)
+        .and_then(|encoded| {
+            URL_SAFE_NO_PAD
+                .decode(encoded)
+                .map_err(|_| XlmpError::InvalidCryptographicSignature)
+        })?;
+    let signature =
+        Signature::from_slice(&signature).map_err(|_| XlmpError::InvalidCryptographicSignature)?;
+    let key = parse_ed25519_public_key(signer)?;
+    key.verify_strict(message, &signature)
+        .map_err(|_| XlmpError::InvalidCryptographicSignature)
+}
+
 pub fn verify_observation_commit_reveal(
     committed: &ObservationCommitMessage,
     revealed: &ObservationReceipt,
 ) -> Result<(), XlmpError> {
+    revealed
+        .validate_integrity()
+        .map_err(|error| XlmpError::ObservationIntegrity(error.to_string()))?;
     let same_binding = committed.job_id == revealed.job_id
         && committed.receipt_id == revealed.receipt_id
         && committed.node_id == revealed.node_id
@@ -794,6 +862,14 @@ mod tests {
             contribution_manifest_hash: "blake3:contributions".into(),
             rights_manifest_hash: "blake3:rights".into(),
         })
+    }
+
+    #[test]
+    fn malformed_ed25519_signer_identifier_is_rejected() {
+        assert!(matches!(
+            validate_ed25519_signer("ed25519:not-a-public-key"),
+            Err(XlmpError::InvalidCryptographicSignature)
+        ));
     }
 
     #[test]

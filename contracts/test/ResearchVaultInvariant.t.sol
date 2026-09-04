@@ -37,15 +37,8 @@ contract ResearchVaultHandler is Test {
         uint256 balance = credit.balanceOf(address(this));
         if (balance == 0) return;
         uint256 maximum = bound(uint256(rawMaximum), 1, balance);
-        bytes32 authorizationId = keccak256(
-            abi.encode("invariant-authorization", ++nonce)
-        );
-        vault.authorize(
-            authorizationId,
-            PAYEE,
-            maximum,
-            uint64(block.timestamp + 365 days)
-        );
+        bytes32 authorizationId = keccak256(abi.encode("invariant-authorization", ++nonce));
+        vault.authorize(authorizationId, PAYEE, maximum, uint64(block.timestamp + 365 days));
         activeAuthorization = authorizationId;
         activeMaximum = maximum;
     }
@@ -80,12 +73,7 @@ contract ResearchVaultInvariantTest is StdInvariant, Test {
     function setUp() public {
         asset = new MockUSDC();
         vault = new ResearchVault(
-            IERC20(address(asset)),
-            6,
-            address(this),
-            address(this),
-            "Invariant Research Credit",
-            "iRCR"
+            IERC20(address(asset)), 6, address(this), address(this), "Invariant Research Credit", "iRCR"
         );
         handler = new ResearchVaultHandler(asset, vault);
         vault.grantRole(vault.SETTLER_ROLE(), address(handler));

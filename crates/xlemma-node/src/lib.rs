@@ -23,6 +23,10 @@ use xlemma_core::{
 /// Domain-separated assignment envelope used by schedulers and node agents.
 pub type SignedNodeAssignment = xlemma_crypto::SignedEnvelope<NodeAssignment>;
 
+pub trait AssignmentProofVerifier {
+    fn verify_assignment(&self, capability: &NodeCapability, assignment: &NodeAssignment) -> bool;
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NodeCapability {
     pub node_id: NodeId,
@@ -96,7 +100,6 @@ pub struct NodeJob {
 #[derive(Clone, Debug)]
 pub struct ObservationEvidence {
     pub verdict: ObservationVerdict,
-    pub observation_root: String,
     pub execution_trace_root: String,
 }
 
@@ -118,6 +121,8 @@ pub enum NodeError {
     InvalidTiming,
     #[error("assignment identifier, signature, root, or policy is empty")]
     InvalidAssignment,
+    #[error("assignment signature or credential authorization is invalid")]
+    InvalidAssignmentProof,
     #[error("operator occupies incompatible roles on the same job")]
     RoleConflict,
     #[error("invalid node job transition: {0:?} -> {1:?}")]
@@ -128,6 +133,8 @@ pub enum NodeError {
     CommitmentMismatch,
     #[error(transparent)]
     Id(#[from] xlemma_core::IdError),
+    #[error(transparent)]
+    ObservationIntegrity(#[from] xlemma_core::ObservationIntegrityError),
 }
 
 pub fn validate_assignment(
@@ -135,6 +142,7 @@ pub fn validate_assignment(
     assignment: &NodeAssignment,
     now: DateTime<Utc>,
     operator_roles_on_job: &BTreeSet<NodeRole>,
+    verifier: &impl AssignmentProofVerifier,
 ) -> Result<(), NodeError> {
     capability.node_id.validate()?;
     capability.verified_user_id.validate()?;
@@ -176,6 +184,9 @@ pub fn validate_assignment(
         || assignment.assigned_credential_chain_root.is_empty()
     {
         return Err(NodeError::InvalidAssignment);
+    }
+    if !verifier.verify_assignment(capability, assignment) {
+        return Err(NodeError::InvalidAssignmentProof);
     }
     if assignment.assigned_at > now
         || assignment.assigned_at > assignment.execute_after
@@ -266,6 +277,9 @@ pub fn transition(job: &mut NodeJob, next: NodeJobState) -> Result<(), NodeError
     Ok(())
 }
 
+// Commit/reveal timestamps, salt, signature, and verifier remain explicit
+// because each is an independent receipt-integrity boundary.
+#[allow(clippy::too_many_arguments)]
 pub fn build_observation_receipt(
     capability: &NodeCapability,
     assignment: &NodeAssignment,
@@ -274,6 +288,7 @@ pub fn build_observation_receipt(
     committed_at: DateTime<Utc>,
     revealed_at: DateTime<Utc>,
     signature: String,
+    verifier: &impl AssignmentProofVerifier,
 ) -> Result<ObservationReceipt, NodeError> {
     if salt.is_empty()
         || signature.is_empty()
@@ -284,43 +299,19 @@ pub fn build_observation_receipt(
     {
         return Err(NodeError::InvalidTiming);
     }
-    validate_assignment(capability, assignment, committed_at, &BTreeSet::new())?;
+    validate_assignment(
+        capability,
+        assignment,
+        committed_at,
+        &BTreeSet::new(),
+        verifier,
+    )?;
     let family = capability.checker_family;
-    let commitment = observation_commitment(
-        &assignment.job_id,
-        evidence.verdict,
-        &evidence.observation_root,
-        salt.as_bytes(),
-    );
-    let receipt_material = serde_json::json!({
-        "job_id": &assignment.job_id,
-        "node_id": &capability.node_id,
-        "verified_user_id": &capability.verified_user_id,
-        "operator_id": &capability.operator_id,
-        "operator_cluster_id": &capability.operator_cluster_id,
-        "user_credential_id": &capability.user_credential_id,
-        "operator_credential_id": &capability.operator_credential_id,
-        "node_credential_id": &capability.node_credential_id,
-        "credential_chain_root": &capability.credential_chain_root,
-        "checker_family": family,
-        "checker_name": &capability.checker_name,
-        "checker_version": &capability.checker_version,
-        "checker_binary_digest": &capability.checker_binary_digest,
-        "infrastructure_provider": &capability.infrastructure_provider,
-        "region": &capability.region,
-        "artifact_root": &assignment.artifact_root,
-        "environment_root": &assignment.environment_root,
-        "dependency_root": &assignment.dependency_root,
-        "axiom_set_root": &assignment.axiom_set_root,
-        "execution_trace_root": &evidence.execution_trace_root,
-        "observation_root": &evidence.observation_root,
-        "verdict": evidence.verdict,
-        "commitment": &commitment,
-        "committed_at": &committed_at,
-        "revealed_at": &revealed_at,
-    });
-    Ok(ObservationReceipt {
-        receipt_id: ReceiptId::derive(&receipt_material)?,
+    if evidence.execution_trace_root.trim().is_empty() {
+        return Err(NodeError::InvalidAssignment);
+    }
+    let mut receipt = ObservationReceipt {
+        receipt_id: ReceiptId::derive(&"pending-observation-receipt")?,
         job_id: assignment.job_id.clone(),
         node_id: capability.node_id.clone(),
         verified_user_id: capability.verified_user_id.clone(),
@@ -341,14 +332,24 @@ pub fn build_observation_receipt(
         dependency_root: assignment.dependency_root.clone(),
         axiom_set_root: assignment.axiom_set_root.clone(),
         execution_trace_root: evidence.execution_trace_root,
-        observation_root: evidence.observation_root,
+        observation_root: String::new(),
         verdict: evidence.verdict,
-        commitment,
+        commitment: String::new(),
         reveal_salt: salt.to_owned(),
         committed_at,
         revealed_at,
         signature,
-    })
+    };
+    receipt.observation_root = receipt.expected_observation_root()?;
+    receipt.commitment = observation_commitment(
+        &receipt.job_id,
+        receipt.verdict,
+        &receipt.observation_root,
+        receipt.reveal_salt.as_bytes(),
+    );
+    receipt.receipt_id = receipt.expected_receipt_id()?;
+    receipt.validate_integrity()?;
+    Ok(receipt)
 }
 
 fn is_checker_role(role: NodeRole) -> bool {
@@ -363,6 +364,14 @@ mod tests {
     use super::*;
     use chrono::Duration;
     use xlemma_consensus::verify_reveal;
+
+    struct AcceptTestAssignment;
+
+    impl AssignmentProofVerifier for AcceptTestAssignment {
+        fn verify_assignment(&self, _: &NodeCapability, _: &NodeAssignment) -> bool {
+            true
+        }
+    }
 
     fn capability(role: NodeRole) -> NodeCapability {
         NodeCapability {
@@ -438,6 +447,7 @@ mod tests {
                 &assignment(NodeRole::OfficialKernelChecker, now),
                 now,
                 &roles,
+                &AcceptTestAssignment,
             ),
             Err(NodeError::RoleConflict)
         ));
@@ -453,13 +463,13 @@ mod tests {
             &assignment,
             ObservationEvidence {
                 verdict: ObservationVerdict::Pass,
-                observation_root: "blake3:observation".into(),
                 execution_trace_root: "blake3:trace".into(),
             },
             "fresh-salt",
             now,
             now + Duration::seconds(1),
             "signature".into(),
+            &AcceptTestAssignment,
         )
         .unwrap();
         assert!(verify_reveal(&receipt, b"fresh-salt"));
@@ -472,7 +482,13 @@ mod tests {
         let mut assigned = assignment(NodeRole::OfficialKernelChecker, now);
         assigned.assigned_node_id = NodeId::derive(&"another-node").unwrap();
         assert!(matches!(
-            validate_assignment(&cap, &assigned, now, &BTreeSet::new()),
+            validate_assignment(
+                &cap,
+                &assigned,
+                now,
+                &BTreeSet::new(),
+                &AcceptTestAssignment
+            ),
             Err(NodeError::WrongAssignee)
         ));
     }
@@ -484,7 +500,13 @@ mod tests {
         let mut assigned = assignment(NodeRole::OfficialKernelChecker, now);
         assigned.assigned_verified_user_id = VerifiedUserId::derive(&"another-user").unwrap();
         assert!(matches!(
-            validate_assignment(&cap, &assigned, now, &BTreeSet::new()),
+            validate_assignment(
+                &cap,
+                &assigned,
+                now,
+                &BTreeSet::new(),
+                &AcceptTestAssignment
+            ),
             Err(NodeError::WrongAssignee)
         ));
     }
@@ -496,7 +518,13 @@ mod tests {
         let mut assigned = assignment(NodeRole::OfficialKernelChecker, now);
         assigned.assigned_at = now + Duration::seconds(1);
         assert!(matches!(
-            validate_assignment(&cap, &assigned, now, &BTreeSet::new()),
+            validate_assignment(
+                &cap,
+                &assigned,
+                now,
+                &BTreeSet::new(),
+                &AcceptTestAssignment
+            ),
             Err(NodeError::InvalidTiming)
         ));
     }
@@ -512,6 +540,7 @@ mod tests {
                 &assignment(NodeRole::OfficialKernelChecker, now),
                 now,
                 &BTreeSet::new(),
+                &AcceptTestAssignment,
             ),
             Err(NodeError::MissingInfrastructureIdentity)
         ));
@@ -527,13 +556,13 @@ mod tests {
             &assigned,
             ObservationEvidence {
                 verdict: ObservationVerdict::Pass,
-                observation_root: "blake3:observation".into(),
                 execution_trace_root: "blake3:trace".into(),
             },
             "fresh-salt",
             now,
             assigned.reveal_deadline + Duration::seconds(1),
             "signature".into(),
+            &AcceptTestAssignment,
         );
         assert!(matches!(result, Err(NodeError::InvalidTiming)));
     }

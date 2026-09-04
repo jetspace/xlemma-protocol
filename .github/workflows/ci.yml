@@ -8,30 +8,45 @@ jobs:
   structural-validation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with: { python-version: "3.12" }
-      - run: pip install jsonschema pyyaml
+      - run: pip install jsonschema==4.25.1 pyyaml==6.0.2
       - run: python scripts/validate_repo.py
       - run: python scripts/simulate_economics.py
 
   rust:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.82.0
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with: { persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@271ea64dfe6a2ce0953f640d4ac3de19c5f75523 # 1.82.0
         with:
+          toolchain: 1.82.0
           components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@bc2d2e71bd35c5549942babaa51a89c586b981d1 # v2.8.1
       - run: cargo fmt --all -- --check
       - run: cargo clippy --locked --workspace --all-targets -- -D warnings
       - run: cargo test --locked --workspace
 
+  rust-security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with: { persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: stable
+      - run: cargo install cargo-audit --locked --version 0.22.2
+      - run: cargo audit --deny warnings
+
   lean:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: leanprover/lean-action@v1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with: { persist-credentials: false }
+      - uses: leanprover/lean-action@434f25c2f80ded67bba02502ad3a86f25db50709 # v1.3.0
         with:
           lake-package-directory: lean
           build: true
@@ -45,12 +60,15 @@ jobs:
   solidity:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: foundry-rs/foundry-toolchain@v1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with: { persist-credentials: false }
+      - uses: foundry-rs/foundry-toolchain@82dee4ba654bd2146511f85f0d013af94670c4de # v1.4.0
+        with:
+          version: v1.4.0
       - working-directory: contracts
         run: |
-          forge install OpenZeppelin/openzeppelin-contracts --no-git
-          forge install foundry-rs/forge-std --no-git
+          forge install OpenZeppelin/openzeppelin-contracts@fcbae5394ae8ad52d8e580a3477db99814b9d565 --no-git
+          forge install foundry-rs/forge-std@8e40513d678f392f398620b3ef2b418648b33e89 --no-git
           forge fmt --check
           forge build --sizes
           forge test -vvv

@@ -6,10 +6,10 @@
 
 use async_trait::async_trait;
 use chrono::Utc;
-use reqwest::StatusCode;
+use reqwest::{redirect::Policy as RedirectPolicy, StatusCode, Url};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use std::{collections::BTreeMap, env, time::Instant};
+use std::{collections::BTreeMap, env, sync::Arc, time::Instant};
 use thiserror::Error;
 use xlemma_core::{
     Amount, ArtifactId, AstraComputeReceipt, ComputeReceipt, ComputeService, JobId, ReceiptId,
@@ -20,6 +20,7 @@ use xlemma_xlmp::{AdapterError, ProverArtifact, ProverRequest, ResearchProver};
 pub struct AstraConfig {
     pub api_key: String,
     pub base_url: String,
+    pub allowed_hosts: Vec<String>,
     pub model: String,
     pub reasoning_effort: String,
     pub max_output_tokens: u64,
@@ -37,6 +38,13 @@ impl AstraConfig {
             api_key: env::var("OPENAI_API_KEY").map_err(|_| AstraError::MissingApiKey)?,
             base_url: env::var("OPENAI_BASE_URL")
                 .unwrap_or_else(|_| "https://api.openai.com/v1".to_owned()),
+            allowed_hosts: env::var("OPENAI_ALLOWED_HOSTS")
+                .unwrap_or_else(|_| "api.openai.com".to_owned())
+                .split(',')
+                .map(str::trim)
+                .filter(|host| !host.is_empty())
+                .map(str::to_owned)
+                .collect(),
             model: env::var("OPENAI_MODEL").unwrap_or_else(|_| "gpt-6-astra".to_owned()),
             reasoning_effort: env::var("OPENAI_REASONING_EFFORT")
                 .unwrap_or_else(|_| "high".to_owned()),
@@ -135,12 +143,18 @@ pub enum AstraError {
     MissingApiKey,
     #[error("OpenAI API request failed: {0}")]
     Transport(#[from] reqwest::Error),
-    #[error("OpenAI API returned status {status}: {body}")]
-    Api { status: StatusCode, body: String },
+    #[error("OpenAI API returned status {status}")]
+    Api { status: StatusCode },
+    #[error("OpenAI endpoint configuration is not an allowed HTTPS origin")]
+    InvalidEndpoint,
+    #[error("OpenAI API response exceeded the configured byte limit")]
+    ResponseTooLarge,
     #[error("response did not contain output text")]
     MissingOutput,
     #[error("failed to parse structured ASTRA output: {0}")]
     Parse(#[from] serde_json::Error),
+    #[error("ASTRA compute receipt signing failed")]
+    ReceiptSigning,
 }
 
 #[async_trait]
@@ -165,16 +179,32 @@ pub trait AstraProverAdapter: Send + Sync {
 pub struct OpenAiAstraClient {
     config: AstraConfig,
     http: reqwest::Client,
+    responses_url: Url,
+    receipt_signer: Arc<dyn AstraReceiptSigner>,
+}
+
+pub trait AstraReceiptSigner: Send + Sync {
+    fn sign_receipt(&self, unsigned_receipt: &AstraComputeReceipt) -> Result<String, AstraError>;
 }
 
 impl OpenAiAstraClient {
-    pub fn new(config: AstraConfig) -> Result<Self, AstraError> {
+    pub fn new(
+        config: AstraConfig,
+        receipt_signer: Arc<dyn AstraReceiptSigner>,
+    ) -> Result<Self, AstraError> {
+        let responses_url = validated_responses_url(&config)?;
         let http = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(
                 config.request_timeout_seconds,
             ))
+            .redirect(RedirectPolicy::none())
             .build()?;
-        Ok(Self { config, http })
+        Ok(Self {
+            config,
+            http,
+            responses_url,
+            receipt_signer,
+        })
     }
 
     async fn responses_create(&self, prompt: String) -> Result<AstraRawResult, AstraError> {
@@ -205,21 +235,31 @@ impl OpenAiAstraClient {
 
         let response = self
             .http
-            .post(format!(
-                "{}/responses",
-                self.config.base_url.trim_end_matches('/')
-            ))
+            .post(self.responses_url.clone())
             .bearer_auth(&self.config.api_key)
             .json(&request_value)
             .send()
             .await?;
         let status = response.status();
-        let body = response.text().await?;
         if !status.is_success() {
-            return Err(AstraError::Api { status, body });
+            return Err(AstraError::Api { status });
+        }
+        if response
+            .content_length()
+            .is_some_and(|length| length > MAX_RESPONSE_BYTES as u64)
+        {
+            return Err(AstraError::ResponseTooLarge);
+        }
+        let mut response = response;
+        let mut body = Vec::new();
+        while let Some(chunk) = response.chunk().await? {
+            if body.len().saturating_add(chunk.len()) > MAX_RESPONSE_BYTES {
+                return Err(AstraError::ResponseTooLarge);
+            }
+            body.extend_from_slice(&chunk);
         }
 
-        let value: Value = serde_json::from_str(&body)?;
+        let value: Value = serde_json::from_slice(&body)?;
         let output_text = extract_output_text(&value).ok_or(AstraError::MissingOutput)?;
         let usage = extract_usage(&value);
         let response_id = value
@@ -249,7 +289,7 @@ impl OpenAiAstraClient {
         context_root: String,
         result: &AstraRawResult,
         candidate_roots: Vec<String>,
-    ) -> AstraComputeReceipt {
+    ) -> Result<AstraComputeReceipt, AstraError> {
         let charged_units = estimate_charge_minor_units(&self.config, &result.usage);
         let receipt_material = serde_json::json!({
             "job_id": job_id,
@@ -259,7 +299,7 @@ impl OpenAiAstraClient {
             "candidate_roots": candidate_roots,
             "usage": result.usage,
         });
-        AstraComputeReceipt {
+        let mut receipt = AstraComputeReceipt {
             receipt_id: ReceiptId::derive(&receipt_material)
                 .expect("receipt material is serializable"),
             job_id,
@@ -282,10 +322,39 @@ impl OpenAiAstraClient {
             ),
             candidate_artifact_roots: candidate_roots,
             generated_at: Utc::now(),
-            // Production nodes MUST sign through an HSM-backed signer.
-            signature: "UNSIGNED_REFERENCE_RECEIPT".to_owned(),
+            signature: String::new(),
+        };
+        receipt.signature = self.receipt_signer.sign_receipt(&receipt)?;
+        if receipt.signature.trim().is_empty() {
+            return Err(AstraError::ReceiptSigning);
         }
+        Ok(receipt)
     }
+}
+
+const MAX_RESPONSE_BYTES: usize = 8 * 1024 * 1024;
+
+fn validated_responses_url(config: &AstraConfig) -> Result<Url, AstraError> {
+    let base = Url::parse(config.base_url.trim()).map_err(|_| AstraError::InvalidEndpoint)?;
+    let host = base.host_str().ok_or(AstraError::InvalidEndpoint)?;
+    if base.scheme() != "https"
+        || !base.username().is_empty()
+        || base.password().is_some()
+        || base.query().is_some()
+        || base.fragment().is_some()
+        || config.allowed_hosts.is_empty()
+        || !config
+            .allowed_hosts
+            .iter()
+            .any(|allowed| allowed.eq_ignore_ascii_case(host))
+    {
+        return Err(AstraError::InvalidEndpoint);
+    }
+    Url::parse(&format!(
+        "{}/responses",
+        base.as_str().trim_end_matches('/')
+    ))
+    .map_err(|_| AstraError::InvalidEndpoint)
 }
 
 #[async_trait]
@@ -310,7 +379,7 @@ impl AstraProverAdapter for OpenAiAstraClient {
             request.artifact_context_root,
             &result,
             vec![root],
-        );
+        )?;
         Ok((candidate, receipt))
     }
 
@@ -333,7 +402,7 @@ impl AstraProverAdapter for OpenAiAstraClient {
             request.artifact_context_root,
             &result,
             vec![root],
-        );
+        )?;
         Ok((candidate, receipt))
     }
 
@@ -355,7 +424,7 @@ impl AstraProverAdapter for OpenAiAstraClient {
             request.artifact_context_root,
             &result,
             vec![root],
-        );
+        )?;
         Ok((explanation, receipt))
     }
 }
@@ -773,6 +842,7 @@ mod tests {
         let config = AstraConfig {
             api_key: "test".into(),
             base_url: "http://127.0.0.1:9999".into(),
+            allowed_hosts: vec!["127.0.0.1".into()],
             model: "test-model".into(),
             reasoning_effort: "high".into(),
             max_output_tokens: 100,
@@ -789,5 +859,38 @@ mod tests {
             output_tokens: 100_000,
         };
         assert_eq!(estimate_charge_minor_units(&config, &usage), 10_500_000);
+    }
+
+    #[test]
+    fn endpoint_must_be_https_and_explicitly_allowlisted() {
+        let mut config = AstraConfig {
+            api_key: "test".into(),
+            base_url: "http://127.0.0.1:9999/v1".into(),
+            allowed_hosts: vec!["127.0.0.1".into()],
+            model: "test-model".into(),
+            reasoning_effort: "high".into(),
+            max_output_tokens: 100,
+            request_timeout_seconds: 1,
+            price_input_per_million_minor_units: 1,
+            price_cached_input_per_million_minor_units: 1,
+            price_output_per_million_minor_units: 1,
+            settlement_asset: "USDC".into(),
+            settlement_decimals: 6,
+        };
+        assert!(matches!(
+            validated_responses_url(&config),
+            Err(AstraError::InvalidEndpoint)
+        ));
+        config.base_url = "https://evil.example/v1".into();
+        assert!(matches!(
+            validated_responses_url(&config),
+            Err(AstraError::InvalidEndpoint)
+        ));
+        config.base_url = "https://api.openai.com/v1".into();
+        config.allowed_hosts = vec!["api.openai.com".into()];
+        assert_eq!(
+            validated_responses_url(&config).unwrap().as_str(),
+            "https://api.openai.com/v1/responses"
+        );
     }
 }

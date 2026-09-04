@@ -5,13 +5,12 @@ use serde::{de::DeserializeOwned, Serialize};
 use std::{fs, path::PathBuf};
 use xlemma_compute_curve::{quote_verified_proof_cost, ExpectedWork, ServiceOffer};
 use xlemma_consensus::{
-    eligible_set_root, evaluate_formal_consensus, randomness_commitment, select_committee,
-    FormalConsensusPolicy,
+    eligible_set_root, evaluate_formal_consensus, randomness_commitment, FormalConsensusPolicy,
 };
 use xlemma_core::{
-    Amount, ArtifactId, ClaimManifest, CommitteeSortitionRequest, CredentialRevocation,
-    EligibleNode, NodeCredential, NodeCredentialChain, NodeServiceAdvertisement,
-    ObservationReceipt, OperatorCredential, ProofManifest, TheoryId, UserCredential,
+    Amount, ArtifactId, ClaimManifest, CredentialRevocation, EligibleNode, NodeCredential,
+    NodeCredentialChain, NodeServiceAdvertisement, ObservationReceipt, OperatorCredential,
+    ProofManifest, TheoryId, UserCredential,
 };
 use xlemma_economics::{compute_savings_dividend, ComputeSavingsEvidence, ComputeSavingsPolicy};
 use xlemma_storage::{build_bundle_manifest, BundleInput};
@@ -48,15 +47,6 @@ enum Command {
     CredentialChainRoot { credential_chain: PathBuf },
     /// Derive the canonical identifier of an XLMP envelope's message content.
     MessageId { envelope: PathBuf },
-    /// Reproduce an auditable committee selection from committed inputs.
-    SelectCommittee {
-        request: PathBuf,
-        eligible_nodes: PathBuf,
-        #[arg(long)]
-        revealed_seed: String,
-        #[arg(long)]
-        selected_at: DateTime<Utc>,
-    },
     /// Quote a verified proof from service offers and expected work.
     Quote {
         offers: PathBuf,
@@ -160,21 +150,6 @@ fn main() -> Result<()> {
         Command::MessageId { envelope } => {
             let envelope: XlmpEnvelope = read_json(envelope)?;
             println!("{}", envelope.expected_message_id()?);
-        }
-        Command::SelectCommittee {
-            request,
-            eligible_nodes,
-            revealed_seed,
-            selected_at,
-        } => {
-            let request: CommitteeSortitionRequest = read_json(request)?;
-            let nodes: Vec<EligibleNode> = read_json(eligible_nodes)?;
-            print_json(&select_committee(
-                &request,
-                revealed_seed.as_bytes(),
-                &nodes,
-                selected_at,
-            )?)?;
         }
         Command::Quote {
             offers,

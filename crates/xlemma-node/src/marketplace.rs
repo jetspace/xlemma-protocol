@@ -9,6 +9,16 @@ use xlemma_core::{
     ServiceCapability, ServiceMatch, ServiceMatchId, ServiceOrder, ServiceOrderId,
 };
 
+/// Cryptographic checks are mandatory at every marketplace state boundary.
+/// Deployments normally back this with node credentials and an operator or
+/// committee key registry; there is intentionally no accept-all implementation.
+pub trait MarketplaceProofVerifier {
+    fn verify_advertisement(&self, advertisement: &NodeServiceAdvertisement) -> bool;
+    fn verify_order(&self, order: &ServiceOrder) -> bool;
+    fn verify_match(&self, service_match: &ServiceMatch) -> bool;
+    fn verify_reputation(&self, reputation: &NodeReputationSnapshot) -> bool;
+}
+
 #[derive(Debug, Error)]
 pub enum MarketplaceError {
     #[error("advertisement has an invalid identity, window, endpoint, capability, or signature")]
@@ -35,6 +45,8 @@ pub enum MarketplaceError {
     DuplicateIdentifier,
     #[error("service order already has a recorded match")]
     OrderAlreadyMatched,
+    #[error("marketplace signature or credential proof is invalid")]
+    InvalidProof,
     #[error(transparent)]
     Canonicalization(#[from] xlemma_core::CanonicalizationError),
     #[error(transparent)]
@@ -54,8 +66,12 @@ impl ServiceOrderBook {
         &mut self,
         advertisement: NodeServiceAdvertisement,
         now: DateTime<Utc>,
+        verifier: &impl MarketplaceProofVerifier,
     ) -> Result<(), MarketplaceError> {
         validate_advertisement(&advertisement, now)?;
+        if !verifier.verify_advertisement(&advertisement) {
+            return Err(MarketplaceError::InvalidProof);
+        }
         if self
             .advertisements
             .contains_key(&advertisement.advertisement_id)
@@ -98,8 +114,12 @@ impl ServiceOrderBook {
         &mut self,
         order: ServiceOrder,
         now: DateTime<Utc>,
+        verifier: &impl MarketplaceProofVerifier,
     ) -> Result<(), MarketplaceError> {
         validate_order(&order, now)?;
+        if !verifier.verify_order(&order) {
+            return Err(MarketplaceError::InvalidProof);
+        }
         match self.orders.entry(order.order_id.clone()) {
             std::collections::btree_map::Entry::Vacant(entry) => {
                 entry.insert(order);
@@ -111,7 +131,14 @@ impl ServiceOrderBook {
         }
     }
 
-    pub fn record_match(&mut self, service_match: ServiceMatch) -> Result<(), MarketplaceError> {
+    pub fn record_match(
+        &mut self,
+        service_match: ServiceMatch,
+        verifier: &impl MarketplaceProofVerifier,
+    ) -> Result<(), MarketplaceError> {
+        if !verifier.verify_match(&service_match) {
+            return Err(MarketplaceError::InvalidProof);
+        }
         let order = self
             .orders
             .get(&service_match.order_id)
@@ -278,6 +305,7 @@ pub fn discover_services(
     reputations: &BTreeMap<ReputationId, NodeReputationSnapshot>,
     now: DateTime<Utc>,
     signature: String,
+    verifier: &impl MarketplaceProofVerifier,
 ) -> Result<NodeDiscoveryResult, MarketplaceError> {
     if request.requester.trim().is_empty()
         || request.services.is_empty()
@@ -290,7 +318,7 @@ pub fn discover_services(
     }
     request.discovery_id.validate()?;
 
-    let ranked = ranked_advertisements(request, advertisements, reputations, now)?;
+    let ranked = ranked_advertisements(request, advertisements, reputations, now, verifier)?;
     let advertisement_ids = ranked
         .into_iter()
         .map(|candidate| candidate.advertisement.advertisement_id.clone())
@@ -311,6 +339,9 @@ pub fn discover_services(
     })
 }
 
+// Schedule, signature, and proof-verifier inputs remain explicit so callers
+// cannot accidentally inherit untrusted matching context from mutable state.
+#[allow(clippy::too_many_arguments)]
 pub fn match_service_order(
     order: &ServiceOrder,
     advertisements: &[&NodeServiceAdvertisement],
@@ -319,8 +350,12 @@ pub fn match_service_order(
     scheduled_start: DateTime<Utc>,
     scheduled_end: DateTime<Utc>,
     signature: String,
+    verifier: &impl MarketplaceProofVerifier,
 ) -> Result<ServiceMatch, MarketplaceError> {
     validate_order(order, now)?;
+    if !verifier.verify_order(order) {
+        return Err(MarketplaceError::InvalidProof);
+    }
     if scheduled_start < now
         || scheduled_end <= scheduled_start
         || scheduled_end > order.delivery_deadline
@@ -330,7 +365,7 @@ pub fn match_service_order(
     }
     let request = discovery_request_for_order(order, now)?;
     let mut selected = None;
-    for candidate in ranked_advertisements(&request, advertisements, reputations, now)? {
+    for candidate in ranked_advertisements(&request, advertisements, reputations, now, verifier)? {
         let agreed_price = total_price(order.quantity_units, &candidate.capability.price)?;
         if agreed_price
             .ensure_compatible(&order.maximum_total_price)
@@ -399,10 +434,12 @@ fn ranked_advertisements<'a>(
     advertisements: &'a [&NodeServiceAdvertisement],
     reputations: &BTreeMap<ReputationId, NodeReputationSnapshot>,
     now: DateTime<Utc>,
+    verifier: &impl MarketplaceProofVerifier,
 ) -> Result<Vec<RankedAdvertisement<'a>>, MarketplaceError> {
     let mut ranked = Vec::new();
     for advertisement in advertisements {
         if validate_advertisement(advertisement, now).is_err()
+            || !verifier.verify_advertisement(advertisement)
             || !request.required_roles.is_subset(&advertisement.roles)
             || request
                 .excluded_operator_clusters
@@ -432,6 +469,7 @@ fn ranked_advertisements<'a>(
             || reputation.assessed_at > now
             || reputation.evidence_root.trim().is_empty()
             || reputation.assessor_signature.trim().is_empty()
+            || !verifier.verify_reputation(reputation)
         {
             continue;
         }
@@ -617,6 +655,26 @@ mod tests {
         UserCredentialId,
     };
 
+    struct AcceptTestProofs;
+
+    impl MarketplaceProofVerifier for AcceptTestProofs {
+        fn verify_advertisement(&self, _: &NodeServiceAdvertisement) -> bool {
+            true
+        }
+
+        fn verify_order(&self, _: &ServiceOrder) -> bool {
+            true
+        }
+
+        fn verify_match(&self, _: &ServiceMatch) -> bool {
+            true
+        }
+
+        fn verify_reputation(&self, _: &NodeReputationSnapshot) -> bool {
+            true
+        }
+    }
+
     fn metric(score: u16) -> ReputationMetric {
         ReputationMetric {
             score_bps: score,
@@ -786,6 +844,7 @@ mod tests {
             &reputations,
             now,
             "signature".into(),
+            &AcceptTestProofs,
         )
         .unwrap();
         assert_eq!(
@@ -836,6 +895,7 @@ mod tests {
             now + Duration::minutes(1),
             now + Duration::minutes(10),
             "signature".into(),
+            &AcceptTestProofs,
         )
         .unwrap();
         assert_eq!(matched.agreed_price.units, 125);
@@ -844,12 +904,14 @@ mod tests {
 
         let mut book = ServiceOrderBook::default();
         for advertisement in advertisements {
-            book.publish_advertisement(advertisement, now).unwrap();
+            book.publish_advertisement(advertisement, now, &AcceptTestProofs)
+                .unwrap();
         }
-        book.submit_order(order, now).unwrap();
-        book.record_match(matched.clone()).unwrap();
+        book.submit_order(order, now, &AcceptTestProofs).unwrap();
+        book.record_match(matched.clone(), &AcceptTestProofs)
+            .unwrap();
         assert!(matches!(
-            book.record_match(matched),
+            book.record_match(matched, &AcceptTestProofs),
             Err(MarketplaceError::OrderAlreadyMatched)
         ));
     }
@@ -865,8 +927,10 @@ mod tests {
         second.advertisement_id = expected_advertisement_id(&second).unwrap();
 
         let mut book = ServiceOrderBook::default();
-        book.publish_advertisement(first.clone(), now).unwrap();
-        book.publish_advertisement(second.clone(), now).unwrap();
+        book.publish_advertisement(first.clone(), now, &AcceptTestProofs)
+            .unwrap();
+        book.publish_advertisement(second.clone(), now, &AcceptTestProofs)
+            .unwrap();
         assert_eq!(book.advertisements.len(), 2);
         assert_eq!(
             book.active_advertisements(now)[0].advertisement_id,

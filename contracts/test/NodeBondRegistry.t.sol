@@ -17,11 +17,7 @@ contract NodeBondRegistryTest is Test {
 
     function setUp() public {
         asset = new MockUSDC();
-        registry = new NodeBondRegistry(
-            IERC20(address(asset)),
-            address(this),
-            1 days
-        );
+        registry = new NodeBondRegistry(IERC20(address(asset)), address(this), 1 days);
         asset.mint(nodeOwner, 1_000e6);
     }
 
@@ -47,6 +43,9 @@ contract NodeBondRegistryTest is Test {
         vm.prank(nodeOwner);
         registry.requestUnbond(NODE_ID, 200e6);
         vm.prank(nodeOwner);
+        vm.expectRevert(NodeBondRegistry.InvalidState.selector);
+        registry.register(NODE_ID, OPERATOR_ID, ROLES_ROOT);
+        vm.prank(nodeOwner);
         vm.expectRevert(NodeBondRegistry.DelayOpen.selector);
         registry.withdrawUnbond(NODE_ID);
 
@@ -54,17 +53,13 @@ contract NodeBondRegistryTest is Test {
         vm.prank(nodeOwner);
         registry.withdrawUnbond(NODE_ID);
         assertEq(asset.balanceOf(nodeOwner), 700e6);
+        assertFalse(registry.getNode(NODE_ID).active);
     }
 
     function testObjectiveSlashReducesBondAndDisablesNode() public {
         _registerAndBond(500e6);
 
-        registry.slash(
-            NODE_ID,
-            100e6,
-            keccak256("equivocation-evidence"),
-            slashRecipient
-        );
+        registry.slash(NODE_ID, 100e6, keccak256("equivocation-evidence"), slashRecipient);
 
         NodeBondRegistry.Node memory node = registry.getNode(NODE_ID);
         assertEq(node.bonded, 400e6);

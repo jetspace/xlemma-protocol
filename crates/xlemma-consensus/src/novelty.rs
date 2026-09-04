@@ -32,6 +32,12 @@ pub struct NoveltyOutcome {
     pub independent_operator_count: usize,
 }
 
+/// Verifies the reviewer signature and the reputation/calibration evidence
+/// that produced its weight. Deployments must not aggregate bare score data.
+pub trait NoveltyEvidenceVerifier {
+    fn verify(&self, review: &NoveltyReviewReceipt, weight: &ReviewerWeight) -> bool;
+}
+
 #[derive(Debug, Error)]
 pub enum NoveltyError {
     #[error("no novelty reviews supplied")]
@@ -42,12 +48,21 @@ pub enum NoveltyError {
     InvalidValue,
     #[error("insufficient independent reviewer operators")]
     InsufficientIndependence,
+    #[error("novelty reviews refer to different claims")]
+    MixedClaims,
+    #[error("duplicate novelty receipt, reviewer node, or operator cluster")]
+    DuplicateReviewer,
+    #[error("novelty receipt signature or evidence binding is empty")]
+    InvalidReceipt,
+    #[error("novelty receipt signature or reviewer weight proof is invalid")]
+    InvalidProof,
 }
 
 pub fn aggregate_novelty(
     policy: &NoveltyPolicy,
     reviews: &[NoveltyReviewReceipt],
     weights: &[ReviewerWeight],
+    verifier: &impl NoveltyEvidenceVerifier,
 ) -> Result<NoveltyOutcome, NoveltyError> {
     if reviews.is_empty() {
         return Err(NoveltyError::Empty);
@@ -65,15 +80,42 @@ pub fn aggregate_novelty(
     if policy.maximum_reviewer_weight <= 0.0 || policy.minimum_independent_operators == 0 {
         return Err(NoveltyError::InvalidValue);
     }
-    let weight_by_operator: BTreeMap<_, _> = weights
-        .iter()
-        .map(|weight| (weight.operator_cluster_id.clone(), weight))
-        .collect();
+    let mut weight_by_operator = BTreeMap::new();
+    for weight in weights {
+        if weight_by_operator
+            .insert(weight.operator_cluster_id.clone(), weight)
+            .is_some()
+        {
+            return Err(NoveltyError::DuplicateReviewer);
+        }
+    }
 
-    let operators: BTreeSet<_> = reviews
-        .iter()
-        .map(|review| review.operator_cluster_id.clone())
-        .collect();
+    let claim_id = &reviews[0].claim_id;
+    let mut receipt_ids = BTreeSet::new();
+    let mut nodes = BTreeSet::new();
+    let mut operators = BTreeSet::new();
+    for review in reviews {
+        if &review.claim_id != claim_id {
+            return Err(NoveltyError::MixedClaims);
+        }
+        if review.receipt_id.validate().is_err()
+            || review.claim_id.validate().is_err()
+            || review.reviewer_node_id.validate().is_err()
+            || review.operator_cluster_id.validate().is_err()
+            || review.corpus_cutoff > review.reviewed_at
+            || review.signature.trim().is_empty()
+            || review.evidence_root.trim().is_empty()
+            || review.corpus_root.trim().is_empty()
+        {
+            return Err(NoveltyError::InvalidReceipt);
+        }
+        if !receipt_ids.insert(review.receipt_id.clone())
+            || !nodes.insert(review.reviewer_node_id.clone())
+            || !operators.insert(review.operator_cluster_id.clone())
+        {
+            return Err(NoveltyError::DuplicateReviewer);
+        }
+    }
     if operators.len() < policy.minimum_independent_operators {
         return Err(NoveltyError::InsufficientIndependence);
     }
@@ -86,12 +128,16 @@ pub fn aggregate_novelty(
     for review in reviews {
         validate_probability(review.material_novelty_probability)?;
         validate_probability(review.known_equivalent_probability)?;
+        validate_probability(review.useful_simplification_probability)?;
         validate_probability(review.prior_art_coverage)?;
         validate_probability(review.confidence)?;
 
         let weight = weight_by_operator
             .get(&review.operator_cluster_id)
             .ok_or_else(|| NoveltyError::MissingWeight(review.operator_cluster_id.to_string()))?;
+        if !verifier.verify(review, weight) {
+            return Err(NoveltyError::InvalidProof);
+        }
         for component in [
             weight.calibration,
             weight.domain_score,
@@ -165,6 +211,22 @@ mod tests {
     use chrono::Utc;
     use xlemma_core::{ClaimId, NodeId, ReceiptId, TheoryId};
 
+    struct AcceptTestEvidence;
+
+    impl NoveltyEvidenceVerifier for AcceptTestEvidence {
+        fn verify(&self, _review: &NoveltyReviewReceipt, _weight: &ReviewerWeight) -> bool {
+            true
+        }
+    }
+
+    struct RejectTestEvidence;
+
+    impl NoveltyEvidenceVerifier for RejectTestEvidence {
+        fn verify(&self, _review: &NoveltyReviewReceipt, _weight: &ReviewerWeight) -> bool {
+            false
+        }
+    }
+
     fn review(label: &str, novelty: f64, equivalent: f64) -> NoveltyReviewReceipt {
         NoveltyReviewReceipt {
             receipt_id: ReceiptId::derive(&format!("receipt-{label}")).unwrap(),
@@ -214,6 +276,7 @@ mod tests {
             },
             &reviews,
             &weights,
+            &AcceptTestEvidence,
         )
         .unwrap();
         assert_eq!(outcome.decision, NoveltyDecision::MateriallyNovel);
@@ -237,10 +300,59 @@ mod tests {
             },
             &reviews,
             &weights,
+            &AcceptTestEvidence,
         );
+        assert!(matches!(result, Err(NoveltyError::DuplicateReviewer)));
+    }
+
+    #[test]
+    fn mixed_claim_reviews_are_rejected() {
+        let first = review("a", 0.9, 0.05);
+        let mut second = review("b", 0.9, 0.05);
+        second.claim_id = ClaimId::from_canonical_elaborated_type(
+            &TheoryId::derive(&"other-theory").unwrap(),
+            "other claim",
+        )
+        .unwrap();
+        let reviews = vec![first, second];
+        let weights: Vec<_> = reviews.iter().map(weight).collect();
         assert!(matches!(
-            result,
-            Err(NoveltyError::InsufficientIndependence)
+            aggregate_novelty(
+                &NoveltyPolicy {
+                    prior_probability: 0.5,
+                    material_novelty_threshold: 0.75,
+                    known_equivalent_threshold: 0.75,
+                    minimum_prior_art_coverage: 0.8,
+                    maximum_reviewer_weight: 0.75,
+                    minimum_independent_operators: 2,
+                },
+                &reviews,
+                &weights,
+                &AcceptTestEvidence,
+            ),
+            Err(NoveltyError::MixedClaims)
+        ));
+    }
+
+    #[test]
+    fn unauthenticated_review_or_weight_proof_is_rejected() {
+        let reviews = vec![review("a", 0.9, 0.05), review("b", 0.9, 0.05)];
+        let weights: Vec<_> = reviews.iter().map(weight).collect();
+        assert!(matches!(
+            aggregate_novelty(
+                &NoveltyPolicy {
+                    prior_probability: 0.5,
+                    material_novelty_threshold: 0.75,
+                    known_equivalent_threshold: 0.75,
+                    minimum_prior_art_coverage: 0.8,
+                    maximum_reviewer_weight: 0.75,
+                    minimum_independent_operators: 2,
+                },
+                &reviews,
+                &weights,
+                &RejectTestEvidence,
+            ),
+            Err(NoveltyError::InvalidProof)
         ));
     }
 }

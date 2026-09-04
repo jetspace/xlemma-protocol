@@ -6,6 +6,7 @@ use crate::{
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use thiserror::Error;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AstraComputeReceipt {
@@ -129,6 +130,116 @@ pub struct ObservationReceipt {
     pub committed_at: DateTime<Utc>,
     pub revealed_at: DateTime<Utc>,
     pub signature: String,
+}
+
+#[derive(Debug, Error)]
+pub enum ObservationIntegrityError {
+    #[error("observation receipt contains an empty required field")]
+    EmptyField,
+    #[error("observation receipt timing is invalid")]
+    InvalidTiming,
+    #[error("observation root does not bind the complete execution evidence")]
+    ObservationRootMismatch,
+    #[error("observation commitment does not match its canonical reveal")]
+    CommitmentMismatch,
+    #[error("observation ReceiptID is not content-derived")]
+    ReceiptIdMismatch,
+    #[error(transparent)]
+    Canonical(#[from] crate::CanonicalizationError),
+    #[error(transparent)]
+    Id(#[from] crate::IdError),
+}
+
+impl ObservationReceipt {
+    /// Derives the execution-evidence root from every identity, checker,
+    /// environment, artifact, trace and verdict field. Committers cannot
+    /// choose this root independently of the receipt they later reveal.
+    pub fn expected_observation_root(&self) -> Result<String, ObservationIntegrityError> {
+        let mut value = serde_json::to_value(self).map_err(crate::CanonicalizationError::from)?;
+        let object = value
+            .as_object_mut()
+            .ok_or(ObservationIntegrityError::EmptyField)?;
+        for metadata in [
+            "receipt_id",
+            "observation_root",
+            "commitment",
+            "reveal_salt",
+            "committed_at",
+            "revealed_at",
+            "signature",
+        ] {
+            object.remove(metadata);
+        }
+        let hash = crate::canonical_json_hash("observation-evidence-v1", &value)?;
+        Ok(format!("blake3:{}", hex::encode(hash)))
+    }
+
+    pub fn expected_receipt_id(&self) -> Result<ReceiptId, ObservationIntegrityError> {
+        let mut value = serde_json::to_value(self).map_err(crate::CanonicalizationError::from)?;
+        let object = value
+            .as_object_mut()
+            .ok_or(ObservationIntegrityError::EmptyField)?;
+        object.remove("receipt_id");
+        object.remove("signature");
+        Ok(ReceiptId::derive(&value)?)
+    }
+
+    /// Canonical bytes covered by the node signature.
+    pub fn signing_bytes(&self) -> Result<Vec<u8>, ObservationIntegrityError> {
+        let mut value = serde_json::to_value(self).map_err(crate::CanonicalizationError::from)?;
+        value
+            .as_object_mut()
+            .ok_or(ObservationIntegrityError::EmptyField)?
+            .remove("signature");
+        Ok(crate::canonical_json_bytes(&value)?)
+    }
+
+    pub fn validate_integrity(&self) -> Result<(), ObservationIntegrityError> {
+        self.receipt_id.validate()?;
+        self.job_id.validate()?;
+        self.node_id.validate()?;
+        self.verified_user_id.validate()?;
+        self.operator_id.validate()?;
+        self.operator_cluster_id.validate()?;
+        self.user_credential_id.validate()?;
+        self.operator_credential_id.validate()?;
+        self.node_credential_id.validate()?;
+        if [
+            self.credential_chain_root.as_str(),
+            self.checker_name.as_str(),
+            self.checker_version.as_str(),
+            self.checker_binary_digest.as_str(),
+            self.infrastructure_provider.as_str(),
+            self.region.as_str(),
+            self.artifact_root.as_str(),
+            self.environment_root.as_str(),
+            self.dependency_root.as_str(),
+            self.axiom_set_root.as_str(),
+            self.execution_trace_root.as_str(),
+            self.observation_root.as_str(),
+            self.commitment.as_str(),
+            self.reveal_salt.as_str(),
+            self.signature.as_str(),
+        ]
+        .iter()
+        .any(|field| field.trim().is_empty())
+        {
+            return Err(ObservationIntegrityError::EmptyField);
+        }
+        if self.committed_at > self.revealed_at {
+            return Err(ObservationIntegrityError::InvalidTiming);
+        }
+        if self.observation_root != self.expected_observation_root()? {
+            return Err(ObservationIntegrityError::ObservationRootMismatch);
+        }
+        if !verify_observation_reveal(self, self.reveal_salt.as_bytes()) {
+            return Err(ObservationIntegrityError::CommitmentMismatch);
+        }
+        if self.receipt_id != self.expected_receipt_id()? {
+            return Err(ObservationIntegrityError::ReceiptIdMismatch);
+        }
+        Ok(())
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

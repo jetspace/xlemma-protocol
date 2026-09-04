@@ -41,8 +41,8 @@ contract LemmaCapsule1155 is ERC1155, AccessControl {
         bytes calldata data
     ) external onlyRole(MINTER_ROLE) {
         if (
-            to == address(0) || originator_ == address(0) || amount == 0 ||
-            kind == TokenKind.Unset || manifestRoot_ == bytes32(0)
+            to == address(0) || originator_ == address(0) || amount == 0 || kind == TokenKind.Unset
+                || manifestRoot_ == bytes32(0)
         ) revert InvalidInput();
         if (kind == TokenKind.ProofCapsule && amount != 1) revert InvalidInput();
         if (tokenKind[tokenId] != TokenKind.Unset) revert TokenAlreadyDefined();
@@ -52,27 +52,14 @@ contract LemmaCapsule1155 is ERC1155, AccessControl {
         _mint(to, tokenId, amount, data);
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC1155, AccessControl)
-        returns (bool)
-    {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC1155, AccessControl) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
-    function _update(
-        address from,
-        address to,
-        uint256[] memory ids,
-        uint256[] memory values
-    ) internal override {
+    function _update(address from, address to, uint256[] memory ids, uint256[] memory values) internal override {
         if (from != address(0) && to != address(0)) {
             for (uint256 i = 0; i < ids.length; ++i) {
-                if (
-                    tokenKind[ids[i]] == TokenKind.ProofCapsule ||
-                    tokenKind[ids[i]] == TokenKind.SupportCertificate
-                ) {
+                if (tokenKind[ids[i]] == TokenKind.ProofCapsule || tokenKind[ids[i]] == TokenKind.SupportCertificate) {
                     revert CapsuleIsNonTransferable();
                 }
             }

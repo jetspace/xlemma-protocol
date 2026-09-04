@@ -159,6 +159,12 @@ def validate_required_files() -> None:
         fail(f"missing required repository files: {missing}")
 
 
+def validate_no_symlinks() -> None:
+    links = [path.relative_to(ROOT) for path in ROOT.rglob("*") if path.is_symlink()]
+    if links:
+        fail(f"repository must not contain symlinks: {links}")
+
+
 def validate_json_syntax_and_schemas() -> None:
     schema_objects = {}
     for path in sorted(SCHEMAS.glob("*.json")):
@@ -319,12 +325,12 @@ def validate_yaml() -> None:
     schemas = openapi["components"].get("schemas")
     if not isinstance(schemas, dict):
         fail("OpenAPI components.schemas must be a mapping")
-    if "PaymentOfferRequest" not in schemas:
-        fail("OpenAPI is missing PaymentOfferRequest")
+    if "PaymentOfferRequest" in schemas:
+        fail("OpenAPI must not accept caller-authored payment offers")
     if "/xlmp/v1/messages" not in openapi["paths"]:
         fail("OpenAPI is missing the canonical XLMP message ingress")
-    if "/v1/verification-jobs/{jobId}/payment-required" not in openapi["paths"]:
-        fail("OpenAPI is missing the verification payment-required endpoint")
+    if "/v1/verification-jobs/{jobId}/payment-required" in openapi["paths"]:
+        fail("reference API must not construct payment requirements from job requests")
 
     http_methods = {"get", "post", "put", "patch", "delete", "head", "options", "trace"}
     operation_ids = set()
@@ -501,7 +507,6 @@ def validate_source_tree() -> None:
         "/v1/claims/{claimId}/prove",
         "/v1/proofs/{proofId}/verify",
         "/v1/verification-jobs/{jobId}/evaluate",
-        "/v1/verification-jobs/{jobId}/payment-required",
         "/v1/compute/quote",
         "/v1/node-advertisements",
         "/v1/node-discovery",
@@ -613,6 +618,7 @@ def validate_source_placeholders() -> None:
 def main() -> int:
     checks = [
         validate_required_files,
+        validate_no_symlinks,
         validate_json_syntax_and_schemas,
         validate_toml,
         validate_yaml,

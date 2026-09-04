@@ -4,6 +4,8 @@
 *.log
 *.tmp
 *.swp
+__pycache__/
+*.py[cod]
 contracts/cache/
 contracts/out/
 lean/.lake/

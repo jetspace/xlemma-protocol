@@ -3,6 +3,7 @@ pragma solidity ^0.8.26;
 
 import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 import {ResearchVault} from "../src/ResearchVault.sol";
 import {ResearcherCredit} from "../src/ResearcherCredit.sol";
 import {MockUSDC} from "./mocks/MockUSDC.sol";
@@ -18,14 +19,7 @@ contract ResearchVaultTest is Test {
 
     function setUp() public {
         asset = new MockUSDC();
-        vault = new ResearchVault(
-            IERC20(address(asset)),
-            6,
-            researcher,
-            address(this),
-            "Research Credit",
-            "RCR"
-        );
+        vault = new ResearchVault(IERC20(address(asset)), 6, researcher, address(this), "Research Credit", "RCR");
         credit = vault.credit();
         asset.mint(researcher, 1_000_000e6);
     }
@@ -52,12 +46,7 @@ contract ResearchVaultTest is Test {
 
         vm.startPrank(researcher);
         credit.approve(address(vault), 40e6);
-        vault.authorize(
-            authorizationId,
-            verifier,
-            40e6,
-            uint64(block.timestamp + 1 days)
-        );
+        vault.authorize(authorizationId, verifier, 40e6, uint64(block.timestamp + 1 days));
         vm.stopPrank();
 
         vault.settle(authorizationId, 25e6);
@@ -75,12 +64,7 @@ contract ResearchVaultTest is Test {
 
         vm.startPrank(researcher);
         credit.approve(address(vault), 10e6);
-        vault.authorize(
-            authorizationId,
-            verifier,
-            10e6,
-            uint64(block.timestamp + 1 days)
-        );
+        vault.authorize(authorizationId, verifier, 10e6, uint64(block.timestamp + 1 days));
         vm.stopPrank();
 
         vault.settle(authorizationId, 10e6);
@@ -94,12 +78,7 @@ contract ResearchVaultTest is Test {
 
         vm.startPrank(researcher);
         credit.approve(address(vault), 10e6);
-        vault.authorize(
-            authorizationId,
-            verifier,
-            10e6,
-            uint64(block.timestamp + 1 days)
-        );
+        vault.authorize(authorizationId, verifier, 10e6, uint64(block.timestamp + 1 days));
         vm.stopPrank();
 
         vm.expectRevert(ResearchVault.ExceedsMaximum.selector);
@@ -128,9 +107,17 @@ contract ResearchVaultTest is Test {
         _deposit(100e6);
 
         vm.startPrank(researcher);
-        vm.expectRevert(ResearcherCredit.RestrictedTransfer.selector);
+        vm.expectPartialRevert(ResearcherCredit.RestrictedTransfer.selector);
         credit.transfer(outsider, 1e6);
         vm.stopPrank();
+    }
+
+    function testAdministratorCannotMintUnbackedCredits() public {
+        vm.expectPartialRevert(IAccessControl.AccessControlUnauthorizedAccount.selector);
+        credit.mint(researcher, 1e6);
+
+        assertEq(credit.totalSupply(), 0);
+        assertTrue(vault.isSolvent());
     }
 
     function testSettledExternalRevenueCanCompoundIntoCredits() public {
@@ -156,27 +143,16 @@ contract ResearchVaultTest is Test {
         assertTrue(vault.isSolvent());
     }
 
-    function testFuzzSettlementPreservesSolvency(
-        uint96 depositAmount,
-        uint96 maximum,
-        uint96 actual
-    ) public {
+    function testFuzzSettlementPreservesSolvency(uint96 depositAmount, uint96 maximum, uint96 actual) public {
         uint256 deposit = bound(uint256(depositAmount), 1, 1_000_000e6);
         uint256 maxAuthorization = bound(uint256(maximum), 1, deposit);
         uint256 actualCharge = bound(uint256(actual), 0, maxAuthorization);
         _deposit(deposit);
 
-        bytes32 authorizationId = keccak256(
-            abi.encode(deposit, maxAuthorization, actualCharge)
-        );
+        bytes32 authorizationId = keccak256(abi.encode(deposit, maxAuthorization, actualCharge));
         vm.startPrank(researcher);
         credit.approve(address(vault), maxAuthorization);
-        vault.authorize(
-            authorizationId,
-            verifier,
-            maxAuthorization,
-            uint64(block.timestamp + 1 days)
-        );
+        vault.authorize(authorizationId, verifier, maxAuthorization, uint64(block.timestamp + 1 days));
         vm.stopPrank();
 
         vault.settle(authorizationId, actualCharge);

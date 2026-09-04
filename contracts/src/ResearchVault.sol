@@ -32,18 +32,9 @@ contract ResearchVault is AccessControl, ReentrancyGuard {
 
     event Deposited(address indexed payer, address indexed beneficiary, uint256 amount);
     event Authorized(
-        bytes32 indexed authorizationId,
-        address indexed payer,
-        address indexed payee,
-        uint256 maximum,
-        uint64 expiresAt
+        bytes32 indexed authorizationId, address indexed payer, address indexed payee, uint256 maximum, uint64 expiresAt
     );
-    event Settled(
-        bytes32 indexed authorizationId,
-        address indexed payee,
-        uint256 actual,
-        uint256 refunded
-    );
+    event Settled(bytes32 indexed authorizationId, address indexed payee, uint256 actual, uint256 refunded);
     event RevenueCompounded(address indexed beneficiary, uint256 amount);
     event Redeemed(address indexed owner, address indexed recipient, uint256 amount);
 
@@ -55,6 +46,7 @@ contract ResearchVault is AccessControl, ReentrancyGuard {
     error AuthorizationExpired();
     error ExceedsMaximum();
     error Insolvent();
+    error UnsupportedAssetBehavior();
 
     constructor(
         IERC20 settlementAsset_,
@@ -64,10 +56,7 @@ contract ResearchVault is AccessControl, ReentrancyGuard {
         string memory creditName,
         string memory creditSymbol
     ) {
-        if (
-            address(settlementAsset_) == address(0) || researcher_ == address(0) ||
-            administrator == address(0)
-        ) revert InvalidAddress();
+        if (address(settlementAsset_) == address(0) || researcher_ == address(0) || administrator == address(0)) revert InvalidAddress();
         if (IERC20Metadata(address(settlementAsset_)).decimals() != assetDecimals_) {
             revert InvalidDecimals();
         }
@@ -75,13 +64,7 @@ contract ResearchVault is AccessControl, ReentrancyGuard {
         settlementAsset = settlementAsset_;
         assetDecimals = assetDecimals_;
         researcher = researcher_;
-        credit = new ResearcherCredit(
-            creditName,
-            creditSymbol,
-            assetDecimals_,
-            address(this),
-            administrator
-        );
+        credit = new ResearcherCredit(creditName, creditSymbol, assetDecimals_, address(this), administrator);
         _grantRole(DEFAULT_ADMIN_ROLE, administrator);
         _grantRole(SETTLER_ROLE, administrator);
         _grantRole(REVENUE_ROUTER_ROLE, administrator);
@@ -90,7 +73,7 @@ contract ResearchVault is AccessControl, ReentrancyGuard {
     function deposit(uint256 amount, address beneficiary) external nonReentrant {
         if (amount == 0) revert InvalidAmount();
         if (beneficiary == address(0)) revert InvalidAddress();
-        settlementAsset.safeTransferFrom(msg.sender, address(this), amount);
+        _pullExact(msg.sender, amount);
         credit.mint(beneficiary, amount);
         _assertSolvent();
         emit Deposited(msg.sender, beneficiary, amount);
@@ -98,34 +81,23 @@ contract ResearchVault is AccessControl, ReentrancyGuard {
 
     /// @notice Locks credits for one idempotent x402 authorization and binds
     ///         settlement to the quoted payee/router.
-    function authorize(
-        bytes32 authorizationId,
-        address payee,
-        uint256 maximum,
-        uint64 expiresAt
-    ) external nonReentrant {
+    function authorize(bytes32 authorizationId, address payee, uint256 maximum, uint64 expiresAt)
+        external
+        nonReentrant
+    {
         if (maximum == 0 || expiresAt <= block.timestamp) revert InvalidAmount();
         if (authorizationId == bytes32(0) || payee == address(0)) revert InvalidAddress();
         if (authorizations[authorizationId].payer != address(0)) revert AuthorizationExists();
 
-        credit.transferFrom(msg.sender, address(this), maximum);
-        authorizations[authorizationId] = Authorization({
-            payer: msg.sender,
-            payee: payee,
-            maximum: maximum,
-            expiresAt: expiresAt,
-            closed: false
-        });
+        IERC20(address(credit)).safeTransferFrom(msg.sender, address(this), maximum);
+        authorizations[authorizationId] =
+            Authorization({payer: msg.sender, payee: payee, maximum: maximum, expiresAt: expiresAt, closed: false});
         emit Authorized(authorizationId, msg.sender, payee, maximum, expiresAt);
     }
 
     /// @notice Burns only actual usage, pays the pre-authorized payee, and
     ///         returns the unused maximum to the researcher.
-    function settle(bytes32 authorizationId, uint256 actual)
-        external
-        onlyRole(SETTLER_ROLE)
-        nonReentrant
-    {
+    function settle(bytes32 authorizationId, uint256 actual) external onlyRole(SETTLER_ROLE) nonReentrant {
         Authorization storage authorization = authorizations[authorizationId];
         if (authorization.payer == address(0)) revert InvalidAddress();
         if (authorization.closed) revert AuthorizationClosed();
@@ -136,10 +108,10 @@ contract ResearchVault is AccessControl, ReentrancyGuard {
         uint256 refund = authorization.maximum - actual;
         if (actual != 0) {
             credit.burn(address(this), actual);
-            settlementAsset.safeTransfer(authorization.payee, actual);
+            _pushExact(authorization.payee, actual);
         }
         if (refund != 0) {
-            credit.transfer(authorization.payer, refund);
+            IERC20(address(credit)).safeTransfer(authorization.payer, refund);
         }
         _assertSolvent();
         emit Settled(authorizationId, authorization.payee, actual, refund);
@@ -151,19 +123,15 @@ contract ResearchVault is AccessControl, ReentrancyGuard {
         if (authorization.closed) revert AuthorizationClosed();
         if (block.timestamp <= authorization.expiresAt) revert AuthorizationExpired();
         authorization.closed = true;
-        credit.transfer(authorization.payer, authorization.maximum);
+        IERC20(address(credit)).safeTransfer(authorization.payer, authorization.maximum);
         emit Settled(authorizationId, authorization.payee, 0, authorization.maximum);
     }
 
     /// @notice Converts already-settled external revenue into newly backed credits.
-    function compoundRevenue(uint256 amount, address beneficiary)
-        external
-        onlyRole(REVENUE_ROUTER_ROLE)
-        nonReentrant
-    {
+    function compoundRevenue(uint256 amount, address beneficiary) external onlyRole(REVENUE_ROUTER_ROLE) nonReentrant {
         if (amount == 0) revert InvalidAmount();
         if (beneficiary == address(0)) revert InvalidAddress();
-        settlementAsset.safeTransferFrom(msg.sender, address(this), amount);
+        _pullExact(msg.sender, amount);
         credit.mint(beneficiary, amount);
         _assertSolvent();
         emit RevenueCompounded(beneficiary, amount);
@@ -175,7 +143,7 @@ contract ResearchVault is AccessControl, ReentrancyGuard {
         if (amount == 0) revert InvalidAmount();
         if (recipient == address(0)) revert InvalidAddress();
         credit.burn(msg.sender, amount);
-        settlementAsset.safeTransfer(recipient, amount);
+        _pushExact(recipient, amount);
         _assertSolvent();
         emit Redeemed(msg.sender, recipient, amount);
     }
@@ -190,5 +158,23 @@ contract ResearchVault is AccessControl, ReentrancyGuard {
 
     function _assertSolvent() internal view {
         if (!isSolvent()) revert Insolvent();
+    }
+
+    function _pullExact(address from, uint256 amount) internal {
+        uint256 beforeBalance = settlementAsset.balanceOf(address(this));
+        settlementAsset.safeTransferFrom(from, address(this), amount);
+        if (settlementAsset.balanceOf(address(this)) != beforeBalance + amount) {
+            revert UnsupportedAssetBehavior();
+        }
+    }
+
+    function _pushExact(address recipient, uint256 amount) internal {
+        uint256 beforeVault = settlementAsset.balanceOf(address(this));
+        uint256 beforeRecipient = settlementAsset.balanceOf(recipient);
+        settlementAsset.safeTransfer(recipient, amount);
+        if (
+            settlementAsset.balanceOf(address(this)) + amount != beforeVault
+                || settlementAsset.balanceOf(recipient) != beforeRecipient + amount
+        ) revert UnsupportedAssetBehavior();
     }
 }

@@ -8,12 +8,12 @@ These contracts implement the economic and registry projection of xLemma. They a
 |---|---|---|
 | `ResearcherCredit.sol` | Researcher-specific service credit | Restricted transfer; vault-only mint/burn; no validity or profit vote |
 | `ResearchVault.sol` | Holds neutral 1:1 backing | Payee-bound idempotent authorization; actual-only settlement; refund; solvency assertion |
-| `ResearchVaultFactory.sol` | Creates one vault per ResearcherID | Registry convenience; production deployment must add reviewed governance and allowlists |
-| `PoIRCertificateRegistry.sol` | Economic finality for off-chain evidence certificates | Minimum challenge period; challenge/quarantine/reject; matching claim/policy query |
-| `ProofRegistry.sol` | Append-only proof/certificate roots | One first certificate per record; correction by child/supersession; quarantine/revoke preserved |
+| `ResearchVaultFactory.sol` | Creates researcher vaults | Self-registration; account-namespaced ResearcherIDs prevent cross-account slot squatting |
+| `PoIRCertificateRegistry.sol` | Economic finality for off-chain evidence certificates | Content-derived certificate ID; minimum challenge period; challenge/quarantine/reject; exact claim/artifact/policy query |
+| `ProofRegistry.sol` | Append-only proof/certificate roots | Content-derived record ID; challenge-gated finalization; correction by pre-linked child/supersession |
 | `NodeBondRegistry.sol` | Neutral node collateral | Immutable operator cluster per NodeID; delayed unbond; stake is eligibility, not vote weight |
-| `BountyEscrow.sol` | Reverse-direction proof bounty | Commit-reveal; final matching PoIR certificate; release delay; finality recheck |
-| `RevenueRouter.sol` | Realized external revenue distribution | Replay-safe event IDs; 10,000-bps conservation; atomic vault compounding |
+| `BountyEscrow.sol` | Reverse-direction proof bounty | Content-derived bounty ID; commit-reveal; exact artifact certificate; delayed release/refund; finality recheck |
+| `RevenueRouter.sol` | Realized external revenue distribution | Payer-namespaced replay IDs; 10,000-bps conservation; exact transfers; atomic vault compounding |
 | `LemmaCapsule1155.sol` | Optional capsule/license handles | Originator immutable; proof/support tokens nontransferable; license/access editions may transfer |
 
 ## Dependency installation and tests
@@ -22,8 +22,8 @@ The archive does not vendor OpenZeppelin or forge-std:
 
 ```bash
 cd contracts
-forge install OpenZeppelin/openzeppelin-contracts --no-commit
-forge install foundry-rs/forge-std --no-commit
+forge install OpenZeppelin/openzeppelin-contracts@fcbae5394ae8ad52d8e580a3477db99814b9d565 --no-git
+forge install foundry-rs/forge-std@8e40513d678f392f398620b3ef2b418648b33e89 --no-git
 forge fmt --check
 forge test -vvv
 ```
@@ -35,13 +35,15 @@ Included tests cover:
 - no double settlement or over-settlement;
 - expired authorization cancellation;
 - restricted peer-to-peer research-credit transfer;
+- rejection of administrator attempts to mint unbacked credits;
 - external-revenue compounding and redemption;
 - fuzzed settlement solvency;
 - stateful vault backing invariant;
 - revenue conservation, compounding, and replay resistance;
-- PoIR challenge windows and quarantine;
-- bounty commit-reveal and final-certificate dependence;
+- PoIR content identity, challenge windows, and quarantine;
+- bounty content identity, commit-reveal, exact-artifact certificate dependence, and invalidation refund;
 - append-only proof records and supersession;
+- factory registration authorization and ResearcherID namespace isolation;
 - immutable node operator clusters, unbond delay, and slashing;
 - nontransferable proof capsules and transferable license editions.
 
@@ -73,7 +75,7 @@ No role should be able to mint unbacked credits or turn a divergent proof into a
 
 The contracts are unaudited reference implementations. Production work must address:
 
-- transfer-fee, rebasing, callback, blacklist, and depeg behavior of settlement assets;
+- callback, blacklist, and depeg behavior of settlement assets; fee-on-transfer and rebasing assets are deliberately rejected by exact-balance checks;
 - open role administration, timelocks, threshold keys, escape hatches, and governance capture;
 - VRF/sortition and off-chain certificate signature verification;
 - chain reorganization and cross-chain settlement assumptions;
