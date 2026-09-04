@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/service-order.schema.json",
+  "title": "ServiceOrder",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "order_id": { "$ref": "node-network-common.schema.json#/$defs/orderId" },
+    "job_id": { "$ref": "node-network-common.schema.json#/$defs/jobId" },
+    "requester": { "type": "string", "minLength": 1 },
+    "service": { "$ref": "node-network-common.schema.json#/$defs/serviceKind" },
+    "required_role": { "$ref": "node-network-common.schema.json#/$defs/nodeRole" },
+    "required_checker_families": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "node-network-common.schema.json#/$defs/checkerFamily" }
+    },
+    "theory_id": {
+      "anyOf": [
+        { "$ref": "node-network-common.schema.json#/$defs/theoryId" },
+        { "type": "null" }
+      ]
+    },
+    "domains": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "quantity_units": { "type": "integer", "minimum": 1 },
+    "maximum_total_price": { "$ref": "common.schema.json#/$defs/amount" },
+    "maximum_p95_latency_ms": { "type": ["integer", "null"], "minimum": 0 },
+    "reputation_requirements": { "$ref": "node-network-common.schema.json#/$defs/reputationRequirements" },
+    "excluded_operator_clusters": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "node-network-common.schema.json#/$defs/operatorId" }
+    },
+    "delivery_deadline": { "type": "string", "format": "date-time" },
+    "terms_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "expires_at": { "type": "string", "format": "date-time" },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "order_id", "job_id", "requester", "service", "required_role",
+    "required_checker_families", "theory_id", "domains", "quantity_units",
+    "maximum_total_price", "maximum_p95_latency_ms", "reputation_requirements",
+    "excluded_operator_clusters", "delivery_deadline", "terms_root", "created_at",
+    "expires_at", "signature"
+  ]
+}

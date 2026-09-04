@@ -2,6 +2,13 @@
 
 Providers publish signed offers containing service, model/checker, hardware, domain, delivery window, unit scale, price, capacity, completion probability, latency, collateral, asset, and expiration.
 
+For XLMP node-network routing, `NodeServiceAdvertisement` is the canonical
+provider-neutral market record and `ServiceOffer` is its compute-curve
+projection. Discovery and matching MUST use the exact advertisement sequence,
+checked integer price arithmetic, compatible assets/decimals/units, and the
+constraints in XLIP-019. A quote or service match is not a payment receipt and
+does not establish proof validity.
+
 The protocol tracks separate curves for model generation, Lean build, official checking, independent checking, review, storage, and challenge reserve.
 
 For expected quantities, a job quote is:

@@ -6,7 +6,7 @@ The reference repository is not complete merely because it compiles. xLemma need
 
 ### Unit tests
 
-Cover canonicalization, typed IDs, XLMP envelope integrity and message round trips, protocol lifecycle transitions, money arithmetic, contribution shares, committee eligibility, commit-reveal, formal quorum, novelty aggregation, quote construction, backing conservation, revenue allocation, dividend caps, payment-adapter encoding, and storage path safety.
+Cover canonicalization, typed IDs, XLMP envelope integrity and message round trips, protocol lifecycle transitions, money arithmetic, contribution shares, node advertisement identity and supersession, constrained discovery and order matching, multidimensional reputation, committee eligibility and exact sortition reproduction, commit-reveal, formal quorum, novelty aggregation, quote construction, backing conservation, revenue allocation, dividend caps, payment-adapter encoding, and storage path safety.
 
 ### Property tests
 
@@ -19,6 +19,10 @@ Required properties include:
 - revenue allocations plus explicit rounding remainder equal net distributable revenue;
 - dividends never exceed policy or downstream-revenue caps;
 - committee selection never chooses two NodeIDs from the same operator cluster for one job;
+- bond amount and reputation never become sortition or formal-vote weight after eligibility;
+- a strong reputation dimension never compensates for a failed required dimension;
+- service matching never crosses asset, decimal, unit, expiration, capacity, or maximum-price constraints;
+- advertisement supersession preserves every historical record and exact sequence;
 - required checker-family disagreement never returns `Certified`;
 - state transitions outside the transition table always fail;
 - artifact repacking with identical content/environment yields the same identity;
@@ -37,6 +41,8 @@ Required properties include:
 - challenge, quarantine, remediation, and revalidation;
 - encrypted artifact purchase and independent local verification;
 - storage expiry and replica replacement.
+- node advertisement to discovery to service order/match to payment authorization;
+- committed eligible set and future beacon reveal to exactly reproduced committee selection;
 
 ### Conformance tests
 
@@ -77,6 +83,9 @@ Simulate:
 - honest checker divergence;
 - fabricated trace roots;
 - randomness grinding;
+- post-randomness eligible-set mutation;
+- false capacity, checker-family, hardware, price, bond, or reputation advertisements;
+- one operator advertising through many NodeIDs, endpoints, or infrastructure labels;
 - late operator-cluster reclassification;
 - challenge spam;
 - aggregator equivocation;
@@ -146,7 +155,7 @@ Payment success must never set formal status by itself.
 
 ## 7. XLMP transport and downgrade testing
 
-- all twelve XLMP/1 message discriminators validate against the canonical schema;
+- all twenty-one XLMP/1 message discriminators validate against the canonical schema;
 - unsupported protocol names and major versions fail closed;
 - unknown required fields fail schema validation;
 - MessageID mutation, sender substitution, correlation substitution, and replay are rejected;
@@ -154,6 +163,7 @@ Payment success must never set formal status by itself.
 - HTTP, WebSocket, libp2p, and chain adapters preserve canonical message identity;
 - x402 extension payloads bind the exact XLMP MessageID;
 - adapter-specific metadata cannot be interpreted as proof validity or finalization evidence.
+- node advertisement and committee vectors reproduce the same IDs and roots across implementations.
 
 ## 8. Research-prover evaluation
 

@@ -1,0 +1,13 @@
+{
+  "bond_id": "xlbond:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "node_id": "xlnode:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "operator_cluster_id": "xloperator:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "amount": { "units": 1000000000, "asset": "USDC", "decimals": 6 },
+  "eligible_roles": ["official_kernel_checker"],
+  "slashing_policy_id": "xlpolicy:blake3:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "escrow_reference": "chain:base:0x0000000000000000000000000000000000000001",
+  "status": "active",
+  "locked_until": "2027-09-03T00:00:00Z",
+  "evidence_root": "blake3:bond-evidence",
+  "signature": "example-bond-signature"
+}

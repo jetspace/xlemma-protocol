@@ -2,10 +2,13 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use xlemma_core::{
-    canonical_json_bytes, ArtifactId, CanonicalizationError, CertificateId, Challenge, ClaimId,
-    ClaimManifest, ComputeQuoteReceipt, IdError, JobId, MessageId, NodeId, ObservationReceipt,
-    OperatorClusterId, PoIRCertificate, PolicyId, ProofId, ProofManifest, ReceiptId, ResearcherId,
-    RevenueEvent, VerificationJob, XLMP_MAJOR_VERSION, XLMP_PROTOCOL,
+    canonical_json_bytes, derive_eligible_set_root, ArtifactId, CanonicalizationError,
+    CertificateId, Challenge, ClaimId, ClaimManifest, CommitteeSelection,
+    CommitteeSortitionRequest, ComputeQuoteReceipt, EligibleNode, IdError, JobId, MessageId,
+    NodeBond, NodeDiscoveryRequest, NodeDiscoveryResult, NodeId, NodeReputationSnapshot,
+    NodeServiceAdvertisement, ObservationReceipt, OperatorClusterId, PoIRCertificate, PolicyId,
+    ProofId, ProofManifest, ReceiptId, ResearcherId, RevenueEvent, ServiceMatch, ServiceOrder,
+    VerificationJob, XLMP_MAJOR_VERSION, XLMP_PROTOCOL,
 };
 
 use crate::XLMP_SIGNATURE_DOMAIN;
@@ -36,6 +39,24 @@ pub enum MessageKind {
     Revenue,
     #[serde(rename = "XLMP_REVALIDATE")]
     Revalidate,
+    #[serde(rename = "XLMP_NODE_ADVERTISE")]
+    NodeAdvertise,
+    #[serde(rename = "XLMP_DISCOVERY_REQUEST")]
+    DiscoveryRequest,
+    #[serde(rename = "XLMP_DISCOVERY_RESPONSE")]
+    DiscoveryResponse,
+    #[serde(rename = "XLMP_SERVICE_ORDER")]
+    ServiceOrder,
+    #[serde(rename = "XLMP_SERVICE_MATCH")]
+    ServiceMatch,
+    #[serde(rename = "XLMP_SORTITION_REQUEST")]
+    SortitionRequest,
+    #[serde(rename = "XLMP_COMMITTEE")]
+    Committee,
+    #[serde(rename = "XLMP_REPUTATION")]
+    Reputation,
+    #[serde(rename = "XLMP_BOND")]
+    Bond,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -127,6 +148,52 @@ pub struct RevalidateMessage {
     pub requested_at: DateTime<Utc>,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NodeAdvertiseMessage {
+    pub advertisement: NodeServiceAdvertisement,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DiscoveryRequestMessage {
+    pub request: NodeDiscoveryRequest,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DiscoveryResponseMessage {
+    pub result: NodeDiscoveryResult,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ServiceOrderMessage {
+    pub order: ServiceOrder,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ServiceMatchMessage {
+    pub service_match: ServiceMatch,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SortitionRequestMessage {
+    pub request: CommitteeSortitionRequest,
+    pub eligible_nodes: Vec<EligibleNode>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CommitteeMessage {
+    pub selection: CommitteeSelection,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReputationMessage {
+    pub snapshot: NodeReputationSnapshot,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct BondMessage {
+    pub bond: NodeBond,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", content = "payload")]
 pub enum XlmpMessage {
@@ -154,6 +221,24 @@ pub enum XlmpMessage {
     Revenue(RevenueMessage),
     #[serde(rename = "XLMP_REVALIDATE")]
     Revalidate(RevalidateMessage),
+    #[serde(rename = "XLMP_NODE_ADVERTISE")]
+    NodeAdvertise(NodeAdvertiseMessage),
+    #[serde(rename = "XLMP_DISCOVERY_REQUEST")]
+    DiscoveryRequest(DiscoveryRequestMessage),
+    #[serde(rename = "XLMP_DISCOVERY_RESPONSE")]
+    DiscoveryResponse(DiscoveryResponseMessage),
+    #[serde(rename = "XLMP_SERVICE_ORDER")]
+    ServiceOrder(ServiceOrderMessage),
+    #[serde(rename = "XLMP_SERVICE_MATCH")]
+    ServiceMatch(ServiceMatchMessage),
+    #[serde(rename = "XLMP_SORTITION_REQUEST")]
+    SortitionRequest(SortitionRequestMessage),
+    #[serde(rename = "XLMP_COMMITTEE")]
+    Committee(CommitteeMessage),
+    #[serde(rename = "XLMP_REPUTATION")]
+    Reputation(ReputationMessage),
+    #[serde(rename = "XLMP_BOND")]
+    Bond(BondMessage),
 }
 
 impl XlmpMessage {
@@ -171,6 +256,15 @@ impl XlmpMessage {
             Self::Finalize(_) => MessageKind::Finalize,
             Self::Revenue(_) => MessageKind::Revenue,
             Self::Revalidate(_) => MessageKind::Revalidate,
+            Self::NodeAdvertise(_) => MessageKind::NodeAdvertise,
+            Self::DiscoveryRequest(_) => MessageKind::DiscoveryRequest,
+            Self::DiscoveryResponse(_) => MessageKind::DiscoveryResponse,
+            Self::ServiceOrder(_) => MessageKind::ServiceOrder,
+            Self::ServiceMatch(_) => MessageKind::ServiceMatch,
+            Self::SortitionRequest(_) => MessageKind::SortitionRequest,
+            Self::Committee(_) => MessageKind::Committee,
+            Self::Reputation(_) => MessageKind::Reputation,
+            Self::Bond(_) => MessageKind::Bond,
         }
     }
 
@@ -239,6 +333,70 @@ impl XlmpMessage {
                 message.claim_id.validate()?;
                 message.verification_policy_id.validate()
             }
+            Self::NodeAdvertise(message) => {
+                message.advertisement.advertisement_id.validate()?;
+                message.advertisement.node_id.validate()?;
+                message.advertisement.operator_cluster_id.validate()?;
+                message.advertisement.reputation_snapshot_id.validate()?;
+                message.advertisement.bond_id.validate()
+            }
+            Self::DiscoveryRequest(message) => message.request.discovery_id.validate(),
+            Self::DiscoveryResponse(message) => {
+                message.result.discovery_id.validate()?;
+                for advertisement_id in &message.result.advertisement_ids {
+                    advertisement_id.validate()?;
+                }
+                Ok(())
+            }
+            Self::ServiceOrder(message) => {
+                message.order.order_id.validate()?;
+                message.order.job_id.validate()
+            }
+            Self::ServiceMatch(message) => {
+                message.service_match.match_id.validate()?;
+                message.service_match.order_id.validate()?;
+                message.service_match.advertisement_id.validate()?;
+                message.service_match.node_id.validate()?;
+                message.service_match.operator_cluster_id.validate()
+            }
+            Self::SortitionRequest(message) => {
+                message.request.sortition_id.validate()?;
+                message.request.job_id.validate()?;
+                message.request.policy_id.validate()?;
+                for node in &message.eligible_nodes {
+                    node.node_id.validate()?;
+                    node.operator_cluster_id.validate()?;
+                    node.advertisement_id.validate()?;
+                    node.bond_id.validate()?;
+                    node.reputation_snapshot_id.validate()?;
+                }
+                Ok(())
+            }
+            Self::Committee(message) => {
+                message.selection.sortition_id.validate()?;
+                message.selection.job_id.validate()?;
+                message.selection.policy_id.validate()?;
+                for member in &message.selection.members {
+                    member.node_id.validate()?;
+                    member.operator_cluster_id.validate()?;
+                    member.advertisement_id.validate()?;
+                    member.bond_id.validate()?;
+                    member.reputation_snapshot_id.validate()?;
+                }
+                Ok(())
+            }
+            Self::Reputation(message) => {
+                message.snapshot.reputation_id.validate()?;
+                message.snapshot.node_id.validate()?;
+                message.snapshot.operator_cluster_id.validate()?;
+                message.snapshot.policy_id.validate()
+            }
+            Self::Bond(message) => {
+                message.bond.bond_id.validate()?;
+                message.bond.node_id.validate()?;
+                message.bond.operator_cluster_id.validate()?;
+                message.bond.slashing_policy_id.validate()
+            }
         }
     }
 }
@@ -288,8 +446,16 @@ pub enum XlmpError {
     ClaimIdMismatch,
     #[error("XLMP proof identifier does not match its canonical proof identity")]
     ProofIdMismatch,
+    #[error("XLMP advertisement identifier does not match its canonical service identity")]
+    AdvertisementIdMismatch,
+    #[error("XLMP sortition eligible records do not match their committed root")]
+    EligibleSetRootMismatch,
+    #[error("XLMP service-match identifier does not match its canonical reservation identity")]
+    ServiceMatchIdMismatch,
     #[error("XLMP observation reveal does not match its prior commitment")]
     ObservationCommitMismatch,
+    #[error(transparent)]
+    Canonicalization(#[from] CanonicalizationError),
     #[error(transparent)]
     InvalidId(#[from] IdError),
 }
@@ -377,6 +543,23 @@ impl XlmpEnvelope {
                 if message.proof_id != message.proof.derive_proof_id()? =>
             {
                 return Err(XlmpError::ProofIdMismatch);
+            }
+            XlmpMessage::NodeAdvertise(message)
+                if message.advertisement.advertisement_id
+                    != message.advertisement.derive_advertisement_id()? =>
+            {
+                return Err(XlmpError::AdvertisementIdMismatch);
+            }
+            XlmpMessage::SortitionRequest(message)
+                if message.request.eligible_set_root
+                    != derive_eligible_set_root(&message.eligible_nodes)? =>
+            {
+                return Err(XlmpError::EligibleSetRootMismatch);
+            }
+            XlmpMessage::ServiceMatch(message)
+                if message.service_match.match_id != message.service_match.derive_match_id()? =>
+            {
+                return Err(XlmpError::ServiceMatchIdMismatch);
             }
             _ => {}
         }
@@ -520,6 +703,36 @@ mod tests {
     }
 
     #[test]
+    fn published_node_advertisement_has_a_valid_message_identifier() {
+        let envelope: XlmpEnvelope = serde_json::from_str(include_str!(
+            "../../../examples/node-network/xlmp-node-advertise.json"
+        ))
+        .unwrap();
+        assert_eq!(envelope.message_id, envelope.expected_message_id().unwrap());
+        envelope.validate_integrity().unwrap();
+    }
+
+    #[test]
+    fn envelope_rejects_advertisement_id_that_does_not_bind_price() {
+        let envelope: XlmpEnvelope = serde_json::from_str(include_str!(
+            "../../../examples/node-network/xlmp-node-advertise.json"
+        ))
+        .unwrap();
+        let XlmpMessage::NodeAdvertise(mut message) = envelope.message else {
+            unreachable!();
+        };
+        message.advertisement.capabilities[0].price.amount.units += 1;
+        let result = XlmpEnvelope::new(
+            None,
+            "did:key:checker-node-example",
+            envelope.sent_at,
+            XlmpMessage::NodeAdvertise(message),
+            "signature",
+        );
+        assert!(matches!(result, Err(XlmpError::AdvertisementIdMismatch)));
+    }
+
+    #[test]
     fn required_message_discriminators_are_stable() {
         let kinds = [
             MessageKind::Claim,
@@ -534,6 +747,15 @@ mod tests {
             MessageKind::Finalize,
             MessageKind::Revenue,
             MessageKind::Revalidate,
+            MessageKind::NodeAdvertise,
+            MessageKind::DiscoveryRequest,
+            MessageKind::DiscoveryResponse,
+            MessageKind::ServiceOrder,
+            MessageKind::ServiceMatch,
+            MessageKind::SortitionRequest,
+            MessageKind::Committee,
+            MessageKind::Reputation,
+            MessageKind::Bond,
         ];
         let expected = [
             "XLMP_CLAIM",
@@ -548,6 +770,15 @@ mod tests {
             "XLMP_FINALIZE",
             "XLMP_REVENUE",
             "XLMP_REVALIDATE",
+            "XLMP_NODE_ADVERTISE",
+            "XLMP_DISCOVERY_REQUEST",
+            "XLMP_DISCOVERY_RESPONSE",
+            "XLMP_SERVICE_ORDER",
+            "XLMP_SERVICE_MATCH",
+            "XLMP_SORTITION_REQUEST",
+            "XLMP_COMMITTEE",
+            "XLMP_REPUTATION",
+            "XLMP_BOND",
         ];
         for (kind, expected) in kinds.into_iter().zip(expected) {
             assert_eq!(serde_json::to_value(kind).unwrap(), expected);

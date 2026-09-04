@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/node-bond.schema.json",
+  "title": "NodeBond",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bond_id": { "$ref": "node-network-common.schema.json#/$defs/bondId" },
+    "node_id": { "$ref": "node-network-common.schema.json#/$defs/nodeId" },
+    "operator_cluster_id": { "$ref": "node-network-common.schema.json#/$defs/operatorId" },
+    "amount": { "$ref": "common.schema.json#/$defs/amount" },
+    "eligible_roles": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "$ref": "node-network-common.schema.json#/$defs/nodeRole" }
+    },
+    "slashing_policy_id": { "$ref": "node-network-common.schema.json#/$defs/policyId" },
+    "escrow_reference": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["active", "released", "partially_slashed", "slashed", "quarantined"]
+    },
+    "locked_until": { "type": "string", "format": "date-time" },
+    "evidence_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "bond_id", "node_id", "operator_cluster_id", "amount", "eligible_roles",
+    "slashing_policy_id", "escrow_reference", "status", "locked_until", "evidence_root",
+    "signature"
+  ]
+}

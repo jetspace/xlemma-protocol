@@ -16,6 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS = ROOT / "schemas"
 EXAMPLE = ROOT / "examples" / "no-arbitrage"
+NODE_EXAMPLE = ROOT / "examples" / "node-network"
 
 REQUIRED_FILES = [
     "README.md",
@@ -58,6 +59,7 @@ REQUIRED_FILES = [
     "spec/016-privacy.md",
     "spec/017-deployment-operations.md",
     "spec/018-xlmp-wire-protocol.md",
+    "spec/019-node-network.md",
     "openapi/openapi.yaml",
     "contracts/src/ResearchVault.sol",
     "contracts/src/ResearcherCredit.sol",
@@ -71,7 +73,27 @@ REQUIRED_FILES = [
     "latex/xlemma.sty",
     "crates/xlemma-crypto/src/lib.rs",
     "crates/xlemma-node/src/lib.rs",
+    "crates/xlemma-node/src/marketplace.rs",
+    "crates/xlemma-core/src/network.rs",
     "crates/xlemma-xlmp/src/lib.rs",
+    "schemas/node-network-common.schema.json",
+    "schemas/node-service-advertisement.schema.json",
+    "schemas/node-reputation.schema.json",
+    "schemas/node-bond.schema.json",
+    "schemas/node-discovery-request.schema.json",
+    "schemas/node-discovery-result.schema.json",
+    "schemas/service-order.schema.json",
+    "schemas/service-match.schema.json",
+    "schemas/committee-sortition-request.schema.json",
+    "schemas/committee-selection.schema.json",
+    "schemas/eligible-node.schema.json",
+    "examples/node-network/advertisement.json",
+    "examples/node-network/reputation.json",
+    "examples/node-network/bond.json",
+    "examples/node-network/xlmp-node-advertise.json",
+    "examples/node-network/eligible-nodes.json",
+    "examples/node-network/sortition-request.json",
+    "examples/node-network/committee-selection.json",
 ]
 
 EXAMPLE_SCHEMA_MAP = {
@@ -86,6 +108,15 @@ EXAMPLE_SCHEMA_MAP = {
     "lemma-capsule.json": "lemma-capsule.schema.json",
     "x402-extension.json": "x402-extension.schema.json",
     "xlmp-envelope.json": "xlmp-envelope.schema.json",
+}
+
+NODE_EXAMPLE_SCHEMA_MAP = {
+    "advertisement.json": "node-service-advertisement.schema.json",
+    "reputation.json": "node-reputation.schema.json",
+    "bond.json": "node-bond.schema.json",
+    "xlmp-node-advertise.json": "xlmp-envelope.schema.json",
+    "sortition-request.json": "committee-sortition-request.schema.json",
+    "committee-selection.json": "committee-selection.schema.json",
 }
 
 
@@ -111,8 +142,8 @@ def validate_json_syntax_and_schemas() -> None:
     for path in sorted(SCHEMAS.glob("*.json")):
         schema_objects[path.name] = load_json(path)
 
-    if len(schema_objects) < 31:
-        fail(f"expected at least 31 protocol schemas, found {len(schema_objects)}")
+    if len(schema_objects) < 43:
+        fail(f"expected at least 43 protocol schemas, found {len(schema_objects)}")
 
     try:
         import jsonschema
@@ -155,6 +186,24 @@ def validate_json_syntax_and_schemas() -> None:
             joined = "\n".join(f"  {list(e.path)}: {e.message}" for e in errors)
             fail(f"{example_name} failed {schema_name}:\n{joined}")
 
+    for example_name, schema_name in NODE_EXAMPLE_SCHEMA_MAP.items():
+        instance = load_json(NODE_EXAMPLE / example_name)
+        validator = schema_validator(schema_objects[schema_name])
+        errors = sorted(validator.iter_errors(instance), key=lambda err: list(err.path))
+        if errors:
+            joined = "\n".join(f"  {list(e.path)}: {e.message}" for e in errors)
+            fail(f"node-network/{example_name} failed {schema_name}:\n{joined}")
+
+    eligible_validator = schema_validator(schema_objects["eligible-node.schema.json"])
+    for index, node in enumerate(load_json(NODE_EXAMPLE / "eligible-nodes.json")):
+        errors = list(eligible_validator.iter_errors(node))
+        if errors:
+            fail(f"eligible-nodes.json[{index}] invalid: {errors[0].message}")
+
+    message_variants = schema_objects["xlmp-envelope.schema.json"]["properties"]["message"]["oneOf"]
+    if len(message_variants) != 21:
+        fail(f"expected exactly 21 XLMP/1 message variants, found {len(message_variants)}")
+
     observation_schema = schema_objects["observation.schema.json"]
     observation_validator = schema_validator(observation_schema)
     for index, observation in enumerate(load_json(EXAMPLE / "observations.json")):
@@ -192,6 +241,16 @@ def validate_toml() -> None:
         fail(f"default revenue waterfall totals {total}, expected 10,000")
     if config["committee"]["stake_weighted_voting"]:
         fail("stake-weighted formal voting must remain disabled")
+    if config["committee"]["maximum_eligible_nodes"] != 1024:
+        fail("default committee eligible-set bound must match XLIP-019")
+    if config["committee"]["maximum_committee_slots"] != 32:
+        fail("default committee slot bound must match XLIP-019")
+    if config["committee"]["maximum_search_states"] != 1_000_000:
+        fail("default committee search bound must match XLIP-019")
+    if not config["node_marketplace"]["append_only_history"]:
+        fail("node marketplace history must remain append-only")
+    if not config["node_marketplace"]["checked_integer_prices"]:
+        fail("node marketplace must use checked integer price arithmetic")
     if config["astra"]["self_certification_allowed"]:
         fail("ASTRA self-certification must remain disabled")
     if config["x402"]["facilitator_participates_in_research_consensus"]:
@@ -357,6 +416,8 @@ def validate_documented_invariants() -> None:
         "compute-savings",
         "latex",
         "astra",
+        "multidimensional",
+        "service advertisement",
     ]
     missing = [phrase for phrase in required_phrases if phrase not in combined]
     if missing:
@@ -382,8 +443,8 @@ def validate_source_tree() -> None:
         fail(f"expected at least 9 Solidity reference contracts, found {len(solidity)}")
 
     specs = sorted((ROOT / "spec").glob("[0-9][0-9][0-9]-*.md"))
-    if len(specs) < 19:
-        fail(f"expected at least 19 numbered specifications, found {len(specs)}")
+    if len(specs) < 20:
+        fail(f"expected at least 20 numbered specifications, found {len(specs)}")
 
     full_design = (ROOT / "docs/FULL_DESIGN.md").read_text()
     if len(full_design.splitlines()) < 1000:
@@ -401,10 +462,18 @@ def validate_source_tree() -> None:
         "/v1/verification-jobs/{jobId}/evaluate",
         "/v1/verification-jobs/{jobId}/payment-required",
         "/v1/compute/quote",
+        "/v1/node-advertisements",
+        "/v1/node-discovery",
+        "/v1/service-orders",
+        "/v1/committee-sortitions",
     ]
     missing_paths = [path for path in required_paths if path not in openapi]
     if missing_paths:
         fail(f"OpenAPI is missing required paths: {missing_paths}")
+
+    core_state = (ROOT / "crates/xlemma-core/src/state.rs").read_text()
+    if "AstraProver" in core_state:
+        fail("core node roles must remain provider-neutral; ASTRA belongs in its adapter")
 
     contract_text = "\n".join(path.read_text() for path in solidity)
     contract_invariants = [

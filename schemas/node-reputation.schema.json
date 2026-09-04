@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/node-reputation.schema.json",
+  "title": "NodeReputationSnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "reputation_id": { "$ref": "node-network-common.schema.json#/$defs/reputationId" },
+    "node_id": { "$ref": "node-network-common.schema.json#/$defs/nodeId" },
+    "operator_cluster_id": { "$ref": "node-network-common.schema.json#/$defs/operatorId" },
+    "vector": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "formal_accuracy": { "$ref": "node-network-common.schema.json#/$defs/reputationMetric" },
+        "availability": { "$ref": "node-network-common.schema.json#/$defs/reputationMetric" },
+        "latency": { "$ref": "node-network-common.schema.json#/$defs/reputationMetric" },
+        "novelty_calibration": { "$ref": "node-network-common.schema.json#/$defs/reputationMetric" },
+        "challenge_quality": { "$ref": "node-network-common.schema.json#/$defs/reputationMetric" },
+        "independence": { "$ref": "node-network-common.schema.json#/$defs/reputationMetric" }
+      },
+      "required": [
+        "formal_accuracy", "availability", "latency", "novelty_calibration",
+        "challenge_quality", "independence"
+      ]
+    },
+    "policy_id": { "$ref": "node-network-common.schema.json#/$defs/policyId" },
+    "period_start": { "type": "string", "format": "date-time" },
+    "period_end": { "type": "string", "format": "date-time" },
+    "evidence_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "assessed_at": { "type": "string", "format": "date-time" },
+    "supersedes": {
+      "anyOf": [
+        { "$ref": "node-network-common.schema.json#/$defs/reputationId" },
+        { "type": "null" }
+      ]
+    },
+    "assessor_signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "reputation_id", "node_id", "operator_cluster_id", "vector", "policy_id",
+    "period_start", "period_end", "evidence_root", "assessed_at", "supersedes",
+    "assessor_signature"
+  ]
+}

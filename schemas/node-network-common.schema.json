@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/node-network-common.schema.json",
+  "title": "XLMP node-network shared types",
+  "$defs": {
+    "nodeId": { "type": "string", "pattern": "^xlnode:blake3:[0-9a-f]{64}$" },
+    "operatorId": { "type": "string", "pattern": "^xloperator:blake3:[0-9a-f]{64}$" },
+    "advertisementId": { "type": "string", "pattern": "^xladv:blake3:[0-9a-f]{64}$" },
+    "discoveryId": { "type": "string", "pattern": "^xldiscovery:blake3:[0-9a-f]{64}$" },
+    "orderId": { "type": "string", "pattern": "^xlorder:blake3:[0-9a-f]{64}$" },
+    "matchId": { "type": "string", "pattern": "^xlmatch:blake3:[0-9a-f]{64}$" },
+    "sortitionId": { "type": "string", "pattern": "^xlsortition:blake3:[0-9a-f]{64}$" },
+    "reputationId": { "type": "string", "pattern": "^xlreputation:blake3:[0-9a-f]{64}$" },
+    "bondId": { "type": "string", "pattern": "^xlbond:blake3:[0-9a-f]{64}$" },
+    "jobId": { "type": "string", "pattern": "^xljob:blake3:[0-9a-f]{64}$" },
+    "policyId": { "type": "string", "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$" },
+    "theoryId": { "type": "string", "pattern": "^xlt:blake3:[0-9a-f]{64}$" },
+    "nodeRole": {
+      "type": "string",
+      "enum": [
+        "researcher", "research_prover", "lean_builder", "official_kernel_checker",
+        "independent_checker", "novelty_reviewer", "significance_reviewer", "challenger",
+        "storage_provider", "indexer", "payment_facilitator", "certificate_finalizer"
+      ]
+    },
+    "checkerFamily": {
+      "type": "string",
+      "enum": ["lean_kernel", "nanoda", "other_independent"]
+    },
+    "serviceKind": {
+      "type": "string",
+      "enum": [
+        "formalization", "proof_search", "proof_repair", "explanation", "formal_build",
+        "official_verification", "independent_verification", "novelty_review",
+        "significance_review", "human_expert_review", "storage", "indexing",
+        "challenge_monitoring", "certificate_finalization", "revalidation"
+      ]
+    },
+    "servicePrice": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pricing_model": {
+          "type": "string",
+          "enum": ["fixed", "metered", "up_to", "batch_settlement", "institutional_invoice"]
+        },
+        "unit_name": { "type": "string", "minLength": 1 },
+        "quantity_scale": { "type": "integer", "minimum": 1 },
+        "amount": { "$ref": "common.schema.json#/$defs/amount" }
+      },
+      "required": ["pricing_model", "unit_name", "quantity_scale", "amount"]
+    },
+    "reputationMetric": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "score_bps": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "sample_size": { "type": "integer", "minimum": 0 },
+        "evidence_root": { "$ref": "common.schema.json#/$defs/hash" }
+      },
+      "required": ["score_bps", "sample_size", "evidence_root"]
+    },
+    "reputationRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "minimum_score_bps": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "minimum_sample_size": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["minimum_score_bps", "minimum_sample_size"]
+    },
+    "nullableReputationRequirement": {
+      "anyOf": [
+        { "$ref": "#/$defs/reputationRequirement" },
+        { "type": "null" }
+      ]
+    },
+    "reputationRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "formal_accuracy": { "$ref": "#/$defs/nullableReputationRequirement" },
+        "availability": { "$ref": "#/$defs/nullableReputationRequirement" },
+        "latency": { "$ref": "#/$defs/nullableReputationRequirement" },
+        "novelty_calibration": { "$ref": "#/$defs/nullableReputationRequirement" },
+        "challenge_quality": { "$ref": "#/$defs/nullableReputationRequirement" },
+        "independence": { "$ref": "#/$defs/nullableReputationRequirement" }
+      },
+      "required": [
+        "formal_accuracy", "availability", "latency", "novelty_calibration",
+        "challenge_quality", "independence"
+      ]
+    },
+    "hardwareProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "class": { "type": "string", "minLength": 1 },
+        "architecture": { "type": "string", "minLength": 1 },
+        "accelerator": { "type": ["string", "null"] },
+        "memory_mib": { "type": ["integer", "null"], "minimum": 0 },
+        "trusted_execution_attestation": { "type": ["string", "null"] }
+      },
+      "required": [
+        "class", "architecture", "accelerator", "memory_mib",
+        "trusted_execution_attestation"
+      ]
+    },
+    "serviceEndpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "transport": { "type": "string", "minLength": 1 },
+        "uri": { "type": "string", "minLength": 1 },
+        "authentication_profile": { "type": "string", "minLength": 1 }
+      },
+      "required": ["transport", "uri", "authentication_profile"]
+    },
+    "serviceCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "service": { "$ref": "#/$defs/serviceKind" },
+        "implementation_id": { "type": ["string", "null"] },
+        "checker_families": {
+          "type": "array", "uniqueItems": true,
+          "items": { "$ref": "#/$defs/checkerFamily" }
+        },
+        "supported_theory_ids": {
+          "type": "array", "uniqueItems": true,
+          "items": { "$ref": "#/$defs/theoryId" }
+        },
+        "domains": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "hardware": {
+          "anyOf": [{ "$ref": "#/$defs/hardwareProfile" }, { "type": "null" }]
+        },
+        "maximum_parallel_jobs": { "type": "integer", "minimum": 1 },
+        "capacity_units": { "type": "integer", "minimum": 1 },
+        "available_units": { "type": "integer", "minimum": 0 },
+        "p50_latency_ms": { "type": "integer", "minimum": 0 },
+        "p95_latency_ms": { "type": "integer", "minimum": 0 },
+        "price": { "$ref": "#/$defs/servicePrice" }
+      },
+      "required": [
+        "service", "implementation_id", "checker_families", "supported_theory_ids", "domains",
+        "hardware", "maximum_parallel_jobs", "capacity_units", "available_units",
+        "p50_latency_ms", "p95_latency_ms", "price"
+      ]
+    }
+  }
+}

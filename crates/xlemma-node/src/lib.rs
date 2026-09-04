@@ -3,6 +3,10 @@
 //! Model, checker, storage, payment, and chain processes implement adapters
 //! around this fail-closed state machine.
 
+pub mod marketplace;
+
+pub use marketplace::*;
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
@@ -188,11 +192,11 @@ pub fn roles_conflict(left: NodeRole, right: NodeRole) -> bool {
             OfficialKernelChecker | IndependentChecker | NoveltyReviewer | CertificateFinalizer,
             Researcher
         ) | (
-            AstraProver,
+            ResearchProver,
             OfficialKernelChecker | IndependentChecker | CertificateFinalizer
         ) | (
             OfficialKernelChecker | IndependentChecker | CertificateFinalizer,
-            AstraProver
+            ResearchProver
         ) | (LeanBuilder, OfficialKernelChecker | IndependentChecker)
             | (OfficialKernelChecker | IndependentChecker, LeanBuilder)
             | (PaymentFacilitator, CertificateFinalizer)
@@ -362,7 +366,7 @@ mod tests {
     #[test]
     fn prover_cannot_also_verify_its_own_job() {
         assert!(roles_conflict(
-            NodeRole::AstraProver,
+            NodeRole::ResearchProver,
             NodeRole::OfficialKernelChecker
         ));
     }
@@ -371,7 +375,7 @@ mod tests {
     fn assignment_checks_operator_role_conflicts() {
         let now = Utc::now();
         let cap = capability(NodeRole::OfficialKernelChecker);
-        let roles = BTreeSet::from([NodeRole::AstraProver]);
+        let roles = BTreeSet::from([NodeRole::ResearchProver]);
         assert!(matches!(
             validate_assignment(
                 &cap,

@@ -1,0 +1,33 @@
+{
+  "sortition_id": "xlsortition:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "job_id": "xljob:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "policy_id": "xlpolicy:blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "epoch": 7,
+  "eligible_set_root": "blake3:d75663b4ced4e614322d570fe6e9c660a6e2dd442ea552a9fa658d0c5f469ad7",
+  "randomness": {
+    "source": "drand",
+    "round": 123,
+    "seed_commitment": "blake3:515f930a1231acbcaa1e9770df5fa74a984318bdb4dd176df20c4293cb4216ad",
+    "proof_reference": "drand:quicknet:round:123"
+  },
+  "requirements": [
+    {
+      "role": "official_kernel_checker",
+      "count": 2,
+      "minimum_bond": { "units": 500000000, "asset": "USDC", "decimals": 6 },
+      "reputation_requirements": {
+        "formal_accuracy": { "minimum_score_bps": 9500, "minimum_sample_size": 100 },
+        "availability": { "minimum_score_bps": 9500, "minimum_sample_size": 100 },
+        "latency": { "minimum_score_bps": 9000, "minimum_sample_size": 100 },
+        "novelty_calibration": null,
+        "challenge_quality": { "minimum_score_bps": 8500, "minimum_sample_size": 10 },
+        "independence": { "minimum_score_bps": 9500, "minimum_sample_size": 10 }
+      },
+      "required_checker_families": ["lean_kernel"]
+    }
+  ],
+  "minimum_distinct_providers": 2,
+  "minimum_distinct_regions": 2,
+  "excluded_operator_clusters": [],
+  "requested_at": "2026-09-03T12:00:00Z"
+}

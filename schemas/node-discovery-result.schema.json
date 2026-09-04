@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/node-discovery-result.schema.json",
+  "title": "NodeDiscoveryResult",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "discovery_id": { "$ref": "node-network-common.schema.json#/$defs/discoveryId" },
+    "advertisement_ids": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "node-network-common.schema.json#/$defs/advertisementId" }
+    },
+    "advertisement_set_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "discovery_id", "advertisement_ids", "advertisement_set_root", "generated_at", "signature"
+  ]
+}

@@ -7,6 +7,13 @@ Every major concept requested or developed in the design is mapped to its primar
 | Canonical provider-neutral protocol | `spec/018-xlmp-wire-protocol.md` | `xlemma-xlmp`, `xlmp-envelope.schema.json` |
 | XLMP/1 envelope and MessageID integrity | same | `XlmpEnvelope::validate_integrity`, HTTP message ingress |
 | Canonical XLMP message vocabulary | same | `XlmpMessage`, `MessageKind` |
+| First-class XLMP node network | `spec/019-node-network.md` | `xlemma-core::network`, `xlemma-node::marketplace` |
+| Signed service advertisements | same | `NodeServiceAdvertisement::derive_advertisement_id`, advertisement schema/vector |
+| Constraint-based service discovery | same | `discover_services`, `NodeDiscoveryRequest`, `NodeDiscoveryResult` |
+| Append-only service order book | same | `ServiceOrderBook`, `ServiceOrder`, `ServiceMatch` |
+| Multidimensional node reputation | same | `NodeReputationVector::meets`, reputation schema |
+| Evidence-backed node bonds | same | `NodeBond`, `NodeBondRegistry.sol` |
+| Auditable committee sortition | same | `select_committee`, `verify_committee_selection`, eligible-set/request/selection schemas and vectors |
 | Protocol lifecycle | `spec/018-xlmp-wire-protocol.md`, `spec/014-api-protocol.md` | `ResearchLifecycleState`, `ensure_lifecycle_transition` |
 | Research prover neutrality | `spec/007-astra-lean.md` | `ResearchProver`; ASTRA reference adapter |
 | Formal-system neutrality | same | `VerifierAdapter`; Lean default adapter |
@@ -56,8 +63,8 @@ Every major concept requested or developed in the design is mapped to its primar
 | Five consensus planes | same | `ConsensusDomain` |
 | Generalized role quorum | same | `FormalConsensusPolicy` |
 | Divergence quarantine | same | formal evaluator and state machine |
-| Role-specific committees | `spec/009-node-roles.md` | `select_committee` |
-| VRF/sortition design | same | deterministic seed-based reference selector |
+| Role-specific committees | `spec/009-node-roles.md`, `spec/019-node-network.md` | `select_committee` |
+| VRF/beacon sortition design | same | committed eligible set, future-randomness hash ranking and exact reproduction |
 | Stake as bond, not voting weight | same | `EligibleNode`, `NodeBondRegistry.sol` |
 | OperatorClusterID | same | core ID and committee/evaluator checks |
 | Provider/region diversity | same | policy and checker receipts |

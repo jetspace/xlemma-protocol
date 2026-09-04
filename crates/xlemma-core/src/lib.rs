@@ -8,6 +8,7 @@ pub mod canonical;
 pub mod id;
 pub mod manifest;
 pub mod money;
+pub mod network;
 pub mod protocol;
 pub mod receipt;
 pub mod state;
@@ -16,6 +17,7 @@ pub use canonical::{canonical_json_bytes, canonical_json_hash, CanonicalizationE
 pub use id::*;
 pub use manifest::*;
 pub use money::*;
+pub use network::*;
 pub use protocol::*;
 pub use receipt::*;
 pub use state::*;

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/committee-sortition-request.schema.json",
+  "title": "CommitteeSortitionRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "sortition_id": { "$ref": "node-network-common.schema.json#/$defs/sortitionId" },
+    "job_id": { "$ref": "node-network-common.schema.json#/$defs/jobId" },
+    "policy_id": { "$ref": "node-network-common.schema.json#/$defs/policyId" },
+    "epoch": { "type": "integer", "minimum": 0 },
+    "eligible_set_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "randomness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": { "type": "string", "minLength": 1 },
+        "round": { "type": "integer", "minimum": 1 },
+        "seed_commitment": { "$ref": "common.schema.json#/$defs/hash" },
+        "proof_reference": { "type": "string", "minLength": 1 }
+      },
+      "required": ["source", "round", "seed_commitment", "proof_reference"]
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "role": { "$ref": "node-network-common.schema.json#/$defs/nodeRole" },
+          "count": { "type": "integer", "minimum": 1, "maximum": 32 },
+          "minimum_bond": { "$ref": "common.schema.json#/$defs/amount" },
+          "reputation_requirements": { "$ref": "node-network-common.schema.json#/$defs/reputationRequirements" },
+          "required_checker_families": {
+            "type": "array", "uniqueItems": true,
+            "items": { "$ref": "node-network-common.schema.json#/$defs/checkerFamily" }
+          }
+        },
+        "required": [
+          "role", "count", "minimum_bond", "reputation_requirements",
+          "required_checker_families"
+        ]
+      }
+    },
+    "minimum_distinct_providers": { "type": "integer", "minimum": 1 },
+    "minimum_distinct_regions": { "type": "integer", "minimum": 1 },
+    "excluded_operator_clusters": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "node-network-common.schema.json#/$defs/operatorId" }
+    },
+    "requested_at": { "type": "string", "format": "date-time" }
+  },
+  "required": [
+    "sortition_id", "job_id", "policy_id", "epoch", "eligible_set_root", "randomness",
+    "requirements", "minimum_distinct_providers", "minimum_distinct_regions",
+    "excluded_operator_clusters", "requested_at"
+  ]
+}

@@ -1917,6 +1917,7 @@ dependencies = [
  "blake3",
  "chrono",
  "serde",
+ "serde_json",
  "thiserror",
  "xlemma-core",
 ]
@@ -1972,6 +1973,7 @@ dependencies = [
 name = "xlemma-node"
 version = "0.2.0"
 dependencies = [
+ "blake3",
  "chrono",
  "serde",
  "serde_json",

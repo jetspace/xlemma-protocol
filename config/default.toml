@@ -35,11 +35,26 @@ challenge_period_seconds = 86400
 
 [committee]
 minimum_collateral_minor_units = 1000000000
-minimum_reliability_bps = 9500
-minimum_qualification_bps = 9000
+minimum_formal_accuracy_bps = 9500
+minimum_availability_bps = 9500
+minimum_latency_bps = 9000
+minimum_novelty_calibration_bps = 0
+minimum_challenge_quality_bps = 8000
+minimum_independence_bps = 9500
+minimum_reputation_sample_size = 10
 stake_weighted_voting = false
 randomness_source = "vrf-required-in-production"
 operator_cluster_enforcement = true
+maximum_eligible_nodes = 1024
+maximum_committee_slots = 32
+maximum_search_states = 1000000
+
+[node_marketplace]
+append_only_history = true
+content_derived_advertisement_ids = true
+checked_integer_prices = true
+require_active_bond_reference = true
+maximum_advertisement_lifetime_seconds = 86400
 
 [novelty]
 prior_probability = 0.20

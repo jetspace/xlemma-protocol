@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/node-service-advertisement.schema.json",
+  "title": "NodeServiceAdvertisement",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "advertisement_id": { "$ref": "node-network-common.schema.json#/$defs/advertisementId" },
+    "node_id": { "$ref": "node-network-common.schema.json#/$defs/nodeId" },
+    "operator_cluster_id": { "$ref": "node-network-common.schema.json#/$defs/operatorId" },
+    "sequence": { "type": "integer", "minimum": 1 },
+    "roles": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "$ref": "node-network-common.schema.json#/$defs/nodeRole" }
+    },
+    "endpoints": {
+      "type": "array", "minItems": 1,
+      "items": { "$ref": "node-network-common.schema.json#/$defs/serviceEndpoint" }
+    },
+    "capabilities": {
+      "type": "array", "minItems": 1,
+      "items": { "$ref": "node-network-common.schema.json#/$defs/serviceCapability" }
+    },
+    "reputation_snapshot_id": { "$ref": "node-network-common.schema.json#/$defs/reputationId" },
+    "bond_id": { "$ref": "node-network-common.schema.json#/$defs/bondId" },
+    "terms_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "valid_from": { "type": "string", "format": "date-time" },
+    "valid_until": { "type": "string", "format": "date-time" },
+    "supersedes": {
+      "anyOf": [
+        { "$ref": "node-network-common.schema.json#/$defs/advertisementId" },
+        { "type": "null" }
+      ]
+    },
+    "signature": { "$ref": "common.schema.json#/$defs/signature" }
+  },
+  "required": [
+    "advertisement_id", "node_id", "operator_cluster_id", "sequence", "roles",
+    "endpoints", "capabilities", "reputation_snapshot_id", "bond_id", "terms_root",
+    "valid_from", "valid_until", "supersedes", "signature"
+  ]
+}

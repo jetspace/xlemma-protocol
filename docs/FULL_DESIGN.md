@@ -576,15 +576,15 @@ Never `2–1 PASS`.
 
 ---
 
-## 12. Node classes and separation of duties
+## 12. First-class node network and separation of duties
 
 ### 12.1 Researcher nodes
 
 Create claims, choose policies and budgets, commit artifacts, pay for services, receive revenue, and run local checks. They cannot independently finalize their own proof.
 
-### 12.2 ASTRA prover nodes
+### 12.2 Research-prover nodes
 
-Perform model-assisted formalization, search, repair, and explanation. Their accepted-proof bonus is separate from formal verification.
+Perform model-assisted formalization, search, repair, and explanation. ASTRA is the reference implementation, not a protocol dependency. A prover's accepted-proof bonus is separate from formal verification.
 
 ### 12.3 Lean build nodes
 
@@ -620,25 +620,66 @@ originator ≠ sole novelty reviewer
 challenged node ≠ dispute adjudicator
 ```
 
+### 12.10 Discovery, order book, and immutable matches
+
+A node publishes a signed, expiring `NodeServiceAdvertisement` that binds its
+NodeID, conservative OperatorClusterID, roles, XLMP endpoints,
+implementations/checker families, theories and domains, hardware, capacity,
+latency, price, reputation snapshot, eligibility bond, terms root, and
+validity interval. Price or capacity changes create a new content-derived
+AdvertisementID and monotonically increasing sequence; prior advertisements
+remain available as historical evidence.
+
+`NodeDiscoveryRequest` states service, role, checker, theory, domain, capacity,
+latency, price, reputation, and independence constraints. A deterministic
+result commits to the ordered AdvertisementID set. `ServiceOrder` expresses
+demand and `ServiceMatch` reserves one exact advertisement sequence. Discovery,
+matching, payment settlement, execution, and certification are different
+protocol actions with different receipts.
+
+### 12.11 Multidimensional reputation and bonds
+
+Reputation has six separately evidenced dimensions: formal accuracy,
+availability, latency, novelty calibration, challenge quality, and operator
+independence. Policies gate each relevant dimension by minimum score and sample
+size. XLMP defines no universal weighted score, so strength in one dimension
+cannot conceal failure in another.
+
+A `NodeBond` binds independently valued collateral to a node, operator cluster,
+eligible roles, slashing policy, escrow evidence, and lock period. Bond size
+above the minimum does not increase sortition weight or mathematical authority.
+
 ---
 
 ## 13. Committee selection and independence
 
 ### 13.1 Eligibility and sortition
 
-Collateral, reliability, qualification, software identity, conflict disclosures, and role capability determine eligibility. Public randomness then selects a committee.
+Active collateral, role capability, checker family, software identity, conflict
+disclosures, and every required reputation dimension determine eligibility.
+The eligible-set root and a future randomness source are committed before the
+seed is revealed; domain-separated public hash ranking then selects a committee.
 
 Stake is an eligibility bond, not unlimited voting weight:
 
 \[
-E_n = \mathbf 1[s_n \ge s_{min}]\mathbf 1[r_n \ge r_{min}]\mathbf 1[q_n \ge q_{min}].
+E_n = \mathbf 1[b_n \ge b_{min}]\mathbf 1[q_n=1]
+      \prod_{d\in D_{policy}}\mathbf 1[r_{n,d}\ge r_{min,d}].
 \]
 
-Among eligible nodes, cryptographic sortition should be approximately equal or use tightly capped qualification tiers.
+Among eligible nodes, the reference algorithm gives no additional rank weight
+for more bond or a higher reputation score. It deterministically searches the
+publicly ranked candidates for an assignment with unique operator clusters and
+the required provider and region diversity, failing closed when none exists.
 
 ### 13.2 Randomness
 
-Selection derives from a claim commitment, future manipulation-resistant randomness, policy ID, and epoch. A production deployment should use VRF or equivalent beacon rather than raw same-block data.
+Selection derives from SortitionID, JobID, policy ID, epoch, role and slot,
+NodeID, the committed eligible-set root, and future manipulation-resistant
+randomness. Each member exposes its rank hash and the committee exposes a
+selection root so any observer can reproduce it exactly. A production
+deployment must authenticate a VRF or equivalent beacon proof rather than use
+raw same-block data or trust a coordinator-supplied seed.
 
 ### 13.3 Operator clustering
 

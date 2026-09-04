@@ -10,3 +10,6 @@ chrono.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 xlemma-core = { path = "../xlemma-core" }
+
+[dev-dependencies]
+serde_json.workspace = true

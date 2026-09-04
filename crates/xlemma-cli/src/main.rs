@@ -4,8 +4,14 @@ use clap::{Parser, Subcommand, ValueEnum};
 use serde::{de::DeserializeOwned, Serialize};
 use std::{fs, path::PathBuf};
 use xlemma_compute_curve::{quote_verified_proof_cost, ExpectedWork, ServiceOffer};
-use xlemma_consensus::{evaluate_formal_consensus, FormalConsensusPolicy};
-use xlemma_core::{Amount, ArtifactId, ClaimManifest, ObservationReceipt, ProofManifest, TheoryId};
+use xlemma_consensus::{
+    eligible_set_root, evaluate_formal_consensus, randomness_commitment, select_committee,
+    FormalConsensusPolicy,
+};
+use xlemma_core::{
+    Amount, ArtifactId, ClaimManifest, CommitteeSortitionRequest, EligibleNode,
+    NodeServiceAdvertisement, ObservationReceipt, ProofManifest, TheoryId,
+};
 use xlemma_economics::{compute_savings_dividend, ComputeSavingsEvidence, ComputeSavingsPolicy};
 use xlemma_storage::{build_bundle_manifest, BundleInput};
 
@@ -28,6 +34,22 @@ enum Command {
     EvaluateConsensus {
         policy: PathBuf,
         observations: PathBuf,
+    },
+    /// Commit a public randomness reveal for a future sortition request.
+    CommitteeRandomness {
+        #[arg(long)]
+        revealed_seed: String,
+    },
+    /// Derive the canonical root of an exact eligible-node JSON array.
+    EligibleSetRoot { eligible_nodes: PathBuf },
+    /// Reproduce an auditable committee selection from committed inputs.
+    SelectCommittee {
+        request: PathBuf,
+        eligible_nodes: PathBuf,
+        #[arg(long)]
+        revealed_seed: String,
+        #[arg(long)]
+        selected_at: DateTime<Utc>,
     },
     /// Quote a verified proof from service offers and expected work.
     Quote {
@@ -69,6 +91,7 @@ enum IdKind {
     Claim,
     Proof,
     Artifact,
+    Advertisement,
 }
 
 fn main() -> Result<()> {
@@ -85,6 +108,9 @@ fn main() -> Result<()> {
                     .derive_proof_id()?
                     .to_string(),
                 IdKind::Artifact => ArtifactId::derive(&value)?.to_string(),
+                IdKind::Advertisement => serde_json::from_value::<NodeServiceAdvertisement>(value)?
+                    .derive_advertisement_id()?
+                    .to_string(),
             };
             println!("{id}");
         }
@@ -95,6 +121,28 @@ fn main() -> Result<()> {
             let policy: FormalConsensusPolicy = read_json(policy)?;
             let observations: Vec<ObservationReceipt> = read_json(observations)?;
             print_json(&evaluate_formal_consensus(&policy, &observations)?)?;
+        }
+        Command::CommitteeRandomness { revealed_seed } => {
+            println!("{}", randomness_commitment(revealed_seed.as_bytes()));
+        }
+        Command::EligibleSetRoot { eligible_nodes } => {
+            let nodes: Vec<EligibleNode> = read_json(eligible_nodes)?;
+            println!("{}", eligible_set_root(&nodes)?);
+        }
+        Command::SelectCommittee {
+            request,
+            eligible_nodes,
+            revealed_seed,
+            selected_at,
+        } => {
+            let request: CommitteeSortitionRequest = read_json(request)?;
+            let nodes: Vec<EligibleNode> = read_json(eligible_nodes)?;
+            print_json(&select_committee(
+                &request,
+                revealed_seed.as_bytes(),
+                &nodes,
+                selected_at,
+            )?)?;
         }
         Command::Quote {
             offers,

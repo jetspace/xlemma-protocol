@@ -5,7 +5,8 @@ info:
   description: >-
     HTTP adapter for canonical XLMP/1 messages and reference endpoints for
     decentralized researcher identities, proof-production jobs, independent
-    verification, PoIR observations, compute quotes, optional x402 payments,
+    verification, node discovery and service orders, auditable committee
+    sortition, PoIR observations, compute quotes, optional x402 payments,
     novelty review, and lemma capsules.
 servers:
   - url: http://localhost:8080
@@ -60,6 +61,83 @@ paths:
             application/json:
               schema: { $ref: ../schemas/xlmp-envelope.schema.json }
         "404": { $ref: "#/components/responses/NotFound" }
+  /v1/node-advertisements:
+    post:
+      operationId: publishNodeAdvertisement
+      summary: Append a signed XLMP node capability, capacity, latency, and price advertisement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: ../schemas/node-service-advertisement.schema.json }
+      responses:
+        "201":
+          description: Advertisement appended without replacing historical sequences
+          content:
+            application/json:
+              schema: { $ref: ../schemas/node-service-advertisement.schema.json }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /v1/node-discovery:
+    post:
+      operationId: discoverNodeServices
+      summary: Discover services using explicit price, capacity, checker, reputation, and independence constraints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: ../schemas/node-discovery-request.schema.json }
+      responses:
+        "200":
+          description: Content-committed ordered advertisement set
+          content:
+            application/json:
+              schema: { $ref: ../schemas/node-discovery-result.schema.json }
+        "400": { $ref: "#/components/responses/BadRequest" }
+  /v1/service-orders:
+    post:
+      operationId: submitServiceOrder
+      summary: Append demand and match it to one exact advertisement sequence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: ../schemas/service-order.schema.json }
+      responses:
+        "201":
+          description: Immutable service-capacity reservation; payment remains separate
+          content:
+            application/json:
+              schema: { $ref: ../schemas/service-match.schema.json }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /v1/committee-sortitions:
+    post:
+      operationId: selectCommittee
+      summary: Reproduce committee selection from a committed eligible set and future randomness
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [request, eligible_nodes]
+              properties:
+                request: { $ref: ../schemas/committee-sortition-request.schema.json }
+                eligible_nodes:
+                  type: array
+                  minItems: 1
+                  maxItems: 1024
+                  items: { $ref: ../schemas/eligible-node.schema.json }
+      responses:
+        "201":
+          description: Auditable committee with member rank hashes and a selection root
+          content:
+            application/json:
+              schema: { $ref: ../schemas/committee-selection.schema.json }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { $ref: "#/components/responses/Conflict" }
   /v1/researchers:
     post:
       operationId: registerResearcher

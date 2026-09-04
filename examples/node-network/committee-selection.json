@@ -1,0 +1,35 @@
+{
+  "sortition_id": "xlsortition:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "job_id": "xljob:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "policy_id": "xlpolicy:blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "randomness_commitment": "blake3:515f930a1231acbcaa1e9770df5fa74a984318bdb4dd176df20c4293cb4216ad",
+  "eligible_set_root": "blake3:d75663b4ced4e614322d570fe6e9c660a6e2dd442ea552a9fa658d0c5f469ad7",
+  "members": [
+    {
+      "role": "official_kernel_checker",
+      "slot": 0,
+      "node_id": "xlnode:blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "operator_cluster_id": "xloperator:blake3:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "advertisement_id": "xladv:blake3:3333333333333333333333333333333333333333333333333333333333333333",
+      "bond_id": "xlbond:blake3:6666666666666666666666666666666666666666666666666666666666666666",
+      "reputation_snapshot_id": "xlreputation:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+      "infrastructure_provider": "provider-c",
+      "region": "ap-southeast",
+      "rank_hash": "blake3:1b6e7551af42dcaf58f9b3abba0aafac4a5b881b57329da9c852db5503e39fc0"
+    },
+    {
+      "role": "official_kernel_checker",
+      "slot": 1,
+      "node_id": "xlnode:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "operator_cluster_id": "xloperator:blake3:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "advertisement_id": "xladv:blake3:2222222222222222222222222222222222222222222222222222222222222222",
+      "bond_id": "xlbond:blake3:5555555555555555555555555555555555555555555555555555555555555555",
+      "reputation_snapshot_id": "xlreputation:blake3:8888888888888888888888888888888888888888888888888888888888888888",
+      "infrastructure_provider": "provider-b",
+      "region": "eu-west",
+      "rank_hash": "blake3:004d81b6c733d004cf0872a2b23a3d307ec2601a1c919a57d1f2b2c663f32d6b"
+    }
+  ],
+  "selection_root": "blake3:6783e63330f4c4ec1fbaa72d2d20e00c5f022e202254e71c0f44237432a0c78a",
+  "selected_at": "2026-09-03T12:01:00Z"
+}

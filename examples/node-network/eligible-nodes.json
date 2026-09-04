@@ -1,0 +1,65 @@
+[
+  {
+    "node_id": "xlnode:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "operator_cluster_id": "xloperator:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "advertisement_id": "xladv:blake3:1111111111111111111111111111111111111111111111111111111111111111",
+    "roles": ["official_kernel_checker"],
+    "checker_families": ["lean_kernel"],
+    "bond_id": "xlbond:blake3:4444444444444444444444444444444444444444444444444444444444444444",
+    "active_bond": { "units": 1000000000, "asset": "USDC", "decimals": 6 },
+    "reputation_snapshot_id": "xlreputation:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+    "reputation": {
+      "formal_accuracy": { "score_bps": 9900, "sample_size": 250, "evidence_root": "blake3:a-formal-evidence-v1" },
+      "availability": { "score_bps": 9800, "sample_size": 500, "evidence_root": "blake3:a-availability-evidence-v1" },
+      "latency": { "score_bps": 9500, "sample_size": 500, "evidence_root": "blake3:a-latency-evidence-v1" },
+      "novelty_calibration": { "score_bps": 0, "sample_size": 0, "evidence_root": "blake3:a-novelty-not-applicable-v1" },
+      "challenge_quality": { "score_bps": 9000, "sample_size": 20, "evidence_root": "blake3:a-challenge-evidence-v1" },
+      "independence": { "score_bps": 9900, "sample_size": 20, "evidence_root": "blake3:a-independence-evidence-v1" }
+    },
+    "infrastructure_provider": "provider-a",
+    "region": "us-east",
+    "active": true
+  },
+  {
+    "node_id": "xlnode:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "operator_cluster_id": "xloperator:blake3:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "advertisement_id": "xladv:blake3:2222222222222222222222222222222222222222222222222222222222222222",
+    "roles": ["official_kernel_checker"],
+    "checker_families": ["lean_kernel"],
+    "bond_id": "xlbond:blake3:5555555555555555555555555555555555555555555555555555555555555555",
+    "active_bond": { "units": 1000000000, "asset": "USDC", "decimals": 6 },
+    "reputation_snapshot_id": "xlreputation:blake3:8888888888888888888888888888888888888888888888888888888888888888",
+    "reputation": {
+      "formal_accuracy": { "score_bps": 9850, "sample_size": 220, "evidence_root": "blake3:b-formal-evidence-v1" },
+      "availability": { "score_bps": 9750, "sample_size": 450, "evidence_root": "blake3:b-availability-evidence-v1" },
+      "latency": { "score_bps": 9600, "sample_size": 450, "evidence_root": "blake3:b-latency-evidence-v1" },
+      "novelty_calibration": { "score_bps": 0, "sample_size": 0, "evidence_root": "blake3:b-novelty-not-applicable-v1" },
+      "challenge_quality": { "score_bps": 9100, "sample_size": 18, "evidence_root": "blake3:b-challenge-evidence-v1" },
+      "independence": { "score_bps": 9850, "sample_size": 18, "evidence_root": "blake3:b-independence-evidence-v1" }
+    },
+    "infrastructure_provider": "provider-b",
+    "region": "eu-west",
+    "active": true
+  },
+  {
+    "node_id": "xlnode:blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "operator_cluster_id": "xloperator:blake3:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "advertisement_id": "xladv:blake3:3333333333333333333333333333333333333333333333333333333333333333",
+    "roles": ["official_kernel_checker"],
+    "checker_families": ["lean_kernel"],
+    "bond_id": "xlbond:blake3:6666666666666666666666666666666666666666666666666666666666666666",
+    "active_bond": { "units": 1000000000, "asset": "USDC", "decimals": 6 },
+    "reputation_snapshot_id": "xlreputation:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+    "reputation": {
+      "formal_accuracy": { "score_bps": 9800, "sample_size": 200, "evidence_root": "blake3:c-formal-evidence-v1" },
+      "availability": { "score_bps": 9700, "sample_size": 400, "evidence_root": "blake3:c-availability-evidence-v1" },
+      "latency": { "score_bps": 9400, "sample_size": 400, "evidence_root": "blake3:c-latency-evidence-v1" },
+      "novelty_calibration": { "score_bps": 0, "sample_size": 0, "evidence_root": "blake3:c-novelty-not-applicable-v1" },
+      "challenge_quality": { "score_bps": 9200, "sample_size": 16, "evidence_root": "blake3:c-challenge-evidence-v1" },
+      "independence": { "score_bps": 9800, "sample_size": 16, "evidence_root": "blake3:c-independence-evidence-v1" }
+    },
+    "infrastructure_provider": "provider-c",
+    "region": "ap-southeast",
+    "active": true
+  }
+]

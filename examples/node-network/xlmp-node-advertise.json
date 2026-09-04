@@ -1,0 +1,64 @@
+{
+  "protocol": "XLMP",
+  "version": 1,
+  "message_id": "xlmessage:blake3:5c767b8621fc0e5de5e2c66a14e4468c7ecfab62a2e9776c12b364fdaea3319b",
+  "correlation_id": null,
+  "sender": "did:key:checker-node-example",
+  "sent_at": "2026-09-03T12:00:00Z",
+  "message": {
+    "type": "XLMP_NODE_ADVERTISE",
+    "payload": {
+      "advertisement": {
+        "advertisement_id": "xladv:blake3:403aa6f68589d528f72a24f28bfc496472d572980b4426a1b2cbb358c9c51eae",
+        "node_id": "xlnode:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "operator_cluster_id": "xloperator:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "sequence": 1,
+        "roles": ["official_kernel_checker"],
+        "endpoints": [
+          {
+            "transport": "https",
+            "uri": "https://checker.example/xlmp/v1/messages",
+            "authentication_profile": "did-key-v1"
+          }
+        ],
+        "capabilities": [
+          {
+            "service": "official_verification",
+            "implementation_id": "lean4checker@4.33.1",
+            "checker_families": ["lean_kernel"],
+            "supported_theory_ids": [
+              "xlt:blake3:1111111111111111111111111111111111111111111111111111111111111111"
+            ],
+            "domains": ["formal-mathematics"],
+            "hardware": {
+              "class": "cpu",
+              "architecture": "arm64",
+              "accelerator": null,
+              "memory_mib": 8192,
+              "trusted_execution_attestation": null
+            },
+            "maximum_parallel_jobs": 4,
+            "capacity_units": 10000,
+            "available_units": 8000,
+            "p50_latency_ms": 500,
+            "p95_latency_ms": 1000,
+            "price": {
+              "pricing_model": "metered",
+              "unit_name": "checker-ms",
+              "quantity_scale": 100,
+              "amount": { "units": 50, "asset": "USDC", "decimals": 6 }
+            }
+          }
+        ],
+        "reputation_snapshot_id": "xlreputation:blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "bond_id": "xlbond:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "terms_root": "blake3:node-service-terms-v1",
+        "valid_from": "2026-09-03T00:00:00Z",
+        "valid_until": "2026-09-04T00:00:00Z",
+        "supersedes": null,
+        "signature": "example-node-signature"
+      }
+    }
+  },
+  "signature": "example-xlmp-node-advertisement-signature"
+}

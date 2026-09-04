@@ -106,6 +106,13 @@ protocol_id!(VaultId, "xlvault:blake3:", "research-vault-v1");
 protocol_id!(DividendId, "xldividend:blake3:", "dependency-dividend-v1");
 protocol_id!(LicenseId, "xllicense:blake3:", "license-v1");
 protocol_id!(PublicationId, "xlpublication:blake3:", "publication-v1");
+protocol_id!(AdvertisementId, "xladv:blake3:", "node-advertisement-v1");
+protocol_id!(DiscoveryId, "xldiscovery:blake3:", "node-discovery-v1");
+protocol_id!(ServiceOrderId, "xlorder:blake3:", "service-order-v1");
+protocol_id!(ServiceMatchId, "xlmatch:blake3:", "service-match-v1");
+protocol_id!(SortitionId, "xlsortition:blake3:", "committee-sortition-v1");
+protocol_id!(ReputationId, "xlreputation:blake3:", "node-reputation-v1");
+protocol_id!(BondId, "xlbond:blake3:", "node-bond-v1");
 
 impl ClaimId {
     /// Derive a ClaimID from the canonical elaborated formal type under its

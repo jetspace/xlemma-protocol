@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/node-discovery-request.schema.json",
+  "title": "NodeDiscoveryRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "discovery_id": { "$ref": "node-network-common.schema.json#/$defs/discoveryId" },
+    "requester": { "type": "string", "minLength": 1 },
+    "services": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "$ref": "node-network-common.schema.json#/$defs/serviceKind" }
+    },
+    "required_roles": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "node-network-common.schema.json#/$defs/nodeRole" }
+    },
+    "required_checker_families": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "node-network-common.schema.json#/$defs/checkerFamily" }
+    },
+    "theory_id": {
+      "anyOf": [
+        { "$ref": "node-network-common.schema.json#/$defs/theoryId" },
+        { "type": "null" }
+      ]
+    },
+    "domains": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "minimum_available_units": { "type": "integer", "minimum": 0 },
+    "maximum_p95_latency_ms": { "type": ["integer", "null"], "minimum": 0 },
+    "maximum_unit_price": {
+      "anyOf": [
+        { "$ref": "node-network-common.schema.json#/$defs/servicePrice" },
+        { "type": "null" }
+      ]
+    },
+    "reputation_requirements": { "$ref": "node-network-common.schema.json#/$defs/reputationRequirements" },
+    "excluded_operator_clusters": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "node-network-common.schema.json#/$defs/operatorId" }
+    },
+    "requested_at": { "type": "string", "format": "date-time" },
+    "expires_at": { "type": "string", "format": "date-time" }
+  },
+  "required": [
+    "discovery_id", "requester", "services", "required_roles", "required_checker_families",
+    "theory_id", "domains", "minimum_available_units", "maximum_p95_latency_ms",
+    "maximum_unit_price", "reputation_requirements", "excluded_operator_clusters",
+    "requested_at", "expires_at"
+  ]
+}

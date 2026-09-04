@@ -16,11 +16,14 @@ deterministic source manifest. It checked:
 - required source, specification, schema, example, contract, Lean, LaTeX, and
   documentation files;
 - JSON syntax, JSON Schema Draft 2020-12 validity, and example conformance,
-  including the XLMP/1 envelope and all provider-neutral native-object schemas;
+  including the XLMP/1 envelope, node advertisement/reputation/bond vectors,
+  the published eligible-set/sortition/committee vector, and all
+  provider-neutral native-object schemas;
 - TOML and YAML syntax, OpenAPI 3.1 operations, routes, response maps, external
   references, fragments, and local reference resolution;
 - revenue and contributor-share conservation, checker-root agreement, and
-  operator, provider, region, and checker-family diversity;
+  operator, provider, region, checker-family diversity, constrained service
+  matching, advertisement supersession, and sortition input commitments;
 - documented protocol invariants and absence of obvious embedded API keys or
   private-key blocks;
 - complete `MANIFEST.sha256` file coverage and source digests.
@@ -35,18 +38,20 @@ cargo clippy --locked --workspace --all-targets -- -D warnings
 cargo test --locked --workspace
 ```
 
-The Rust suite contains 56 unit/async-test declarations. It exercises XLMP
-message identity and mutation rejection, append-only HTTP ingress, lifecycle
-gates and revalidation, PoIR divergence and operator independence, backed
-credits, revenue conservation, dependency-dividend caps, provider adapters,
-storage identity, and x402-to-XLMP binding.
+The Rust suite contains 66 unit/async-test declarations. It exercises XLMP
+message and advertisement identity/mutation rejection, append-only HTTP and
+node-market records, asset-compatible capacity matching, six-dimensional
+reputation gates, reproducible future-randomness committee sortition, duplicate
+node and operator exclusion, lifecycle gates and revalidation, PoIR divergence,
+backed credits, revenue conservation, dependency-dividend caps, provider
+adapters, storage identity, and x402-to-XLMP binding.
 
 `scripts/simulate_economics.py` completed successfully for backing,
 authorization, settlement, refund, solvency, revenue allocation, compounding,
 and conservative compute-savings dividends. Python bytecode compilation also
 completed successfully for the repository scripts.
 
-The snapshot contains 13 Rust crates, 32 JSON schemas, 19 numbered
+The snapshot contains 13 Rust crates, 43 JSON schemas, 20 numbered
 specifications, 9 Solidity contracts, and 7 Solidity test suites. These source
 counts establish repository coverage; they do not substitute for an audit.
 
@@ -64,6 +69,8 @@ as locally executed:
 The following production activities were also outside this validation scope:
 
 - live ASTRA/provider calls or calibration;
+- live decentralized service discovery, order matching, or node-reputation assessment;
+- production beacon/VRF proof authentication and decentralized eligible-set publication;
 - live x402, stablecoin, grant, escrow, invoice, IPFS, or chain integration;
 - a second independent XLMP implementation and cross-implementation vectors;
 - independent security, cryptographic, economic, smart-contract, or legal
@@ -72,8 +79,9 @@ The following production activities were also outside this validation scope:
 ## Release status
 
 This remains an architectural reference implementation and prototype. The
-XLMP/1 provider-neutral boundary, canonical messages, lifecycle, native
-records, schemas, and adapters are implemented and locally checked. The
+XLMP/1 provider-neutral boundary, twenty-one canonical messages, lifecycle,
+first-class node network, native records, schemas, and adapters are implemented
+and locally checked. The
 unchecked gates in `docs/PRODUCTION_CHECKLIST.md`, including independent
 checker deployment and external audits, remain mandatory before real-value
 production use.

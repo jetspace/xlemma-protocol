@@ -34,6 +34,7 @@ Schemas are part of the conformance surface.
 | Plane | Native objects |
 |---|---|
 | Research graph | `ResearcherID`, `TheoryID`, `ClaimID`, `ProofID`, `LemmaCapsule`, `ContributionManifest` |
+| Node network | `NodeServiceAdvertisement`, `NodeDiscoveryRequest`, `ServiceOrder`, `ServiceMatch`, `NodeReputationSnapshot`, `NodeBond`, `CommitteeSortitionRequest`, `CommitteeSelection` |
 | Verification | `VerificationJob`, `ObservationReceipt`, `PoIRCertificate`, `Challenge`, `QuarantineRecord` |
 | Economics | `ComputeQuote`, `ComputeReceipt`, `ResearchCredit`, `ResearchVault`, `RevenueEvent`, `DependencyDividend` |
 | Rights/publication | `RightsManifest`, `License`, `PublicationRecord` |
@@ -94,11 +95,24 @@ XLMP/1 defines these message discriminators:
 | `XLMP_FINALIZE` | Record completion of the challenge gate and finalization evidence |
 | `XLMP_REVENUE` | Record realized external revenue bound to an independent settlement receipt |
 | `XLMP_REVALIDATE` | Request fresh reproduction of a previously certified object |
+| `XLMP_NODE_ADVERTISE` | Publish an append-only, expiring node capability/price/capacity advertisement |
+| `XLMP_DISCOVERY_REQUEST` | Query advertisements using explicit service, implementation, capacity, latency, reputation, and independence constraints |
+| `XLMP_DISCOVERY_RESPONSE` | Return a content-committed ordered set of matching advertisements |
+| `XLMP_SERVICE_ORDER` | Publish a bounded service demand with price, delivery, role, and assurance constraints |
+| `XLMP_SERVICE_MATCH` | Reserve advertised capacity and bind an order to a specific advertisement sequence |
+| `XLMP_SORTITION_REQUEST` | Commit the eligible set, role requirements, diversity policy, and future randomness source |
+| `XLMP_COMMITTEE` | Publish an exactly reproducible committee selection with per-member rank proofs |
+| `XLMP_REPUTATION` | Publish a superseding multidimensional, evidence-backed node reputation snapshot |
+| `XLMP_BOND` | Publish independently settled eligibility collateral and its slashing policy |
 
 Proof candidates MUST be labeled as candidates. `XLMP_CERTIFICATE` MUST NOT be
 emitted solely from a prover response. `XLMP_OBSERVATION_REVEAL` MUST bind the
 same job, receipt, node, operator cluster, commitment, and commit time as its
 corresponding `XLMP_OBSERVATION_COMMIT`.
+
+Node-network messages are specified further in XLIP-019. Price, bond size, and
+reputation MUST remain service-routing and eligibility inputs; none is formal
+vote weight and none can override checker evidence.
 
 ## 5. Canonical lifecycle
 
@@ -225,6 +239,8 @@ An XLMP/1 implementation is conforming only if it:
    distinct;
 6. preserves the consensus and economic invariants in XLIP-000;
 7. discloses which adapter implementations and policy roots were used.
+8. preserves append-only node advertisements, orders, matches, reputation
+   snapshots, bonds, and committee evidence.
 
 The reference Rust crate is `xlemma-xlmp`. The JSON Schema authority is
 `schemas/xlmp-envelope.schema.json`; neither artifact is privileged over the

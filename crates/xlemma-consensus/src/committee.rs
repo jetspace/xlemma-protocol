@@ -1,182 +1,653 @@
-use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, BTreeSet};
+use chrono::{DateTime, Utc};
+use std::collections::BTreeSet;
 use thiserror::Error;
-use xlemma_core::{NodeId, NodeRole, OperatorClusterId};
+use xlemma_core::{
+    canonical_json_hash, derive_eligible_set_root, CommitteeSelection, CommitteeSortitionRequest,
+    EligibleNode, NodeRole, OperatorClusterId, SortitionMember,
+};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EligibleNode {
-    pub node_id: NodeId,
-    pub operator_cluster_id: OperatorClusterId,
-    pub roles: BTreeSet<NodeRole>,
-    pub collateral_units: u128,
-    pub reliability_bps: u16,
-    pub qualification_bps: u16,
-    pub infrastructure_provider: Option<String>,
-    pub region: Option<String>,
-    pub active: bool,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CommitteeRequirement {
-    pub role: NodeRole,
-    pub count: usize,
-    pub minimum_collateral_units: u128,
-    pub minimum_reliability_bps: u16,
-    pub minimum_qualification_bps: u16,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CommitteeSelection {
-    pub seed_commitment: String,
-    pub selected: BTreeMap<NodeRole, Vec<NodeId>>,
-}
+/// Reference-conformance bounds keep adversarial sortition inputs from
+/// triggering unbounded combinatorial search. Larger deployments can shard an
+/// eligible set before committing its root, but MUST publish that policy.
+pub const MAX_COMMITTEE_SLOTS: usize = 32;
+pub const MAX_ELIGIBLE_NODES: usize = 1_024;
+pub const MAX_SORTITION_SEARCH_STATES: usize = 1_000_000;
 
 #[derive(Debug, Error)]
 pub enum CommitteeError {
+    #[error("sortition randomness reveal must not be empty")]
+    EmptyRandomness,
+    #[error("sortition randomness reveal does not match its commitment")]
+    RandomnessMismatch,
+    #[error("eligible node set does not match the request commitment")]
+    EligibleSetMismatch,
+    #[error("committee requirements or diversity constraints are invalid")]
+    InvalidRequirements,
+    #[error("committee contains duplicate role requirements")]
+    DuplicateRole,
+    #[error("eligible set contains a duplicate NodeID")]
+    DuplicateEligibleNode,
     #[error(
-        "not enough eligible independent operators for role {role:?}: need {needed}, found {found}"
+        "no committee satisfies role, bond, reputation, checker, and independence constraints"
     )]
-    InsufficientEligibleNodes {
-        role: NodeRole,
-        needed: usize,
-        found: usize,
-    },
+    NoIndependentCommittee,
+    #[error("committee search exceeded the deterministic conformance bound")]
+    SearchLimitExceeded,
+    #[error("published committee selection does not reproduce exactly")]
+    SelectionMismatch,
+    #[error(transparent)]
+    Canonicalization(#[from] xlemma_core::CanonicalizationError),
+    #[error(transparent)]
+    Identifier(#[from] xlemma_core::IdError),
 }
 
-/// Deterministic, stake-capped sortition reference algorithm.
+#[derive(Clone, Copy)]
+struct Slot {
+    role: NodeRole,
+    ordinal: u16,
+    requirement_index: usize,
+}
+
+#[derive(Clone, Copy)]
+struct RankedCandidate<'a> {
+    rank: [u8; 32],
+    node: &'a EligibleNode,
+}
+
+/// Commits a future randomness reveal to a specific sortition domain.
+pub fn randomness_commitment(seed: &[u8]) -> String {
+    let mut hasher = blake3::Hasher::new();
+    hasher.update(b"xlemma-sortition-randomness-v1\0");
+    hasher.update(&(seed.len() as u64).to_le_bytes());
+    hasher.update(seed);
+    format!("blake3:{}", hasher.finalize().to_hex())
+}
+
+/// Canonical commitment to every eligible-node record considered by sortition.
+pub fn eligible_set_root(nodes: &[EligibleNode]) -> Result<String, CommitteeError> {
+    Ok(derive_eligible_set_root(nodes)?)
+}
+
+/// Runs deterministic, auditable, stake-capped committee sortition.
 ///
-/// Stake is an eligibility bond, not unbounded voting weight. Once a node
-/// meets the requirement, selection is hash-ranked using public randomness.
-/// Production deployments SHOULD source the seed from a manipulation-resistant
-/// VRF or equivalent beacon and prove the selection on chain.
+/// Bond and reputation are eligibility gates only. Eligible candidates are
+/// ranked by public randomness; neither money nor a composite reputation score
+/// weights mathematical authority. Deterministic backtracking prevents greedy
+/// role assignment from hiding a valid independent committee.
 pub fn select_committee(
-    seed: &[u8],
+    request: &CommitteeSortitionRequest,
+    revealed_seed: &[u8],
     nodes: &[EligibleNode],
-    requirements: &[CommitteeRequirement],
+    selected_at: DateTime<Utc>,
 ) -> Result<CommitteeSelection, CommitteeError> {
-    let mut globally_used_operators = BTreeSet::new();
-    let mut selected = BTreeMap::new();
-
-    for requirement in requirements {
-        let mut ranked: Vec<([u8; 32], &EligibleNode)> = nodes
-            .iter()
-            .filter(|node| {
-                node.active
-                    && node.roles.contains(&requirement.role)
-                    && node.collateral_units >= requirement.minimum_collateral_units
-                    && node.reliability_bps >= requirement.minimum_reliability_bps
-                    && node.qualification_bps >= requirement.minimum_qualification_bps
-                    && !globally_used_operators.contains(&node.operator_cluster_id)
-            })
-            .map(|node| {
-                let mut hasher = blake3::Hasher::new();
-                hasher.update(b"xlemma-committee-v1\0");
-                hasher.update(seed);
-                hasher.update(b"\0");
-                hasher.update(format!("{:?}", requirement.role).as_bytes());
-                hasher.update(b"\0");
-                hasher.update(node.node_id.as_str().as_bytes());
-                (*hasher.finalize().as_bytes(), node)
-            })
-            .collect();
-
-        ranked.sort_by_key(|(rank, _)| *rank);
-
-        if ranked.len() < requirement.count {
-            return Err(CommitteeError::InsufficientEligibleNodes {
-                role: requirement.role,
-                needed: requirement.count,
-                found: ranked.len(),
-            });
+    validate_request(request)?;
+    if nodes.len() > MAX_ELIGIBLE_NODES {
+        return Err(CommitteeError::InvalidRequirements);
+    }
+    request.sortition_id.validate()?;
+    request.job_id.validate()?;
+    request.policy_id.validate()?;
+    for operator_cluster_id in &request.excluded_operator_clusters {
+        operator_cluster_id.validate()?;
+    }
+    let mut node_ids = BTreeSet::new();
+    for node in nodes {
+        node.node_id.validate()?;
+        node.operator_cluster_id.validate()?;
+        node.advertisement_id.validate()?;
+        node.bond_id.validate()?;
+        node.reputation_snapshot_id.validate()?;
+        if !node_ids.insert(&node.node_id) {
+            return Err(CommitteeError::DuplicateEligibleNode);
         }
-
-        let chosen: Vec<_> = ranked
-            .into_iter()
-            .take(requirement.count)
-            .map(|(_, node)| {
-                let inserted = globally_used_operators.insert(node.operator_cluster_id.clone());
-                debug_assert!(inserted);
-                node.node_id.clone()
-            })
-            .collect();
-        let previous = selected.insert(requirement.role, chosen);
-        debug_assert!(previous.is_none());
+    }
+    if selected_at < request.requested_at {
+        return Err(CommitteeError::InvalidRequirements);
+    }
+    if revealed_seed.is_empty() {
+        return Err(CommitteeError::EmptyRandomness);
+    }
+    if randomness_commitment(revealed_seed) != request.randomness.seed_commitment {
+        return Err(CommitteeError::RandomnessMismatch);
+    }
+    if eligible_set_root(nodes)? != request.eligible_set_root {
+        return Err(CommitteeError::EligibleSetMismatch);
     }
 
-    let seed_commitment = format!("blake3:{}", blake3::hash(seed).to_hex());
+    let mut requirement_indices = (0..request.requirements.len()).collect::<Vec<_>>();
+    requirement_indices.sort_by_key(|index| role_label(request.requirements[*index].role));
+
+    let mut seen_roles = BTreeSet::new();
+    let mut slots = Vec::new();
+    for requirement_index in requirement_indices {
+        let requirement = &request.requirements[requirement_index];
+        if !seen_roles.insert(requirement.role) {
+            return Err(CommitteeError::DuplicateRole);
+        }
+        for ordinal in 0..requirement.count {
+            slots.push(Slot {
+                role: requirement.role,
+                ordinal,
+                requirement_index,
+            });
+        }
+    }
+
+    let ranked_by_slot = slots
+        .iter()
+        .map(|slot| {
+            let requirement = &request.requirements[slot.requirement_index];
+            let mut candidates = nodes
+                .iter()
+                .filter(|node| node_is_eligible(request, requirement, node))
+                .map(|node| RankedCandidate {
+                    rank: rank_candidate(request, revealed_seed, *slot, node),
+                    node,
+                })
+                .collect::<Vec<_>>();
+            candidates.sort_by(|left, right| {
+                left.rank
+                    .cmp(&right.rank)
+                    .then_with(|| left.node.node_id.cmp(&right.node.node_id))
+            });
+            candidates
+        })
+        .collect::<Vec<_>>();
+
+    if ranked_by_slot.iter().any(Vec::is_empty) {
+        return Err(CommitteeError::NoIndependentCommittee);
+    }
+
+    let mut search = SearchState::default();
+    match choose_independent_committee(
+        &slots,
+        &ranked_by_slot,
+        0,
+        request.minimum_distinct_providers,
+        request.minimum_distinct_regions,
+        &mut search,
+    ) {
+        SearchResult::Found => {}
+        SearchResult::NotFound => return Err(CommitteeError::NoIndependentCommittee),
+        SearchResult::LimitExceeded => return Err(CommitteeError::SearchLimitExceeded),
+    }
+
+    let members = search
+        .chosen
+        .into_iter()
+        .map(|(slot, candidate)| SortitionMember {
+            role: slot.role,
+            slot: slot.ordinal,
+            node_id: candidate.node.node_id.clone(),
+            operator_cluster_id: candidate.node.operator_cluster_id.clone(),
+            advertisement_id: candidate.node.advertisement_id.clone(),
+            bond_id: candidate.node.bond_id.clone(),
+            reputation_snapshot_id: candidate.node.reputation_snapshot_id.clone(),
+            infrastructure_provider: candidate.node.infrastructure_provider.clone(),
+            region: candidate.node.region.clone(),
+            rank_hash: format!(
+                "blake3:{}",
+                blake3::Hash::from_bytes(candidate.rank).to_hex()
+            ),
+        })
+        .collect::<Vec<_>>();
+
+    let selection_digest = canonical_json_hash(
+        "xlemma-committee-selection-v1",
+        &(
+            &request.sortition_id,
+            &request.job_id,
+            &request.policy_id,
+            &request.randomness.seed_commitment,
+            &request.eligible_set_root,
+            &members,
+            selected_at,
+        ),
+    )?;
+
     Ok(CommitteeSelection {
-        seed_commitment,
-        selected,
+        sortition_id: request.sortition_id.clone(),
+        job_id: request.job_id.clone(),
+        policy_id: request.policy_id.clone(),
+        randomness_commitment: request.randomness.seed_commitment.clone(),
+        eligible_set_root: request.eligible_set_root.clone(),
+        members,
+        selection_root: format!(
+            "blake3:{}",
+            blake3::Hash::from_bytes(selection_digest).to_hex()
+        ),
+        selected_at,
     })
+}
+
+pub fn verify_committee_selection(
+    request: &CommitteeSortitionRequest,
+    revealed_seed: &[u8],
+    nodes: &[EligibleNode],
+    selection: &CommitteeSelection,
+) -> Result<(), CommitteeError> {
+    let reproduced = select_committee(request, revealed_seed, nodes, selection.selected_at)?;
+    if &reproduced == selection {
+        Ok(())
+    } else {
+        Err(CommitteeError::SelectionMismatch)
+    }
+}
+
+fn validate_request(request: &CommitteeSortitionRequest) -> Result<(), CommitteeError> {
+    if request.requirements.is_empty()
+        || request.randomness.source.trim().is_empty()
+        || request.randomness.round == 0
+        || request.randomness.seed_commitment.trim().is_empty()
+        || request.randomness.proof_reference.trim().is_empty()
+        || request.eligible_set_root.trim().is_empty()
+        || request.requirements.iter().any(|requirement| {
+            requirement.count == 0
+                || requirement.minimum_bond.units == 0
+                || requirement.minimum_bond.asset.trim().is_empty()
+                || (matches!(
+                    requirement.role,
+                    NodeRole::OfficialKernelChecker | NodeRole::IndependentChecker
+                ) && requirement.required_checker_families.is_empty())
+        })
+    {
+        return Err(CommitteeError::InvalidRequirements);
+    }
+    let slots = request
+        .requirements
+        .iter()
+        .map(|requirement| usize::from(requirement.count))
+        .sum::<usize>();
+    if slots > MAX_COMMITTEE_SLOTS
+        || request.minimum_distinct_providers == 0
+        || request.minimum_distinct_regions == 0
+        || usize::from(request.minimum_distinct_providers) > slots
+        || usize::from(request.minimum_distinct_regions) > slots
+    {
+        return Err(CommitteeError::InvalidRequirements);
+    }
+    Ok(())
+}
+
+fn node_is_eligible(
+    request: &CommitteeSortitionRequest,
+    requirement: &xlemma_core::CommitteeRequirement,
+    node: &EligibleNode,
+) -> bool {
+    node.active
+        && node.roles.contains(&requirement.role)
+        && !request
+            .excluded_operator_clusters
+            .contains(&node.operator_cluster_id)
+        && !node.infrastructure_provider.trim().is_empty()
+        && !node.region.trim().is_empty()
+        && node
+            .active_bond
+            .ensure_compatible(&requirement.minimum_bond)
+            .is_ok()
+        && node.active_bond.units >= requirement.minimum_bond.units
+        && node.reputation.meets(&requirement.reputation_requirements)
+        && requirement
+            .required_checker_families
+            .is_subset(&node.checker_families)
+}
+
+fn rank_candidate(
+    request: &CommitteeSortitionRequest,
+    revealed_seed: &[u8],
+    slot: Slot,
+    node: &EligibleNode,
+) -> [u8; 32] {
+    let mut hasher = blake3::Hasher::new();
+    hasher.update(b"xlemma-committee-sortition-v2\0");
+    update_field(&mut hasher, revealed_seed);
+    update_field(&mut hasher, request.sortition_id.as_str().as_bytes());
+    update_field(&mut hasher, request.job_id.as_str().as_bytes());
+    update_field(&mut hasher, request.policy_id.as_str().as_bytes());
+    update_field(&mut hasher, &request.epoch.to_le_bytes());
+    update_field(&mut hasher, role_label(slot.role).as_bytes());
+    update_field(&mut hasher, &slot.ordinal.to_le_bytes());
+    update_field(&mut hasher, node.node_id.as_str().as_bytes());
+    update_field(&mut hasher, request.eligible_set_root.as_bytes());
+    *hasher.finalize().as_bytes()
+}
+
+fn update_field(hasher: &mut blake3::Hasher, bytes: &[u8]) {
+    hasher.update(&(bytes.len() as u64).to_le_bytes());
+    hasher.update(bytes);
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum SearchResult {
+    Found,
+    NotFound,
+    LimitExceeded,
+}
+
+#[derive(Default)]
+struct SearchState<'a> {
+    operators: BTreeSet<OperatorClusterId>,
+    chosen: Vec<(Slot, RankedCandidate<'a>)>,
+    explored_states: usize,
+}
+
+fn choose_independent_committee<'a>(
+    slots: &[Slot],
+    candidates: &[Vec<RankedCandidate<'a>>],
+    index: usize,
+    minimum_distinct_providers: u16,
+    minimum_distinct_regions: u16,
+    search: &mut SearchState<'a>,
+) -> SearchResult {
+    if search.explored_states >= MAX_SORTITION_SEARCH_STATES {
+        return SearchResult::LimitExceeded;
+    }
+    search.explored_states += 1;
+    if index == slots.len() {
+        let providers = search
+            .chosen
+            .iter()
+            .map(|(_, candidate)| candidate.node.infrastructure_provider.as_str())
+            .collect::<BTreeSet<_>>();
+        let regions = search
+            .chosen
+            .iter()
+            .map(|(_, candidate)| candidate.node.region.as_str())
+            .collect::<BTreeSet<_>>();
+        return if providers.len() >= usize::from(minimum_distinct_providers)
+            && regions.len() >= usize::from(minimum_distinct_regions)
+        {
+            SearchResult::Found
+        } else {
+            SearchResult::NotFound
+        };
+    }
+
+    for candidate in &candidates[index] {
+        if !search
+            .operators
+            .insert(candidate.node.operator_cluster_id.clone())
+        {
+            continue;
+        }
+        search.chosen.push((slots[index], *candidate));
+        let result = choose_independent_committee(
+            slots,
+            candidates,
+            index + 1,
+            minimum_distinct_providers,
+            minimum_distinct_regions,
+            search,
+        );
+        if result == SearchResult::Found {
+            return result;
+        }
+        let removed = search.chosen.pop();
+        debug_assert!(removed.is_some());
+        let removed = search.operators.remove(&candidate.node.operator_cluster_id);
+        debug_assert!(removed);
+        if result == SearchResult::LimitExceeded {
+            return result;
+        }
+    }
+    SearchResult::NotFound
+}
+
+fn role_label(role: NodeRole) -> &'static str {
+    match role {
+        NodeRole::Researcher => "researcher",
+        NodeRole::ResearchProver => "research_prover",
+        NodeRole::LeanBuilder => "lean_builder",
+        NodeRole::OfficialKernelChecker => "official_kernel_checker",
+        NodeRole::IndependentChecker => "independent_checker",
+        NodeRole::NoveltyReviewer => "novelty_reviewer",
+        NodeRole::SignificanceReviewer => "significance_reviewer",
+        NodeRole::Challenger => "challenger",
+        NodeRole::StorageProvider => "storage_provider",
+        NodeRole::Indexer => "indexer",
+        NodeRole::PaymentFacilitator => "payment_facilitator",
+        NodeRole::CertificateFinalizer => "certificate_finalizer",
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use xlemma_core::{
+        AdvertisementId, Amount, BondId, CheckerFamily, CommitteeRequirement, JobId,
+        NodeReputationVector, PolicyId, RandomnessBeacon, ReputationId, ReputationMetric,
+        ReputationRequirement, ReputationRequirements, SortitionId,
+    };
 
-    fn eligible_node(label: &str, operator: &str, roles: BTreeSet<NodeRole>) -> EligibleNode {
+    fn metric(score_bps: u16) -> ReputationMetric {
+        ReputationMetric {
+            score_bps,
+            sample_size: 100,
+            evidence_root: "blake3:evidence".into(),
+        }
+    }
+
+    fn reputation(formal_accuracy_bps: u16) -> NodeReputationVector {
+        NodeReputationVector {
+            formal_accuracy: metric(formal_accuracy_bps),
+            availability: metric(9_900),
+            latency: metric(9_500),
+            novelty_calibration: metric(9_000),
+            challenge_quality: metric(9_000),
+            independence: metric(9_900),
+        }
+    }
+
+    fn eligible_node(
+        label: &str,
+        operator: &str,
+        roles: BTreeSet<NodeRole>,
+        provider: &str,
+        region: &str,
+    ) -> EligibleNode {
         EligibleNode {
-            node_id: NodeId::derive(&label).unwrap(),
+            node_id: xlemma_core::NodeId::derive(&label).unwrap(),
             operator_cluster_id: OperatorClusterId::derive(&operator).unwrap(),
+            advertisement_id: AdvertisementId::derive(&label).unwrap(),
             roles,
-            collateral_units: 1_000,
-            reliability_bps: 9_900,
-            qualification_bps: 9_500,
-            infrastructure_provider: Some(format!("provider-{label}")),
-            region: Some(format!("region-{label}")),
+            checker_families: BTreeSet::from([CheckerFamily::LeanKernel, CheckerFamily::Nanoda]),
+            bond_id: BondId::derive(&label).unwrap(),
+            active_bond: Amount::new(1_000, "USDC", 6),
+            reputation_snapshot_id: ReputationId::derive(&label).unwrap(),
+            reputation: reputation(9_800),
+            infrastructure_provider: provider.into(),
+            region: region.into(),
             active: true,
         }
     }
 
-    #[test]
-    fn selection_is_deterministic_and_operator_independent() {
-        let role = NodeRole::OfficialKernelChecker;
-        let nodes = vec![
-            eligible_node("a", "op-a", BTreeSet::from([role])),
-            eligible_node("b", "op-b", BTreeSet::from([role])),
-            eligible_node("c", "op-c", BTreeSet::from([role])),
-        ];
-        let requirements = vec![CommitteeRequirement {
+    fn requirement(role: NodeRole, count: u16) -> CommitteeRequirement {
+        CommitteeRequirement {
             role,
-            count: 2,
-            minimum_collateral_units: 100,
-            minimum_reliability_bps: 9_000,
-            minimum_qualification_bps: 9_000,
-        }];
+            count,
+            minimum_bond: Amount::new(100, "USDC", 6),
+            reputation_requirements: ReputationRequirements {
+                formal_accuracy: Some(ReputationRequirement {
+                    minimum_score_bps: 9_000,
+                    minimum_sample_size: 10,
+                }),
+                ..ReputationRequirements::default()
+            },
+            required_checker_families: match role {
+                NodeRole::OfficialKernelChecker => BTreeSet::from([CheckerFamily::LeanKernel]),
+                NodeRole::IndependentChecker => BTreeSet::from([CheckerFamily::Nanoda]),
+                _ => BTreeSet::new(),
+            },
+        }
+    }
 
-        let left = select_committee(b"public-seed", &nodes, &requirements).unwrap();
-        let right = select_committee(b"public-seed", &nodes, &requirements).unwrap();
-        assert_eq!(left.seed_commitment, right.seed_commitment);
-        assert_eq!(left.selected, right.selected);
-        assert_eq!(left.selected[&role].len(), 2);
+    fn request(
+        nodes: &[EligibleNode],
+        requirements: Vec<CommitteeRequirement>,
+    ) -> CommitteeSortitionRequest {
+        let seed = b"future-beacon-reveal";
+        CommitteeSortitionRequest {
+            sortition_id: SortitionId::derive(&"sortition").unwrap(),
+            job_id: JobId::derive(&"job").unwrap(),
+            policy_id: PolicyId::derive(&"policy").unwrap(),
+            epoch: 7,
+            eligible_set_root: eligible_set_root(nodes).unwrap(),
+            randomness: RandomnessBeacon {
+                source: "drand".into(),
+                round: 42,
+                seed_commitment: randomness_commitment(seed),
+                proof_reference: "blake3:beacon-proof".into(),
+            },
+            requirements,
+            minimum_distinct_providers: 2,
+            minimum_distinct_regions: 2,
+            excluded_operator_clusters: BTreeSet::new(),
+            requested_at: Utc::now(),
+        }
     }
 
     #[test]
-    fn one_operator_cannot_fill_multiple_required_roles() {
+    fn selection_is_reproducible_and_operator_independent() {
+        let role = NodeRole::OfficialKernelChecker;
+        let nodes = vec![
+            eligible_node("a", "op-a", BTreeSet::from([role]), "p-a", "r-a"),
+            eligible_node("b", "op-b", BTreeSet::from([role]), "p-b", "r-b"),
+            eligible_node("c", "op-c", BTreeSet::from([role]), "p-c", "r-c"),
+        ];
+        let request = request(&nodes, vec![requirement(role, 2)]);
+        let selected_at = Utc::now();
+        let left =
+            select_committee(&request, b"future-beacon-reveal", &nodes, selected_at).unwrap();
+        let right =
+            select_committee(&request, b"future-beacon-reveal", &nodes, selected_at).unwrap();
+        assert_eq!(left, right);
+        assert_eq!(left.members.len(), 2);
+        assert_ne!(
+            left.members[0].operator_cluster_id,
+            left.members[1].operator_cluster_id
+        );
+        verify_committee_selection(&request, b"future-beacon-reveal", &nodes, &left).unwrap();
+    }
+
+    #[test]
+    fn one_operator_cannot_fill_multiple_roles() {
         let kernel = NodeRole::OfficialKernelChecker;
         let independent = NodeRole::IndependentChecker;
-        let both = BTreeSet::from([kernel, independent]);
-        let nodes = vec![eligible_node("a", "same-operator", both)];
-        let requirements = vec![
-            CommitteeRequirement {
-                role: kernel,
-                count: 1,
-                minimum_collateral_units: 1,
-                minimum_reliability_bps: 1,
-                minimum_qualification_bps: 1,
-            },
-            CommitteeRequirement {
-                role: independent,
-                count: 1,
-                minimum_collateral_units: 1,
-                minimum_reliability_bps: 1,
-                minimum_qualification_bps: 1,
-            },
-        ];
-
+        let nodes = vec![eligible_node(
+            "a",
+            "same-operator",
+            BTreeSet::from([kernel, independent]),
+            "p-a",
+            "r-a",
+        )];
+        let mut request = request(
+            &nodes,
+            vec![requirement(kernel, 1), requirement(independent, 1)],
+        );
+        request.minimum_distinct_providers = 1;
+        request.minimum_distinct_regions = 1;
         assert!(matches!(
-            select_committee(b"seed", &nodes, &requirements),
-            Err(CommitteeError::InsufficientEligibleNodes { .. })
+            select_committee(&request, b"future-beacon-reveal", &nodes, Utc::now()),
+            Err(CommitteeError::NoIndependentCommittee)
         ));
+    }
+
+    #[test]
+    fn money_and_reputation_are_eligibility_not_rank_weight() {
+        let role = NodeRole::OfficialKernelChecker;
+        let mut low_accuracy =
+            eligible_node("wealthy", "op-rich", BTreeSet::from([role]), "p-a", "r-a");
+        low_accuracy.active_bond.units = 1_000_000;
+        low_accuracy.reputation = reputation(8_000);
+        let qualified = eligible_node(
+            "qualified",
+            "op-qualified",
+            BTreeSet::from([role]),
+            "p-b",
+            "r-b",
+        );
+        let nodes = vec![low_accuracy, qualified];
+        let mut request = request(&nodes, vec![requirement(role, 1)]);
+        request.minimum_distinct_providers = 1;
+        request.minimum_distinct_regions = 1;
+        let selection =
+            select_committee(&request, b"future-beacon-reveal", &nodes, Utc::now()).unwrap();
+        assert_eq!(selection.members[0].node_id, nodes[1].node_id);
+    }
+
+    #[test]
+    fn randomness_and_eligible_set_commitments_fail_closed() {
+        let role = NodeRole::OfficialKernelChecker;
+        let nodes = vec![eligible_node(
+            "a",
+            "op-a",
+            BTreeSet::from([role]),
+            "p-a",
+            "r-a",
+        )];
+        let mut sortition_request = request(&nodes, vec![requirement(role, 1)]);
+        sortition_request.minimum_distinct_providers = 1;
+        sortition_request.minimum_distinct_regions = 1;
+        assert!(matches!(
+            select_committee(&sortition_request, b"wrong", &nodes, Utc::now()),
+            Err(CommitteeError::RandomnessMismatch)
+        ));
+
+        let mut mutated_nodes = nodes.clone();
+        mutated_nodes[0].active = false;
+        assert!(matches!(
+            select_committee(
+                &sortition_request,
+                b"future-beacon-reveal",
+                &mutated_nodes,
+                Utc::now()
+            ),
+            Err(CommitteeError::EligibleSetMismatch)
+        ));
+
+        let duplicate_nodes = vec![nodes[0].clone(), nodes[0].clone()];
+        let mut duplicate_request = request(&duplicate_nodes, vec![requirement(role, 1)]);
+        duplicate_request.minimum_distinct_providers = 1;
+        duplicate_request.minimum_distinct_regions = 1;
+        assert!(matches!(
+            select_committee(
+                &duplicate_request,
+                b"future-beacon-reveal",
+                &duplicate_nodes,
+                Utc::now()
+            ),
+            Err(CommitteeError::DuplicateEligibleNode)
+        ));
+    }
+
+    #[test]
+    fn published_sortition_vector_reproduces_exactly() {
+        let mut nodes: Vec<EligibleNode> = serde_json::from_str(include_str!(
+            "../../../examples/node-network/eligible-nodes.json"
+        ))
+        .unwrap();
+        let request: CommitteeSortitionRequest = serde_json::from_str(include_str!(
+            "../../../examples/node-network/sortition-request.json"
+        ))
+        .unwrap();
+        let expected: CommitteeSelection = serde_json::from_str(include_str!(
+            "../../../examples/node-network/committee-selection.json"
+        ))
+        .unwrap();
+        assert_eq!(
+            eligible_set_root(&nodes).unwrap(),
+            request.eligible_set_root
+        );
+        let selection = select_committee(
+            &request,
+            b"future-beacon-reveal",
+            &nodes,
+            expected.selected_at,
+        )
+        .unwrap();
+        assert_eq!(selection, expected);
+
+        nodes.reverse();
+        verify_committee_selection(&request, b"future-beacon-reveal", &nodes, &selection).unwrap();
     }
 }

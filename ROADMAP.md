@@ -9,6 +9,7 @@
 
 ## Phase 1 — independent verification network
 
+- Harden the XLMP/1 reference sortition into a production beacon/VRF integration and distributed eligible-set registry; deterministic selection and proof reproduction are implemented.
 - Harden sandbox isolation with no-network execution, seccomp, namespaces, immutable images and resource controls.
 - Integrate Lean `comparator`, official kernel replay and independent checkers.
 - Deploy PoIR commit-reveal committees with operator-cluster controls.
@@ -23,8 +24,9 @@
 
 ## Phase 3 — research marketplace
 
+- Deploy the implemented XLMP node advertisement, constrained discovery, service-order, immutable match, multidimensional-reputation, and bond records through multiple independent indexers.
 - Add public bounties, grants, certified proof services, encrypted delivery, and license manifests.
-- Add ASTRA prover-node marketplace and provider-neutral model adapters.
+- Qualify ASTRA and alternative implementations in the provider-neutral research-prover marketplace.
 - Add calibrated novelty-review committees and formal equivalence graphing.
 
 ## Phase 4 — compute economics

@@ -37,10 +37,10 @@ conservation. Named external technologies are replaceable adapters:
                             │
          ┌──────────────────┼──────────────────┐
          │                  │                  │
-   Research graph       Consensus          Economics
+   Research graph       Node network       Economics
    claims/proofs        PoIR/challenge     credits/revenue
-   dependencies         certification      compute/bounties
-   provenance/rights    quarantine         dividends
+   provenance/rights    discovery/markets  compute/bounties
+   dependencies         sortition/PoIR     dividends
          │                  │                  │
          └──────────────────┼──────────────────┘
                             │
@@ -67,7 +67,11 @@ The canonical envelope and required messages are specified in
 includes `XLMP_CLAIM`, `XLMP_COMMIT`, `XLMP_COMPUTE_QUOTE`,
 `XLMP_PROOF_CANDIDATE`, `XLMP_VERIFY_REQUEST`, `XLMP_OBSERVATION_COMMIT`,
 `XLMP_OBSERVATION_REVEAL`, `XLMP_CERTIFICATE`, `XLMP_CHALLENGE`,
-`XLMP_FINALIZE`, `XLMP_REVENUE`, and `XLMP_REVALIDATE`.
+`XLMP_FINALIZE`, `XLMP_REVENUE`, `XLMP_REVALIDATE`,
+`XLMP_NODE_ADVERTISE`, `XLMP_DISCOVERY_REQUEST`,
+`XLMP_DISCOVERY_RESPONSE`, `XLMP_SERVICE_ORDER`, `XLMP_SERVICE_MATCH`,
+`XLMP_SORTITION_REQUEST`, `XLMP_COMMITTEE`, `XLMP_REPUTATION`, and
+`XLMP_BOND`.
 
 Its protocol lifecycle is:
 
@@ -89,6 +93,28 @@ research funding
   → researcher income + newly backed research credits
   → more research
 ```
+
+## First-class node network
+
+XLMP nodes publish signed, expiring service advertisements containing roles,
+endpoints, implementations or checker families, supported theories/domains,
+hardware, capacity, latency, prices, a reputation snapshot, and an eligibility
+bond. Discovery requests and service orders state every constraint explicitly;
+deterministic matching produces immutable service-match records bound to the
+exact advertisement sequence.
+
+Reputation is deliberately a vector rather than a scalar:
+
+```text
+formal accuracy | availability | latency | novelty calibration
+challenge quality | operator independence
+```
+
+No dimension compensates for another. Bond and reputation determine
+eligibility only. Committee authority comes from policy-qualified independent
+reproduction, and deterministic sortition uses committed future randomness,
+unique operator clusters, and required provider/region diversity. See
+[`spec/019-node-network.md`](spec/019-node-network.md).
 
 ## The central separation
 
@@ -249,11 +275,11 @@ The payment facilitator validates and settles payment payloads. It is intentiona
 
 ```text
 crates/
-  xlemma-core/           IDs, manifests, capsules, receipts and state types
+  xlemma-core/           IDs, research objects, node-market records, receipts and state types
   xlemma-xlmp/           XLMP/1 envelopes, messages, lifecycle and adapter traits
   xlemma-crypto/         domain-separated envelopes, signatures and replay protection
-  xlemma-consensus/      PoIR, generalized quorums, commit-reveal and novelty aggregation
-  xlemma-node/           node capabilities, assignments, role separation and receipt workflow
+  xlemma-consensus/      PoIR, auditable sortition, quorums, commit-reveal and novelty aggregation
+  xlemma-node/           discovery/order book, matching, assignments and receipt workflow
   xlemma-economics/      backed credits, vault conservation, revenue and dividends
   xlemma-compute-curve/  service offers, forward curves and proof-cost quotes
   xlemma-astra/          configurable OpenAI Responses API adapter and proof prompts
@@ -272,6 +298,7 @@ docs/                    integrated design, diagrams, economics, governance, ope
 openapi/                  REST API contract
 config/                   default policy configuration
 examples/no-arbitrage/    end-to-end illustrative lemma package
+examples/node-network/    advertisement, reputation, bond and XLMP identity vectors
 deploy/                   local container deployment templates
 scripts/                  validation, simulation and archiving tools
 ```

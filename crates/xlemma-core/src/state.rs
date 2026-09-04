@@ -54,7 +54,8 @@ pub enum AssuranceLevel {
 #[serde(rename_all = "snake_case")]
 pub enum NodeRole {
     Researcher,
-    AstraProver,
+    #[serde(alias = "astra_prover")]
+    ResearchProver,
     LeanBuilder,
     OfficialKernelChecker,
     IndependentChecker,

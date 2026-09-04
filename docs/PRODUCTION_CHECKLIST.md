@@ -38,6 +38,19 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] Required checker divergence always quarantines.
 - [ ] Historical revalidation workflow exercised.
 
+## Node network and service marketplace
+
+- [ ] Advertisement signatures and content-derived IDs verified at every ingress.
+- [ ] Advertisement supersession and service-order/match history remain append-only.
+- [ ] Independent discovery providers reproduce the same constrained ordered set.
+- [ ] Price arithmetic is integer, overflow-checked, rounded upward, and asset/unit compatible.
+- [ ] Capacity, latency, checker-family, hardware, and terms claims have challengeable evidence.
+- [ ] Every reputation dimension has role-specific evidence and minimum sample-size policy.
+- [ ] No scalar reputation, bond amount, or token balance becomes committee or formal-vote weight.
+- [ ] Eligible-set publication is decentralized and committed before randomness reveal.
+- [ ] Production beacon/VRF proofs are authenticated and manipulation-resistant.
+- [ ] Committee ranks, unique operator clusters, provider/region diversity, and selection root reproduce independently.
+
 ## ASTRA and model layer
 
 - [ ] Provider API behavior and model name are configuration-driven.

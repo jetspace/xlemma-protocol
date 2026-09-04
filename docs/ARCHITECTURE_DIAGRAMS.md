@@ -8,10 +8,15 @@ These diagrams are normative illustrations of the trust boundaries described in 
 flowchart TB
     X[XLMP/1 canonical protocol]
     X --> RG[Research graph<br/>claims, proofs, dependencies,<br/>provenance, rights]
-    X --> C[Consensus<br/>PoIR, challenge, certification,<br/>quarantine, revalidation]
+    X --> N[Node network]
     X --> E[Economics<br/>credits, revenue, compute,<br/>bounties, dividends]
+    N --> D[Discovery<br/>signed advertisements]
+    N --> M[Service markets<br/>orders and immutable matches]
+    N --> SO[Committee sortition<br/>committed set + future randomness]
+    N --> R[Reputation + bonding<br/>multidimensional eligibility]
+    N --> C[PoIR consensus<br/>challenge, quarantine, revalidation]
     RG --> AB[Adapter / transport boundary]
-    C --> AB
+    N --> AB
     E --> AB
     AB --> A[ResearchProver<br/>ASTRA / others]
     AB --> L[VerifierAdapter<br/>Lean / Coq / Rocq / others]
@@ -22,6 +27,30 @@ flowchart TB
 ```
 
 XLMP owns research state and consensus. Every named external technology is an adapter. A chain may order certificates and economic state, but it does not execute a social vote over theorem validity.
+
+## 1.1 Node-network routing and authority
+
+```mermaid
+flowchart LR
+    A[Signed service advertisement] --> D[Constraint-filtered discovery]
+    D --> O[Service order]
+    O --> M[Immutable service match]
+    M --> P[Separate payment authorization]
+    M --> X[Measured execution receipt]
+
+    B[Active bond] --> EL[Eligibility]
+    RV[Six-dimension reputation] --> EL
+    CF[Role + checker family] --> EL
+    EL --> ES[Committed eligible-set root]
+    FR[Future public randomness] --> S[Deterministic sortition]
+    ES --> S
+    S --> C[Reproducible committee]
+    C --> POIR[Independent PoIR observations]
+```
+
+Price routes services. Bond and reputation gate eligibility. Neither creates
+formal vote weight; mathematical status still follows exact independent
+checker evidence.
 
 ## 2. Trust planes
 

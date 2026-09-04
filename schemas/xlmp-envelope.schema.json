@@ -26,7 +26,16 @@
         { "$ref": "#/$defs/challengeMessage" },
         { "$ref": "#/$defs/finalizeMessage" },
         { "$ref": "#/$defs/revenueMessage" },
-        { "$ref": "#/$defs/revalidateMessage" }
+        { "$ref": "#/$defs/revalidateMessage" },
+        { "$ref": "#/$defs/nodeAdvertiseMessage" },
+        { "$ref": "#/$defs/discoveryRequestMessage" },
+        { "$ref": "#/$defs/discoveryResponseMessage" },
+        { "$ref": "#/$defs/serviceOrderMessage" },
+        { "$ref": "#/$defs/serviceMatchMessage" },
+        { "$ref": "#/$defs/sortitionRequestMessage" },
+        { "$ref": "#/$defs/committeeMessage" },
+        { "$ref": "#/$defs/reputationMessage" },
+        { "$ref": "#/$defs/bondMessage" }
       ]
     },
     "signature": { "$ref": "common.schema.json#/$defs/signature" }
@@ -222,6 +231,120 @@
     "revalidateMessage": {
       "type": "object", "additionalProperties": false,
       "properties": { "type": { "const": "XLMP_REVALIDATE" }, "payload": { "$ref": "#/$defs/revalidatePayload" } },
+      "required": ["type", "payload"]
+    },
+    "nodeAdvertiseMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_NODE_ADVERTISE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "advertisement": { "$ref": "node-service-advertisement.schema.json" } },
+          "required": ["advertisement"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "discoveryRequestMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_DISCOVERY_REQUEST" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "request": { "$ref": "node-discovery-request.schema.json" } },
+          "required": ["request"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "discoveryResponseMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_DISCOVERY_RESPONSE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "result": { "$ref": "node-discovery-result.schema.json" } },
+          "required": ["result"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "serviceOrderMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_SERVICE_ORDER" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "order": { "$ref": "service-order.schema.json" } },
+          "required": ["order"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "serviceMatchMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_SERVICE_MATCH" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "service_match": { "$ref": "service-match.schema.json" } },
+          "required": ["service_match"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "sortitionRequestMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_SORTITION_REQUEST" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "request": { "$ref": "committee-sortition-request.schema.json" },
+            "eligible_nodes": {
+              "type": "array", "minItems": 1, "maxItems": 1024,
+              "items": { "$ref": "eligible-node.schema.json" }
+            }
+          },
+          "required": ["request", "eligible_nodes"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "committeeMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_COMMITTEE" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "selection": { "$ref": "committee-selection.schema.json" } },
+          "required": ["selection"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "reputationMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_REPUTATION" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "snapshot": { "$ref": "node-reputation.schema.json" } },
+          "required": ["snapshot"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "bondMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_BOND" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "bond": { "$ref": "node-bond.schema.json" } },
+          "required": ["bond"]
+        }
+      },
       "required": ["type", "payload"]
     }
   }

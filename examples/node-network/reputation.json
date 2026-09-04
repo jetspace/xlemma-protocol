@@ -1,0 +1,20 @@
+{
+  "reputation_id": "xlreputation:blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "node_id": "xlnode:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "operator_cluster_id": "xloperator:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "vector": {
+    "formal_accuracy": { "score_bps": 9900, "sample_size": 250, "evidence_root": "blake3:formal-accuracy-evidence" },
+    "availability": { "score_bps": 9800, "sample_size": 500, "evidence_root": "blake3:availability-evidence" },
+    "latency": { "score_bps": 9500, "sample_size": 500, "evidence_root": "blake3:latency-evidence" },
+    "novelty_calibration": { "score_bps": 0, "sample_size": 0, "evidence_root": "blake3:not-applicable-novelty" },
+    "challenge_quality": { "score_bps": 9000, "sample_size": 20, "evidence_root": "blake3:challenge-evidence" },
+    "independence": { "score_bps": 9700, "sample_size": 12, "evidence_root": "blake3:independence-evidence" }
+  },
+  "policy_id": "xlpolicy:blake3:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "period_start": "2026-08-01T00:00:00Z",
+  "period_end": "2026-09-01T00:00:00Z",
+  "evidence_root": "blake3:reputation-snapshot-evidence",
+  "assessed_at": "2026-09-02T00:00:00Z",
+  "supersedes": null,
+  "assessor_signature": "example-assessor-signature"
+}

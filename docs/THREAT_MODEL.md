@@ -21,6 +21,8 @@ researcher client
   | untrusted network
 XLMP message router
   | transport adapter boundary
+node discovery / append-only order book
+  | untrusted market-data and capacity boundary
 payment adapter / facilitator
   | separate paid service boundary
 research prover / ASTRA provider
@@ -59,7 +61,31 @@ Controls: formal outcomes use exact deterministic agreement, not stake-weighted 
 
 ### Sybil or common-control committee
 
-Controls: neutral collateral, role qualification, randomized selection, operator clustering, provider/region diversity, payout-relationship analysis, and public challenge.
+Controls: neutral collateral, role qualification, committed eligible-set roots, future authenticated randomness, deterministic hash ranking, unique operator clusters, provider/region diversity, payout-relationship analysis, exact selection proofs, and public challenge. Bond and reputation are eligibility gates, never sortition or formal-vote weight.
+
+### False node-market advertisement or discovery manipulation
+
+Controls: content-derived AdvertisementIDs, signed bounded validity windows,
+monotonic append-only supersession, exact price units/assets/decimals, checked
+integer arithmetic, capacity and latency constraints, checker-family binding,
+evidence-backed reputation snapshots and bonds, reproducible ordered discovery
+results, and multiple independent discovery/index providers. A service match is
+bound to one exact advertisement sequence and cannot inherit a silent revision.
+
+### Reputation laundering or scalar-score capture
+
+Controls: six separately evidenced dimensions, minimum sample sizes,
+policy-specific per-dimension gates, explicit supersession, operator-cluster
+binding, and no universal composite authority score. Honest dissent and valid
+`FAIL` observations are not penalized merely for disagreeing with a majority.
+
+### Sortition grinding or input mutation
+
+Controls: eligible-set commitment before reveal, a declared future beacon/VRF
+round, domain-separated ranks, bounded reference inputs, published per-member
+rank hashes and selection root, and exact third-party reproduction. Production
+deployments must authenticate the beacon proof; the seed commitment alone is
+insufficient.
 
 ### Receipt copying
 
@@ -129,3 +155,5 @@ Slashing requires objectively provable misconduct: equivocation, false artifact 
 - Stable backing can face issuer, chain, bridge, custody, and regulatory risk.
 - Succinct proof systems add their own trusted setup, circuit, and implementation assumptions.
 - The prototype HTTP ingress does not yet authenticate XLMP signatures.
+- Public beacon/VRF authentication and decentralized eligible-set publication are not yet integrated into the prototype service.
+- Capacity, latency, hardware, reputation evidence, and operator clustering still require independent measurement and challenge infrastructure.
