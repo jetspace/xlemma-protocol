@@ -21,7 +21,14 @@
           "role": { "$ref": "node-network-common.schema.json#/$defs/nodeRole" },
           "slot": { "type": "integer", "minimum": 0 },
           "node_id": { "$ref": "node-network-common.schema.json#/$defs/nodeId" },
-          "operator_cluster_id": { "$ref": "node-network-common.schema.json#/$defs/operatorId" },
+          "verified_user_id": { "$ref": "identity-common.schema.json#/$defs/verifiedUserId" },
+          "operator_id": { "$ref": "node-network-common.schema.json#/$defs/operatorId" },
+          "operator_cluster_id": { "$ref": "node-network-common.schema.json#/$defs/operatorClusterId" },
+          "user_credential_id": { "$ref": "identity-common.schema.json#/$defs/userCredentialId" },
+          "operator_credential_id": { "$ref": "identity-common.schema.json#/$defs/operatorCredentialId" },
+          "node_credential_id": { "$ref": "identity-common.schema.json#/$defs/nodeCredentialId" },
+          "credential_tier": { "$ref": "identity-common.schema.json#/$defs/credentialTier" },
+          "credential_chain_root": { "$ref": "common.schema.json#/$defs/hash" },
           "advertisement_id": { "$ref": "node-network-common.schema.json#/$defs/advertisementId" },
           "bond_id": { "$ref": "node-network-common.schema.json#/$defs/bondId" },
           "reputation_snapshot_id": { "$ref": "node-network-common.schema.json#/$defs/reputationId" },
@@ -30,7 +37,9 @@
           "rank_hash": { "$ref": "common.schema.json#/$defs/hash" }
         },
         "required": [
-          "role", "slot", "node_id", "operator_cluster_id", "advertisement_id", "bond_id",
+          "role", "slot", "node_id", "verified_user_id", "operator_id", "operator_cluster_id",
+          "user_credential_id", "operator_credential_id", "node_credential_id",
+          "credential_tier", "credential_chain_root", "advertisement_id", "bond_id",
           "reputation_snapshot_id", "infrastructure_provider", "region", "rank_hash"
         ]
       }

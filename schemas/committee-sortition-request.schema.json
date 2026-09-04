@@ -36,11 +36,17 @@
           "required_checker_families": {
             "type": "array", "uniqueItems": true,
             "items": { "$ref": "node-network-common.schema.json#/$defs/checkerFamily" }
+          },
+          "minimum_credential_tier": { "$ref": "identity-common.schema.json#/$defs/credentialTier" },
+          "maximum_status_age_seconds": { "type": "integer", "minimum": 1 },
+          "required_qualifications": {
+            "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 }
           }
         },
         "required": [
           "role", "count", "minimum_bond", "reputation_requirements",
-          "required_checker_families"
+          "required_checker_families", "minimum_credential_tier", "maximum_status_age_seconds",
+          "required_qualifications"
         ]
       }
     },
@@ -48,7 +54,7 @@
     "minimum_distinct_regions": { "type": "integer", "minimum": 1 },
     "excluded_operator_clusters": {
       "type": "array", "uniqueItems": true,
-      "items": { "$ref": "node-network-common.schema.json#/$defs/operatorId" }
+      "items": { "$ref": "node-network-common.schema.json#/$defs/operatorClusterId" }
     },
     "requested_at": { "type": "string", "format": "date-time" }
   },

@@ -61,6 +61,58 @@ paths:
             application/json:
               schema: { $ref: ../schemas/xlmp-envelope.schema.json }
         "404": { $ref: "#/components/responses/NotFound" }
+  /v1/credentials/users:
+    post:
+      operationId: publishUserCredential
+      summary: Append a pseudonymous verified-participant credential
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: ../schemas/user-credential.schema.json }
+      responses:
+        "201": { description: User credential appended }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /v1/credentials/operators:
+    post:
+      operationId: publishOperatorCredential
+      summary: Append a verified-participant delegation to an operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: ../schemas/operator-credential.schema.json }
+      responses:
+        "201": { description: Operator credential appended }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /v1/credentials/nodes:
+    post:
+      operationId: publishNodeCredential
+      summary: Append an operator delegation to a node key and exact roles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: ../schemas/node-credential.schema.json }
+      responses:
+        "201": { description: Node credential appended }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /v1/credentials/revocations:
+    post:
+      operationId: publishCredentialRevocation
+      summary: Append an effective revocation for an exact credential
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: ../schemas/credential-revocation.schema.json }
+      responses:
+        "201": { description: Credential revocation appended }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { $ref: "#/components/responses/Conflict" }
   /v1/node-advertisements:
     post:
       operationId: publishNodeAdvertisement

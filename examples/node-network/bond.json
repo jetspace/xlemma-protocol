@@ -1,7 +1,8 @@
 {
   "bond_id": "xlbond:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
   "node_id": "xlnode:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "operator_cluster_id": "xloperator:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "operator_id": "xlop:blake3:e7e8b7222bc5e3d3781ab251f5cf130fd879d9478162b65d012007deeb7c2e3b",
+  "operator_cluster_id": "xloperator:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
   "amount": { "units": 1000000000, "asset": "USDC", "decimals": 6 },
   "eligible_roles": ["official_kernel_checker"],
   "slashing_policy_id": "xlpolicy:blake3:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",

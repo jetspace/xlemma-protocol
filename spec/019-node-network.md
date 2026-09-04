@@ -31,7 +31,9 @@ vote or override a conflicting required checker family.
 
 A signed advertisement binds:
 
-- NodeID and conservative OperatorClusterID;
+- NodeID, OperatorID, and conservative OperatorClusterID;
+- UserCredentialID, OperatorCredentialID, NodeCredentialID, credential-chain
+  root, coarse jurisdiction class, and delegation signature;
 - monotonically increasing sequence and optional superseded advertisement;
 - supported roles and XLMP endpoints;
 - service kind, implementation/checker families, theories, and domains;
@@ -70,7 +72,7 @@ verification.
 
 ## 3. Multidimensional reputation
 
-`NodeReputationVector` contains six independent metrics:
+`NodeReputationVector` contains eight independent metrics:
 
 1. formal accuracy;
 2. availability;
@@ -78,6 +80,8 @@ verification.
 4. novelty calibration;
 5. challenge quality;
 6. operator independence.
+7. storage quality; and
+8. integrity.
 
 Each metric binds basis-point score, sample size, and evidence root.
 Requirements apply minimum score and sample size per dimension. XLMP/1 defines
@@ -93,7 +97,7 @@ disagreeing with a majority.
 
 ## 4. Bonding
 
-`NodeBond` binds a node/operator, independently valued asset amount, eligible
+`NodeBond` binds a NodeID, OperatorID, OperatorClusterID, independently valued asset amount, eligible
 roles, slashing policy, escrow reference, lock deadline, status, and evidence
 root. A bond is an eligibility and misconduct-security mechanism. Amount above
 the policy threshold MUST NOT increase formal voting or sortition weight.
@@ -113,7 +117,8 @@ Before randomness is known, `XLMP_SORTITION_REQUEST` MUST bind:
 - canonical eligible-set root;
 - future randomness source, round, seed commitment, and proof reference;
 - role counts, minimum bonds, per-dimension reputation requirements, and
-  required checker families;
+  required checker families, minimum credential tier, maximum status-proof age,
+  and qualifications;
 - minimum distinct infrastructure providers and regions;
 - excluded operator clusters.
 
@@ -122,20 +127,23 @@ the request. Their derived root MUST equal `eligible_set_root`; this makes the
 selection input independently available instead of trusting a coordinator's
 private database.
 
-The eligible set contains exact AdvertisementID, BondID, ReputationSnapshotID,
-roles, checker families, provider, region, and active state. Mutating one input
-changes the eligible-set root.
+The eligible set contains the exact credential chain and fresh non-revocation
+status proof alongside AdvertisementID, BondID, ReputationSnapshotID, roles,
+checker families, provider, region, and active state. Mutating one input changes
+the eligible-set root.
 
 ### 5.2 Eligibility and ranking
 
-A node is eligible for a slot only when all role, active-bond, reputation,
-checker-family, exclusion, provider, and region requirements pass. The
+A node is eligible for a slot only when all credential-chain, non-revocation,
+role, active-bond, reputation, checker-family, exclusion, provider, and region
+requirements pass. The
 reference algorithm hash-ranks each eligible node using domain-separated
 committed randomness plus SortitionID, JobID, PolicyID, epoch, role, slot,
-NodeID, and eligible-set root.
+NodeID, OperatorID, VerifiedUserID, and eligible-set root.
 
-Each operator cluster MAY fill at most one slot in the committee. The selector
-MUST enforce the declared provider and region diversity. Deterministic search
+Each VerifiedUserID, OperatorID, and OperatorClusterID MAY fill at most one slot
+in the committee. The selector MUST enforce the declared provider and region
+diversity. Deterministic search
 MUST find a valid independent assignment when a greedy first role would block
 one; it MUST fail closed when no assignment exists.
 
@@ -147,9 +155,10 @@ silently choosing a partial or lower-assurance committee.
 
 ### 5.3 Selection proof
 
-`XLMP_COMMITTEE` publishes every member's role, slot, NodeID,
-OperatorClusterID, AdvertisementID, BondID, ReputationSnapshotID, provider,
-region, and rank hash plus a selection root. Any implementation can reproduce
+`XLMP_COMMITTEE` publishes every member's role, slot, NodeID, VerifiedUserID,
+OperatorID, OperatorClusterID, credential IDs, credential tier, credential-chain
+root, AdvertisementID, BondID, ReputationSnapshotID, provider, region, and rank
+hash plus a selection root. Any implementation can reproduce
 the selection from the request, eligible records, randomness reveal, and
 selection time.
 
@@ -200,7 +209,9 @@ A conforming node-network implementation MUST:
 4. enforce price, capacity, latency, role, checker, reputation, and exclusion
    constraints without floating-point money arithmetic;
 5. use bond/reputation only for eligibility, never formal vote weight;
-6. enforce unique operator clusters and required provider/region diversity;
+6. enforce unique VerifiedUserIDs, OperatorIDs, operator clusters, and required provider/region diversity;
 7. reproduce committee member ranks and the selection root;
 8. keep service matching, payment settlement, and PoIR certification as
    separate state transitions and receipts.
+9. validate credential chains under XLIP-020 and ensure one verified
+   participant cannot gain independence by operating additional machines.

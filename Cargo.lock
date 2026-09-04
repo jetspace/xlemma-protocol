@@ -1898,6 +1898,7 @@ dependencies = [
  "xlemma-core",
  "xlemma-economics",
  "xlemma-storage",
+ "xlemma-xlmp",
 ]
 
 [[package]]

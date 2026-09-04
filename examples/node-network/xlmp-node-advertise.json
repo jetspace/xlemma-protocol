@@ -1,7 +1,7 @@
 {
   "protocol": "XLMP",
   "version": 1,
-  "message_id": "xlmessage:blake3:5c767b8621fc0e5de5e2c66a14e4468c7ecfab62a2e9776c12b364fdaea3319b",
+  "message_id": "xlmessage:blake3:76948f144e89bbe4c4449b4e782d37aae25dbe8cd9d5135ae2a86a9f49cb68c5",
   "correlation_id": null,
   "sender": "did:key:checker-node-example",
   "sent_at": "2026-09-03T12:00:00Z",
@@ -9,9 +9,15 @@
     "type": "XLMP_NODE_ADVERTISE",
     "payload": {
       "advertisement": {
-        "advertisement_id": "xladv:blake3:403aa6f68589d528f72a24f28bfc496472d572980b4426a1b2cbb358c9c51eae",
+        "advertisement_id": "xladv:blake3:04719a7cb5a40a37d3ca1441dcc922fc26ef1b3a3970560e5c6e7d7a29660a5e",
         "node_id": "xlnode:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "operator_cluster_id": "xloperator:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "operator_id": "xlop:blake3:e7e8b7222bc5e3d3781ab251f5cf130fd879d9478162b65d012007deeb7c2e3b",
+        "operator_cluster_id": "xloperator:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "user_credential_id": "xlusercred:blake3:b967ca8a33c289ae8db77ebacf2634962353fe49edea1fe9e17b1e67aa4a2ed9",
+        "operator_credential_id": "xloperatorcred:blake3:33a8631e123761e53abb02af549f534eb57fbb948013d3fd437d8e425c38dc09",
+        "node_credential_id": "xlnodecred:blake3:c94fe9ad1621454c06fc70f3779479fc04ece86ec3bcf9d0d27f8996e1f2b95e",
+        "credential_chain_root": "blake3:9ea5ea987a301805a35cc6d203113e6effa145ffee12beced8f715bf23eb3dd9",
+        "jurisdiction_class": "privacy-preserving-verified",
         "sequence": 1,
         "roles": ["official_kernel_checker"],
         "endpoints": [
@@ -56,6 +62,7 @@
         "valid_from": "2026-09-03T00:00:00Z",
         "valid_until": "2026-09-04T00:00:00Z",
         "supersedes": null,
+        "delegation_signature": "example-advertisement-delegation-signature",
         "signature": "example-node-signature"
       }
     }

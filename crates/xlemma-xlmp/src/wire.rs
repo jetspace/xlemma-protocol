@@ -4,11 +4,12 @@ use thiserror::Error;
 use xlemma_core::{
     canonical_json_bytes, derive_eligible_set_root, ArtifactId, CanonicalizationError,
     CertificateId, Challenge, ClaimId, ClaimManifest, CommitteeSelection,
-    CommitteeSortitionRequest, ComputeQuoteReceipt, EligibleNode, IdError, JobId, MessageId,
-    NodeBond, NodeDiscoveryRequest, NodeDiscoveryResult, NodeId, NodeReputationSnapshot,
-    NodeServiceAdvertisement, ObservationReceipt, OperatorClusterId, PoIRCertificate, PolicyId,
-    ProofId, ProofManifest, ReceiptId, ResearcherId, RevenueEvent, ServiceMatch, ServiceOrder,
-    VerificationJob, XLMP_MAJOR_VERSION, XLMP_PROTOCOL,
+    CommitteeSortitionRequest, ComputeQuoteReceipt, CredentialRevocation, EligibleNode, IdError,
+    JobId, MessageId, NodeBond, NodeCredential, NodeDiscoveryRequest, NodeDiscoveryResult, NodeId,
+    NodeReputationSnapshot, NodeServiceAdvertisement, ObservationReceipt, OperatorClusterId,
+    OperatorCredential, OperatorId, PoIRCertificate, PolicyId, ProofId, ProofManifest, ReceiptId,
+    ResearcherId, RevenueEvent, ServiceMatch, ServiceOrder, UserCredential, VerificationJob,
+    VerifiedUserId, XLMP_MAJOR_VERSION, XLMP_PROTOCOL,
 };
 
 use crate::XLMP_SIGNATURE_DOMAIN;
@@ -57,6 +58,14 @@ pub enum MessageKind {
     Reputation,
     #[serde(rename = "XLMP_BOND")]
     Bond,
+    #[serde(rename = "XLMP_USER_CREDENTIAL")]
+    UserCredential,
+    #[serde(rename = "XLMP_OPERATOR_CREDENTIAL")]
+    OperatorCredential,
+    #[serde(rename = "XLMP_NODE_CREDENTIAL")]
+    NodeCredential,
+    #[serde(rename = "XLMP_CREDENTIAL_REVOCATION")]
+    CredentialRevocation,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -103,7 +112,13 @@ pub struct ObservationCommitMessage {
     pub job_id: JobId,
     pub receipt_id: ReceiptId,
     pub node_id: NodeId,
+    pub verified_user_id: VerifiedUserId,
+    pub operator_id: OperatorId,
     pub operator_cluster_id: OperatorClusterId,
+    pub user_credential_id: xlemma_core::UserCredentialId,
+    pub operator_credential_id: xlemma_core::OperatorCredentialId,
+    pub node_credential_id: xlemma_core::NodeCredentialId,
+    pub credential_chain_root: String,
     pub commitment: String,
     pub committed_at: DateTime<Utc>,
     pub signature: String,
@@ -194,6 +209,26 @@ pub struct BondMessage {
     pub bond: NodeBond,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UserCredentialMessage {
+    pub credential: UserCredential,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OperatorCredentialMessage {
+    pub credential: OperatorCredential,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NodeCredentialMessage {
+    pub credential: NodeCredential,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CredentialRevocationMessage {
+    pub revocation: CredentialRevocation,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", content = "payload")]
 pub enum XlmpMessage {
@@ -239,6 +274,14 @@ pub enum XlmpMessage {
     Reputation(ReputationMessage),
     #[serde(rename = "XLMP_BOND")]
     Bond(BondMessage),
+    #[serde(rename = "XLMP_USER_CREDENTIAL")]
+    UserCredential(UserCredentialMessage),
+    #[serde(rename = "XLMP_OPERATOR_CREDENTIAL")]
+    OperatorCredential(OperatorCredentialMessage),
+    #[serde(rename = "XLMP_NODE_CREDENTIAL")]
+    NodeCredential(NodeCredentialMessage),
+    #[serde(rename = "XLMP_CREDENTIAL_REVOCATION")]
+    CredentialRevocation(CredentialRevocationMessage),
 }
 
 impl XlmpMessage {
@@ -265,6 +308,10 @@ impl XlmpMessage {
             Self::Committee(_) => MessageKind::Committee,
             Self::Reputation(_) => MessageKind::Reputation,
             Self::Bond(_) => MessageKind::Bond,
+            Self::UserCredential(_) => MessageKind::UserCredential,
+            Self::OperatorCredential(_) => MessageKind::OperatorCredential,
+            Self::NodeCredential(_) => MessageKind::NodeCredential,
+            Self::CredentialRevocation(_) => MessageKind::CredentialRevocation,
         }
     }
 
@@ -302,13 +349,23 @@ impl XlmpMessage {
                 message.job_id.validate()?;
                 message.receipt_id.validate()?;
                 message.node_id.validate()?;
-                message.operator_cluster_id.validate()
+                message.verified_user_id.validate()?;
+                message.operator_id.validate()?;
+                message.operator_cluster_id.validate()?;
+                message.user_credential_id.validate()?;
+                message.operator_credential_id.validate()?;
+                message.node_credential_id.validate()
             }
             Self::ObservationReveal(message) => {
                 message.observation.receipt_id.validate()?;
                 message.observation.job_id.validate()?;
                 message.observation.node_id.validate()?;
-                message.observation.operator_cluster_id.validate()
+                message.observation.verified_user_id.validate()?;
+                message.observation.operator_id.validate()?;
+                message.observation.operator_cluster_id.validate()?;
+                message.observation.user_credential_id.validate()?;
+                message.observation.operator_credential_id.validate()?;
+                message.observation.node_credential_id.validate()
             }
             Self::Certificate(message) => {
                 message.certificate.certificate_id.validate()?;
@@ -336,7 +393,11 @@ impl XlmpMessage {
             Self::NodeAdvertise(message) => {
                 message.advertisement.advertisement_id.validate()?;
                 message.advertisement.node_id.validate()?;
+                message.advertisement.operator_id.validate()?;
                 message.advertisement.operator_cluster_id.validate()?;
+                message.advertisement.user_credential_id.validate()?;
+                message.advertisement.operator_credential_id.validate()?;
+                message.advertisement.node_credential_id.validate()?;
                 message.advertisement.reputation_snapshot_id.validate()?;
                 message.advertisement.bond_id.validate()
             }
@@ -357,6 +418,7 @@ impl XlmpMessage {
                 message.service_match.order_id.validate()?;
                 message.service_match.advertisement_id.validate()?;
                 message.service_match.node_id.validate()?;
+                message.service_match.operator_id.validate()?;
                 message.service_match.operator_cluster_id.validate()
             }
             Self::SortitionRequest(message) => {
@@ -365,7 +427,13 @@ impl XlmpMessage {
                 message.request.policy_id.validate()?;
                 for node in &message.eligible_nodes {
                     node.node_id.validate()?;
+                    node.operator_id.validate()?;
                     node.operator_cluster_id.validate()?;
+                    node.credential_chain.user.credential_id.validate()?;
+                    node.credential_chain.user.verified_user_id.validate()?;
+                    node.credential_chain.operator.credential_id.validate()?;
+                    node.credential_chain.operator.operator_id.validate()?;
+                    node.credential_chain.node.credential_id.validate()?;
                     node.advertisement_id.validate()?;
                     node.bond_id.validate()?;
                     node.reputation_snapshot_id.validate()?;
@@ -378,7 +446,12 @@ impl XlmpMessage {
                 message.selection.policy_id.validate()?;
                 for member in &message.selection.members {
                     member.node_id.validate()?;
+                    member.verified_user_id.validate()?;
+                    member.operator_id.validate()?;
                     member.operator_cluster_id.validate()?;
+                    member.user_credential_id.validate()?;
+                    member.operator_credential_id.validate()?;
+                    member.node_credential_id.validate()?;
                     member.advertisement_id.validate()?;
                     member.bond_id.validate()?;
                     member.reputation_snapshot_id.validate()?;
@@ -388,15 +461,40 @@ impl XlmpMessage {
             Self::Reputation(message) => {
                 message.snapshot.reputation_id.validate()?;
                 message.snapshot.node_id.validate()?;
+                message.snapshot.operator_id.validate()?;
                 message.snapshot.operator_cluster_id.validate()?;
                 message.snapshot.policy_id.validate()
             }
             Self::Bond(message) => {
                 message.bond.bond_id.validate()?;
                 message.bond.node_id.validate()?;
+                message.bond.operator_id.validate()?;
                 message.bond.operator_cluster_id.validate()?;
                 message.bond.slashing_policy_id.validate()
             }
+            Self::UserCredential(message) => {
+                message.credential.credential_id.validate()?;
+                message.credential.verified_user_id.validate()?;
+                if let Some(researcher_id) = &message.credential.researcher_id {
+                    researcher_id.validate()?;
+                }
+                Ok(())
+            }
+            Self::OperatorCredential(message) => {
+                message.credential.credential_id.validate()?;
+                message.credential.operator_id.validate()?;
+                message.credential.verified_user_id.validate()?;
+                message.credential.user_credential_id.validate()?;
+                message.credential.operator_cluster_id.validate()
+            }
+            Self::NodeCredential(message) => {
+                message.credential.credential_id.validate()?;
+                message.credential.node_id.validate()?;
+                message.credential.operator_id.validate()?;
+                message.credential.operator_credential_id.validate()?;
+                message.credential.operator_cluster_id.validate()
+            }
+            Self::CredentialRevocation(message) => message.revocation.revocation_id.validate(),
         }
     }
 }
@@ -454,6 +552,10 @@ pub enum XlmpError {
     ServiceMatchIdMismatch,
     #[error("XLMP observation reveal does not match its prior commitment")]
     ObservationCommitMismatch,
+    #[error("XLMP credential or revocation content is structurally invalid")]
+    CredentialIntegrity,
+    #[error("XLMP observation lacks its credential-chain binding")]
+    ObservationIdentity,
     #[error(transparent)]
     Canonicalization(#[from] CanonicalizationError),
     #[error(transparent)]
@@ -534,6 +636,67 @@ impl XlmpEnvelope {
         }
         self.message.validate_ids()?;
         match &self.message {
+            XlmpMessage::UserCredential(message) => message
+                .credential
+                .validate_integrity()
+                .map_err(|_| XlmpError::CredentialIntegrity)?,
+            XlmpMessage::OperatorCredential(message) => message
+                .credential
+                .validate_integrity()
+                .map_err(|_| XlmpError::CredentialIntegrity)?,
+            XlmpMessage::NodeCredential(message) => message
+                .credential
+                .validate_integrity()
+                .map_err(|_| XlmpError::CredentialIntegrity)?,
+            XlmpMessage::CredentialRevocation(message) => {
+                message
+                    .revocation
+                    .validate_integrity()
+                    .map_err(|_| XlmpError::CredentialIntegrity)?
+            }
+            XlmpMessage::SortitionRequest(message) => {
+                for node in &message.eligible_nodes {
+                    let chain = &node.credential_chain;
+                    chain
+                        .user
+                        .validate_integrity()
+                        .map_err(|_| XlmpError::CredentialIntegrity)?;
+                    chain
+                        .operator
+                        .validate_integrity()
+                        .map_err(|_| XlmpError::CredentialIntegrity)?;
+                    chain
+                        .node
+                        .validate_integrity()
+                        .map_err(|_| XlmpError::CredentialIntegrity)?;
+                    chain
+                        .status
+                        .validate_integrity()
+                        .map_err(|_| XlmpError::CredentialIntegrity)?;
+                    if node.node_id != chain.node.node_id
+                        || node.operator_id != chain.operator.operator_id
+                        || node.operator_cluster_id != chain.operator.operator_cluster_id
+                        || chain.user.verified_user_id != chain.operator.verified_user_id
+                        || chain.user.credential_id != chain.operator.user_credential_id
+                        || chain.operator.credential_id != chain.node.operator_credential_id
+                    {
+                        return Err(XlmpError::CredentialIntegrity);
+                    }
+                }
+            }
+            XlmpMessage::ObservationCommit(message)
+                if message.credential_chain_root.trim().is_empty() =>
+            {
+                return Err(XlmpError::ObservationIdentity);
+            }
+            XlmpMessage::ObservationReveal(message)
+                if message.observation.credential_chain_root.trim().is_empty() =>
+            {
+                return Err(XlmpError::ObservationIdentity);
+            }
+            _ => {}
+        }
+        match &self.message {
             XlmpMessage::Claim(message)
                 if message.claim_id != message.claim.derive_claim_id()? =>
             {
@@ -594,7 +757,13 @@ pub fn verify_observation_commit_reveal(
     let same_binding = committed.job_id == revealed.job_id
         && committed.receipt_id == revealed.receipt_id
         && committed.node_id == revealed.node_id
+        && committed.verified_user_id == revealed.verified_user_id
+        && committed.operator_id == revealed.operator_id
         && committed.operator_cluster_id == revealed.operator_cluster_id
+        && committed.user_credential_id == revealed.user_credential_id
+        && committed.operator_credential_id == revealed.operator_credential_id
+        && committed.node_credential_id == revealed.node_credential_id
+        && committed.credential_chain_root == revealed.credential_chain_root
         && committed.commitment == revealed.commitment
         && committed.committed_at == revealed.committed_at
         && revealed.revealed_at >= committed.committed_at
@@ -713,6 +882,38 @@ mod tests {
     }
 
     #[test]
+    fn user_credential_is_a_native_integrity_checked_message() {
+        let credential: UserCredential = serde_json::from_str(include_str!(
+            "../../../examples/node-network/user-credential.json"
+        ))
+        .unwrap();
+        let envelope = XlmpEnvelope::new(
+            None,
+            "did:web:issuer.xlemma.example",
+            "2026-09-03T12:00:00Z".parse().unwrap(),
+            XlmpMessage::UserCredential(UserCredentialMessage { credential }),
+            "example-envelope-signature",
+        )
+        .unwrap();
+        assert_eq!(envelope.kind(), MessageKind::UserCredential);
+
+        let XlmpMessage::UserCredential(mut message) = envelope.message else {
+            unreachable!();
+        };
+        message.credential.public_subject = "did:key:substituted".into();
+        assert!(matches!(
+            XlmpEnvelope::new(
+                None,
+                "did:web:issuer.xlemma.example",
+                envelope.sent_at,
+                XlmpMessage::UserCredential(message),
+                "example-envelope-signature",
+            ),
+            Err(XlmpError::CredentialIntegrity)
+        ));
+    }
+
+    #[test]
     fn envelope_rejects_advertisement_id_that_does_not_bind_price() {
         let envelope: XlmpEnvelope = serde_json::from_str(include_str!(
             "../../../examples/node-network/xlmp-node-advertise.json"
@@ -756,6 +957,10 @@ mod tests {
             MessageKind::Committee,
             MessageKind::Reputation,
             MessageKind::Bond,
+            MessageKind::UserCredential,
+            MessageKind::OperatorCredential,
+            MessageKind::NodeCredential,
+            MessageKind::CredentialRevocation,
         ];
         let expected = [
             "XLMP_CLAIM",
@@ -779,6 +984,10 @@ mod tests {
             "XLMP_COMMITTEE",
             "XLMP_REPUTATION",
             "XLMP_BOND",
+            "XLMP_USER_CREDENTIAL",
+            "XLMP_OPERATOR_CREDENTIAL",
+            "XLMP_NODE_CREDENTIAL",
+            "XLMP_CREDENTIAL_REVOCATION",
         ];
         for (kind, expected) in kinds.into_iter().zip(expected) {
             assert_eq!(serde_json::to_value(kind).unwrap(), expected);

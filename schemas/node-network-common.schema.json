@@ -4,7 +4,8 @@
   "title": "XLMP node-network shared types",
   "$defs": {
     "nodeId": { "type": "string", "pattern": "^xlnode:blake3:[0-9a-f]{64}$" },
-    "operatorId": { "type": "string", "pattern": "^xloperator:blake3:[0-9a-f]{64}$" },
+    "operatorId": { "type": "string", "pattern": "^xlop:blake3:[0-9a-f]{64}$" },
+    "operatorClusterId": { "type": "string", "pattern": "^xloperator:blake3:[0-9a-f]{64}$" },
     "advertisementId": { "type": "string", "pattern": "^xladv:blake3:[0-9a-f]{64}$" },
     "discoveryId": { "type": "string", "pattern": "^xldiscovery:blake3:[0-9a-f]{64}$" },
     "orderId": { "type": "string", "pattern": "^xlorder:blake3:[0-9a-f]{64}$" },
@@ -84,11 +85,13 @@
         "latency": { "$ref": "#/$defs/nullableReputationRequirement" },
         "novelty_calibration": { "$ref": "#/$defs/nullableReputationRequirement" },
         "challenge_quality": { "$ref": "#/$defs/nullableReputationRequirement" },
-        "independence": { "$ref": "#/$defs/nullableReputationRequirement" }
+        "independence": { "$ref": "#/$defs/nullableReputationRequirement" },
+        "storage_quality": { "$ref": "#/$defs/nullableReputationRequirement" },
+        "integrity": { "$ref": "#/$defs/nullableReputationRequirement" }
       },
       "required": [
         "formal_accuracy", "availability", "latency", "novelty_calibration",
-        "challenge_quality", "independence"
+        "challenge_quality", "independence", "storage_quality", "integrity"
       ]
     },
     "hardwareProfile": {

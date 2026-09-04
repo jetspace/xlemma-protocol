@@ -3,8 +3,10 @@
 //! Model, checker, storage, payment, and chain processes implement adapters
 //! around this fail-closed state machine.
 
+pub mod credentials;
 pub mod marketplace;
 
+pub use credentials::*;
 pub use marketplace::*;
 
 use chrono::{DateTime, Utc};
@@ -13,8 +15,9 @@ use std::collections::BTreeSet;
 use thiserror::Error;
 use xlemma_consensus::observation_commitment;
 use xlemma_core::{
-    ArtifactId, CheckerFamily, ClaimId, JobId, NodeId, NodeRole, ObservationReceipt,
-    ObservationVerdict, OperatorClusterId, PolicyId, ReceiptId, TheoryId,
+    ArtifactId, CheckerFamily, ClaimId, JobId, NodeCredentialId, NodeId, NodeRole,
+    ObservationReceipt, ObservationVerdict, OperatorClusterId, OperatorCredentialId, OperatorId,
+    PolicyId, ReceiptId, TheoryId, UserCredentialId, VerifiedUserId,
 };
 
 /// Domain-separated assignment envelope used by schedulers and node agents.
@@ -23,7 +26,13 @@ pub type SignedNodeAssignment = xlemma_crypto::SignedEnvelope<NodeAssignment>;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NodeCapability {
     pub node_id: NodeId,
+    pub verified_user_id: VerifiedUserId,
+    pub operator_id: OperatorId,
     pub operator_cluster_id: OperatorClusterId,
+    pub user_credential_id: UserCredentialId,
+    pub operator_credential_id: OperatorCredentialId,
+    pub node_credential_id: NodeCredentialId,
+    pub credential_chain_root: String,
     pub roles: BTreeSet<NodeRole>,
     pub checker_family: Option<CheckerFamily>,
     pub checker_name: Option<String>,
@@ -39,7 +48,13 @@ pub struct NodeAssignment {
     pub assignment_id: String,
     pub job_id: JobId,
     pub assigned_node_id: NodeId,
+    pub assigned_verified_user_id: VerifiedUserId,
+    pub assigned_operator_id: OperatorId,
     pub assigned_operator_cluster_id: OperatorClusterId,
+    pub assigned_user_credential_id: UserCredentialId,
+    pub assigned_operator_credential_id: OperatorCredentialId,
+    pub assigned_node_credential_id: NodeCredentialId,
+    pub assigned_credential_chain_root: String,
     pub role: NodeRole,
     pub claim_id: ClaimId,
     pub theory_id: TheoryId,
@@ -91,7 +106,9 @@ pub enum NodeError {
     Inactive,
     #[error("node is not qualified for the assigned role")]
     MissingRole,
-    #[error("assignment is addressed to a different node or operator cluster")]
+    #[error(
+        "assignment is addressed to a different participant, operator, node, or credential chain"
+    )]
     WrongAssignee,
     #[error("checker assignment requires complete checker identity")]
     MissingCheckerIdentity,
@@ -119,6 +136,20 @@ pub fn validate_assignment(
     now: DateTime<Utc>,
     operator_roles_on_job: &BTreeSet<NodeRole>,
 ) -> Result<(), NodeError> {
+    capability.node_id.validate()?;
+    capability.verified_user_id.validate()?;
+    capability.operator_id.validate()?;
+    capability.operator_cluster_id.validate()?;
+    capability.user_credential_id.validate()?;
+    capability.operator_credential_id.validate()?;
+    capability.node_credential_id.validate()?;
+    assignment.assigned_node_id.validate()?;
+    assignment.assigned_verified_user_id.validate()?;
+    assignment.assigned_operator_id.validate()?;
+    assignment.assigned_operator_cluster_id.validate()?;
+    assignment.assigned_user_credential_id.validate()?;
+    assignment.assigned_operator_credential_id.validate()?;
+    assignment.assigned_node_credential_id.validate()?;
     if !capability.active {
         return Err(NodeError::Inactive);
     }
@@ -126,7 +157,13 @@ pub fn validate_assignment(
         return Err(NodeError::MissingRole);
     }
     if capability.node_id != assignment.assigned_node_id
+        || capability.verified_user_id != assignment.assigned_verified_user_id
+        || capability.operator_id != assignment.assigned_operator_id
         || capability.operator_cluster_id != assignment.assigned_operator_cluster_id
+        || capability.user_credential_id != assignment.assigned_user_credential_id
+        || capability.operator_credential_id != assignment.assigned_operator_credential_id
+        || capability.node_credential_id != assignment.assigned_node_credential_id
+        || capability.credential_chain_root != assignment.assigned_credential_chain_root
     {
         return Err(NodeError::WrongAssignee);
     }
@@ -136,6 +173,7 @@ pub fn validate_assignment(
         || assignment.environment_root.is_empty()
         || assignment.dependency_root.is_empty()
         || assignment.axiom_set_root.is_empty()
+        || assignment.assigned_credential_chain_root.is_empty()
     {
         return Err(NodeError::InvalidAssignment);
     }
@@ -246,15 +284,8 @@ pub fn build_observation_receipt(
     {
         return Err(NodeError::InvalidTiming);
     }
-    if capability.node_id != assignment.assigned_node_id
-        || capability.operator_cluster_id != assignment.assigned_operator_cluster_id
-    {
-        return Err(NodeError::WrongAssignee);
-    }
+    validate_assignment(capability, assignment, committed_at, &BTreeSet::new())?;
     let family = capability.checker_family;
-    if is_checker_role(assignment.role) && family.is_none() {
-        return Err(NodeError::MissingCheckerIdentity);
-    }
     let commitment = observation_commitment(
         &assignment.job_id,
         evidence.verdict,
@@ -264,7 +295,13 @@ pub fn build_observation_receipt(
     let receipt_material = serde_json::json!({
         "job_id": &assignment.job_id,
         "node_id": &capability.node_id,
+        "verified_user_id": &capability.verified_user_id,
+        "operator_id": &capability.operator_id,
         "operator_cluster_id": &capability.operator_cluster_id,
+        "user_credential_id": &capability.user_credential_id,
+        "operator_credential_id": &capability.operator_credential_id,
+        "node_credential_id": &capability.node_credential_id,
+        "credential_chain_root": &capability.credential_chain_root,
         "checker_family": family,
         "checker_name": &capability.checker_name,
         "checker_version": &capability.checker_version,
@@ -286,7 +323,13 @@ pub fn build_observation_receipt(
         receipt_id: ReceiptId::derive(&receipt_material)?,
         job_id: assignment.job_id.clone(),
         node_id: capability.node_id.clone(),
+        verified_user_id: capability.verified_user_id.clone(),
+        operator_id: capability.operator_id.clone(),
         operator_cluster_id: capability.operator_cluster_id.clone(),
+        user_credential_id: capability.user_credential_id.clone(),
+        operator_credential_id: capability.operator_credential_id.clone(),
+        node_credential_id: capability.node_credential_id.clone(),
+        credential_chain_root: capability.credential_chain_root.clone(),
         checker_family: family,
         checker_name: capability.checker_name.clone().unwrap_or_default(),
         checker_version: capability.checker_version.clone().unwrap_or_default(),
@@ -324,7 +367,13 @@ mod tests {
     fn capability(role: NodeRole) -> NodeCapability {
         NodeCapability {
             node_id: NodeId::derive(&"node").unwrap(),
+            verified_user_id: VerifiedUserId::derive(&"user").unwrap(),
+            operator_id: OperatorId::derive(&"operator-id").unwrap(),
             operator_cluster_id: OperatorClusterId::derive(&"operator").unwrap(),
+            user_credential_id: UserCredentialId::derive(&"user-credential").unwrap(),
+            operator_credential_id: OperatorCredentialId::derive(&"operator-credential").unwrap(),
+            node_credential_id: NodeCredentialId::derive(&"node-credential").unwrap(),
+            credential_chain_root: "blake3:credential-chain-root".into(),
             roles: BTreeSet::from([role]),
             checker_family: Some(CheckerFamily::LeanKernel),
             checker_name: Some("lean4checker".into()),
@@ -341,7 +390,14 @@ mod tests {
             assignment_id: "assignment-1".into(),
             job_id: JobId::derive(&"job").unwrap(),
             assigned_node_id: NodeId::derive(&"node").unwrap(),
+            assigned_verified_user_id: VerifiedUserId::derive(&"user").unwrap(),
+            assigned_operator_id: OperatorId::derive(&"operator-id").unwrap(),
             assigned_operator_cluster_id: OperatorClusterId::derive(&"operator").unwrap(),
+            assigned_user_credential_id: UserCredentialId::derive(&"user-credential").unwrap(),
+            assigned_operator_credential_id: OperatorCredentialId::derive(&"operator-credential")
+                .unwrap(),
+            assigned_node_credential_id: NodeCredentialId::derive(&"node-credential").unwrap(),
+            assigned_credential_chain_root: "blake3:credential-chain-root".into(),
             role,
             claim_id: ClaimId::from_canonical_elaborated_type(
                 &TheoryId::derive(&"theory").unwrap(),
@@ -415,6 +471,18 @@ mod tests {
         let cap = capability(NodeRole::OfficialKernelChecker);
         let mut assigned = assignment(NodeRole::OfficialKernelChecker, now);
         assigned.assigned_node_id = NodeId::derive(&"another-node").unwrap();
+        assert!(matches!(
+            validate_assignment(&cap, &assigned, now, &BTreeSet::new()),
+            Err(NodeError::WrongAssignee)
+        ));
+    }
+
+    #[test]
+    fn assignment_is_bound_to_selected_participant_and_credential_chain() {
+        let now = Utc::now();
+        let cap = capability(NodeRole::OfficialKernelChecker);
+        let mut assigned = assignment(NodeRole::OfficialKernelChecker, now);
+        assigned.assigned_verified_user_id = VerifiedUserId::derive(&"another-user").unwrap();
         assert!(matches!(
             validate_assignment(&cap, &assigned, now, &BTreeSet::new()),
             Err(NodeError::WrongAssignee)

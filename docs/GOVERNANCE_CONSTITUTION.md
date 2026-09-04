@@ -14,6 +14,7 @@ This constitution defines powers that protocol governance may exercise and bound
 8. Emergency actions are fail-closed, scoped, reviewable, and time-limited.
 9. Protocol revenue cannot be manufactured from unrealized token valuation.
 10. Public profit-linked instruments remain outside the core until separately reviewed and legally wrapped.
+11. No node may contribute to xLemma consensus without a valid, non-revoked OperatorCredential ultimately controlled by a verified xLemma participant; multiple nodes under the same participant form one operator-independence domain.
 
 These principles should be encoded as immutable contract constraints where practical and as social/governance constraints where not.
 
@@ -26,6 +27,7 @@ Governance may manage:
 - minimum neutral collateral;
 - challenge periods;
 - checker-family qualification criteria;
+- accepted credential issuers, credential tiers, revocation profiles, and role qualifications;
 - permitted trust-policy templates;
 - treasury and public-goods budgets;
 - software release processes;
@@ -40,6 +42,7 @@ Governance may not decide:
 - that a vault is solvent when backing is insufficient;
 - that a payment receipt substitutes for a verification receipt;
 - that a novelty vote changes the result of formal checking.
+- that additional NodeIDs under one verified participant create additional independence.
 
 ## 3. Roles
 
@@ -88,7 +91,7 @@ Submit counterevidence and monitor execution, availability, solvency, conflicts,
 A mature network should avoid a single fungible-token electorate. Material changes should require concurrence from independent chambers such as:
 
 - verified researcher identities;
-- qualified node operators, capped per operator cluster;
+- qualified node operators, capped independently per VerifiedUserID, OperatorID, and conservative OperatorClusterID;
 - maintainers and security experts;
 - public-goods or user representatives;
 - optional capital providers, without unilateral epistemic power.

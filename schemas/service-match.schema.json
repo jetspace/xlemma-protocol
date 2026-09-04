@@ -10,7 +10,8 @@
     "advertisement_id": { "$ref": "node-network-common.schema.json#/$defs/advertisementId" },
     "advertisement_sequence": { "type": "integer", "minimum": 1 },
     "node_id": { "$ref": "node-network-common.schema.json#/$defs/nodeId" },
-    "operator_cluster_id": { "$ref": "node-network-common.schema.json#/$defs/operatorId" },
+    "operator_id": { "$ref": "node-network-common.schema.json#/$defs/operatorId" },
+    "operator_cluster_id": { "$ref": "node-network-common.schema.json#/$defs/operatorClusterId" },
     "service": { "$ref": "node-network-common.schema.json#/$defs/serviceKind" },
     "reserved_units": { "type": "integer", "minimum": 1 },
     "agreed_price": { "$ref": "common.schema.json#/$defs/amount" },
@@ -20,7 +21,7 @@
     "signature": { "$ref": "common.schema.json#/$defs/signature" }
   },
   "required": [
-    "match_id", "order_id", "advertisement_id", "advertisement_sequence", "node_id",
+    "match_id", "order_id", "advertisement_id", "advertisement_sequence", "node_id", "operator_id",
     "operator_cluster_id", "service", "reserved_units", "agreed_price", "scheduled_start",
     "scheduled_end", "matched_at", "signature"
   ]

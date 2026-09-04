@@ -13,6 +13,7 @@ flowchart TB
     N --> D[Discovery<br/>signed advertisements]
     N --> M[Service markets<br/>orders and immutable matches]
     N --> SO[Committee sortition<br/>committed set + future randomness]
+    N --> I[Identity credentials<br/>participant → operator → nodes<br/>delegation + revocation]
     N --> R[Reputation + bonding<br/>multidimensional eligibility]
     N --> C[PoIR consensus<br/>challenge, quarantine, revalidation]
     RG --> AB[Adapter / transport boundary]
@@ -39,7 +40,8 @@ flowchart LR
     M --> X[Measured execution receipt]
 
     B[Active bond] --> EL[Eligibility]
-    RV[Six-dimension reputation] --> EL
+    RV[Eight-dimension operator reputation<br/>with node subrecords] --> EL
+    VC[Valid non-revoked V2+ chain<br/>VerifiedUser → Operator → Node] --> EL
     CF[Role + checker family] --> EL
     EL --> ES[Committed eligible-set root]
     FR[Future public randomness] --> S[Deterministic sortition]
@@ -51,6 +53,10 @@ flowchart LR
 Price routes services. Bond and reputation gate eligibility. Neither creates
 formal vote weight; mathematical status still follows exact independent
 checker evidence.
+
+One committee slot consumes all three independence identifiers. A collision on
+VerifiedUserID, OperatorID, or conservative OperatorClusterID rejects the
+candidate; adding NodeIDs cannot multiply one participant's authority.
 
 ## 2. Trust planes
 

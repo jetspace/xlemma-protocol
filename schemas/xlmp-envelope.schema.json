@@ -35,7 +35,11 @@
         { "$ref": "#/$defs/sortitionRequestMessage" },
         { "$ref": "#/$defs/committeeMessage" },
         { "$ref": "#/$defs/reputationMessage" },
-        { "$ref": "#/$defs/bondMessage" }
+        { "$ref": "#/$defs/bondMessage" },
+        { "$ref": "#/$defs/userCredentialMessage" },
+        { "$ref": "#/$defs/operatorCredentialMessage" },
+        { "$ref": "#/$defs/nodeCredentialMessage" },
+        { "$ref": "#/$defs/credentialRevocationMessage" }
       ]
     },
     "signature": { "$ref": "common.schema.json#/$defs/signature" }
@@ -103,12 +107,23 @@
         "job_id": { "$ref": "#/$defs/jobId" },
         "receipt_id": { "$ref": "#/$defs/receiptId" },
         "node_id": { "type": "string", "pattern": "^xlnode:blake3:[0-9a-f]{64}$" },
+        "verified_user_id": { "$ref": "identity-common.schema.json#/$defs/verifiedUserId" },
+        "operator_id": { "$ref": "identity-common.schema.json#/$defs/operatorId" },
         "operator_cluster_id": { "type": "string", "pattern": "^xloperator:blake3:[0-9a-f]{64}$" },
+        "user_credential_id": { "$ref": "identity-common.schema.json#/$defs/userCredentialId" },
+        "operator_credential_id": { "$ref": "identity-common.schema.json#/$defs/operatorCredentialId" },
+        "node_credential_id": { "$ref": "identity-common.schema.json#/$defs/nodeCredentialId" },
+        "credential_chain_root": { "$ref": "common.schema.json#/$defs/hash" },
         "commitment": { "$ref": "common.schema.json#/$defs/hash" },
         "committed_at": { "type": "string", "format": "date-time" },
         "signature": { "$ref": "common.schema.json#/$defs/signature" }
       },
-      "required": ["job_id", "receipt_id", "node_id", "operator_cluster_id", "commitment", "committed_at", "signature"]
+      "required": [
+        "job_id", "receipt_id", "node_id", "verified_user_id", "operator_id",
+        "operator_cluster_id", "user_credential_id", "operator_credential_id",
+        "node_credential_id", "credential_chain_root", "commitment", "committed_at",
+        "signature"
+      ]
     },
     "finalizePayload": {
       "type": "object",
@@ -343,6 +358,54 @@
           "type": "object", "additionalProperties": false,
           "properties": { "bond": { "$ref": "node-bond.schema.json" } },
           "required": ["bond"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "userCredentialMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_USER_CREDENTIAL" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "credential": { "$ref": "user-credential.schema.json" } },
+          "required": ["credential"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "operatorCredentialMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_OPERATOR_CREDENTIAL" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "credential": { "$ref": "operator-credential.schema.json" } },
+          "required": ["credential"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "nodeCredentialMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_NODE_CREDENTIAL" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "credential": { "$ref": "node-credential.schema.json" } },
+          "required": ["credential"]
+        }
+      },
+      "required": ["type", "payload"]
+    },
+    "credentialRevocationMessage": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "type": { "const": "XLMP_CREDENTIAL_REVOCATION" },
+        "payload": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "revocation": { "$ref": "credential-revocation.schema.json" } },
+          "required": ["revocation"]
         }
       },
       "required": ["type", "payload"]

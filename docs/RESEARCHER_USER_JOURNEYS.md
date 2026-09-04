@@ -6,11 +6,12 @@ This document defines the expected end-to-end experience for the protocol's targ
 
 1. Generate an offline root identity key and separate operational signing keys.
 2. Publish a `ResearcherNodeManifest` containing public identity keys, supported domains, governance policy, vault address, and researcher-credit identifier.
-3. Deploy or join a reviewed `ResearchVault` with a neutral settlement asset.
-4. Deposit backing or receive a grant allocation; mint no more research credits than backing received.
-5. Configure default ASTRA budget, Lean trust policy, novelty policy, storage policy, revenue waterfall, and auto-compound rate.
-6. Register public disclosures for institutional, university, employment, sponsor, and grant-related rights restrictions.
-7. Run a local proof-validation dry run before purchasing independent assurance.
+3. Optionally link the research persona to a pseudonymous UserCredential; this does not make legal identity public or grant consensus-node authority.
+4. Deploy or join a reviewed `ResearchVault` with a neutral settlement asset.
+5. Deposit backing or receive a grant allocation; mint no more research credits than backing received.
+6. Configure default ASTRA budget, Lean trust policy, novelty policy, storage policy, revenue waterfall, and auto-compound rate.
+7. Register public disclosures for institutional, university, employment, sponsor, and grant-related rights restrictions.
+8. Run a local proof-validation dry run before purchasing independent assurance.
 
 The protocol supports pseudonymity, but economic counterparties, jurisdictions, and regulated service providers may impose separate identity or screening requirements.
 
@@ -110,16 +111,23 @@ A prover should preserve failed trajectories when authorized because they can im
 
 ## 7. Operate a checker node
 
-A checker node:
+A checker-node operator:
 
-1. registers an immutable NodeID and operator cluster;
-2. bonds a neutral asset;
-3. declares checker family, binary digest, environment image, provider, region, and capacity;
-4. receives a committee assignment after the claim commitment;
-5. executes the exact artifact in an isolated environment;
-6. commits to its observation before learning peer observations;
-7. reveals its full receipt and trace root;
-8. receives its execution fee whether the result is `PASS`, `FAIL`, `ERROR`, or honest dissent.
+1. obtains a pseudonymous verified-participant UserCredential;
+2. delegates a V2-or-higher OperatorCredential and one NodeCredential per machine/key;
+3. publishes a fresh non-revocation status proof and conservative OperatorClusterID;
+4. bonds a neutral asset;
+5. declares checker family, binary digest, environment image, provider, region, and capacity;
+6. receives a committee assignment only if the credential, role, conflict, reputation, bond, and diversity gates pass;
+7. executes the exact artifact in an isolated environment;
+8. commits to its observation before learning peer observations;
+9. reveals its full receipt and trace root;
+10. receives its execution fee whether the result is `PASS`, `FAIL`, `ERROR`, or honest dissent.
+
+Multiple NodeIDs under the same verified participant count as one independence
+domain. The participant's private verification evidence remains with the
+issuer; committee records expose only typed IDs, commitments, qualifications,
+and the credential-chain root.
 
 It can be slashed for provable fabrication, equivocation, concealed operator control, or false custody evidence—not merely for disagreeing.
 

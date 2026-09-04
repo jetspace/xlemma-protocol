@@ -64,7 +64,8 @@ impl ServiceOrderBook {
         }
         if self.advertisements.values().any(|existing| {
             existing.node_id == advertisement.node_id
-                && existing.operator_cluster_id != advertisement.operator_cluster_id
+                && (existing.operator_id != advertisement.operator_id
+                    || existing.operator_cluster_id != advertisement.operator_cluster_id)
         }) {
             return Err(MarketplaceError::InvalidSupersession);
         }
@@ -135,6 +136,7 @@ impl ServiceOrderBook {
         if service_match.match_id != expected_service_match_id(&service_match)?
             || service_match.advertisement_sequence != advertisement.sequence
             || service_match.node_id != advertisement.node_id
+            || service_match.operator_id != advertisement.operator_id
             || service_match.operator_cluster_id != advertisement.operator_cluster_id
             || service_match.service != order.service
             || service_match.reserved_units != order.quantity_units
@@ -200,7 +202,11 @@ pub fn validate_advertisement(
 ) -> Result<(), MarketplaceError> {
     advertisement.advertisement_id.validate()?;
     advertisement.node_id.validate()?;
+    advertisement.operator_id.validate()?;
     advertisement.operator_cluster_id.validate()?;
+    advertisement.user_credential_id.validate()?;
+    advertisement.operator_credential_id.validate()?;
+    advertisement.node_credential_id.validate()?;
     advertisement.reputation_snapshot_id.validate()?;
     advertisement.bond_id.validate()?;
     if advertisement.advertisement_id != expected_advertisement_id(advertisement)?
@@ -208,7 +214,10 @@ pub fn validate_advertisement(
         || advertisement.roles.is_empty()
         || advertisement.endpoints.is_empty()
         || advertisement.capabilities.is_empty()
+        || advertisement.credential_chain_root.trim().is_empty()
+        || advertisement.jurisdiction_class.trim().is_empty()
         || advertisement.terms_root.trim().is_empty()
+        || advertisement.delegation_signature.trim().is_empty()
         || advertisement.signature.trim().is_empty()
         || advertisement.valid_from > now
         || advertisement.valid_until <= now
@@ -340,6 +349,7 @@ pub fn match_service_order(
         advertisement_id: candidate.advertisement.advertisement_id.clone(),
         advertisement_sequence: candidate.advertisement.sequence,
         node_id: candidate.advertisement.node_id.clone(),
+        operator_id: candidate.advertisement.operator_id.clone(),
         operator_cluster_id: candidate.advertisement.operator_cluster_id.clone(),
         service: order.service,
         reserved_units: order.quantity_units,
@@ -406,6 +416,7 @@ fn ranked_advertisements<'a>(
         if reputation.reputation_id != advertisement.reputation_snapshot_id
             || reputation.reputation_id.validate().is_err()
             || reputation.node_id.validate().is_err()
+            || reputation.operator_id.validate().is_err()
             || reputation.operator_cluster_id.validate().is_err()
             || reputation.policy_id.validate().is_err()
             || reputation
@@ -413,6 +424,7 @@ fn ranked_advertisements<'a>(
                 .as_ref()
                 .is_some_and(|identifier| identifier.validate().is_err())
             || reputation.node_id != advertisement.node_id
+            || reputation.operator_id != advertisement.operator_id
             || reputation.operator_cluster_id != advertisement.operator_cluster_id
             || !reputation.vector.meets(&request.reputation_requirements)
             || reputation.period_start >= reputation.period_end
@@ -599,9 +611,10 @@ mod tests {
     use super::*;
     use chrono::Duration;
     use xlemma_core::{
-        BondId, HardwareProfile, NodeId, NodeReputationVector, NodeRole, NodeServiceKind,
-        OperatorClusterId, PolicyId, PricingModel, ReputationMetric, ReputationRequirements,
-        ServiceEndpoint, ServicePrice,
+        BondId, HardwareProfile, NodeCredentialId, NodeId, NodeReputationVector, NodeRole,
+        NodeServiceKind, OperatorClusterId, OperatorCredentialId, OperatorId, PolicyId,
+        PricingModel, ReputationMetric, ReputationRequirements, ServiceEndpoint, ServicePrice,
+        UserCredentialId,
     };
 
     fn metric(score: u16) -> ReputationMetric {
@@ -614,12 +627,14 @@ mod tests {
 
     fn reputation(
         node: &NodeId,
+        operator_id: &OperatorId,
         operator: &OperatorClusterId,
         id: &ReputationId,
         now: DateTime<Utc>,
     ) -> NodeReputationSnapshot {
         NodeReputationSnapshot {
             reputation_id: id.clone(),
+            operator_id: operator_id.clone(),
             node_id: node.clone(),
             operator_cluster_id: operator.clone(),
             vector: NodeReputationVector {
@@ -629,6 +644,8 @@ mod tests {
                 novelty_calibration: metric(9_000),
                 challenge_quality: metric(9_100),
                 independence: metric(9_900),
+                storage_quality: metric(9_500),
+                integrity: metric(9_900),
             },
             policy_id: PolicyId::derive(&"reputation-policy").unwrap(),
             period_start: now - Duration::days(30),
@@ -646,12 +663,24 @@ mod tests {
         now: DateTime<Utc>,
     ) -> NodeServiceAdvertisement {
         let node_id = NodeId::derive(&label).unwrap();
+        let operator_id = OperatorId::derive(&format!("operator-{label}")).unwrap();
         let operator_cluster_id = OperatorClusterId::derive(&format!("operator-{label}")).unwrap();
         let reputation_snapshot_id = ReputationId::derive(&label).unwrap();
         let mut advertisement = NodeServiceAdvertisement {
             advertisement_id: AdvertisementId::derive(&"placeholder").unwrap(),
             node_id,
+            operator_id,
             operator_cluster_id,
+            user_credential_id: UserCredentialId::derive(&format!("user-credential-{label}"))
+                .unwrap(),
+            operator_credential_id: OperatorCredentialId::derive(&format!(
+                "operator-credential-{label}"
+            ))
+            .unwrap(),
+            node_credential_id: NodeCredentialId::derive(&format!("node-credential-{label}"))
+                .unwrap(),
+            credential_chain_root: format!("blake3:credential-chain-{label}"),
+            jurisdiction_class: "privacy-preserving-verified".into(),
             sequence: 1,
             roles: BTreeSet::from([NodeRole::OfficialKernelChecker]),
             endpoints: vec![ServiceEndpoint {
@@ -690,6 +719,7 @@ mod tests {
             valid_from: now - Duration::minutes(1),
             valid_until: now + Duration::hours(1),
             supersedes: None,
+            delegation_signature: "delegation-signature".into(),
             signature: "signature".into(),
         };
         advertisement.advertisement_id = expected_advertisement_id(&advertisement).unwrap();
@@ -731,6 +761,7 @@ mod tests {
                     advertisement.reputation_snapshot_id.clone(),
                     reputation(
                         &advertisement.node_id,
+                        &advertisement.operator_id,
                         &advertisement.operator_cluster_id,
                         &advertisement.reputation_snapshot_id,
                         now,

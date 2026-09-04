@@ -25,8 +25,12 @@ lean_kernel_count = 2
 nanoda_count = 1
 other_independent_count = 0
 minimum_operator_clusters = 3
+minimum_operator_ids = 3
+minimum_verified_users = 3
 minimum_infrastructure_providers = 2
 minimum_regions = 2
+minimum_checker_families = 2
+minimum_credential_tier = "v2_verified_operator"
 require_identical_artifact_root = true
 require_identical_environment_root = true
 require_identical_dependency_root = true
@@ -41,10 +45,16 @@ minimum_latency_bps = 9000
 minimum_novelty_calibration_bps = 0
 minimum_challenge_quality_bps = 8000
 minimum_independence_bps = 9500
+minimum_storage_quality_bps = 0
+minimum_integrity_bps = 9500
 minimum_reputation_sample_size = 10
 stake_weighted_voting = false
 randomness_source = "vrf-required-in-production"
 operator_cluster_enforcement = true
+operator_id_enforcement = true
+verified_user_enforcement = true
+fresh_non_revocation_proof_required = true
+minimum_credential_tier = "v2_verified_operator"
 maximum_eligible_nodes = 1024
 maximum_committee_slots = 32
 maximum_search_states = 1000000
@@ -55,6 +65,16 @@ content_derived_advertisement_ids = true
 checked_integer_prices = true
 require_active_bond_reference = true
 maximum_advertisement_lifetime_seconds = 86400
+minimum_credential_tier = "v1_verified_participant"
+credential_chain_root_required = true
+
+[identity]
+public_identity_mode = "pseudonymous"
+private_evidence_retained_by_issuer = true
+raw_legal_identity_on_protocol = false
+append_only_credentials_and_revocations = true
+user_operator_node_delegation_required = true
+maximum_status_proof_age_seconds = 3600
 
 [novelty]
 prior_probability = 0.20

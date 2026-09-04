@@ -113,6 +113,20 @@ protocol_id!(ServiceMatchId, "xlmatch:blake3:", "service-match-v1");
 protocol_id!(SortitionId, "xlsortition:blake3:", "committee-sortition-v1");
 protocol_id!(ReputationId, "xlreputation:blake3:", "node-reputation-v1");
 protocol_id!(BondId, "xlbond:blake3:", "node-bond-v1");
+protocol_id!(VerifiedUserId, "xluser:blake3:", "verified-user-v1");
+protocol_id!(OperatorId, "xlop:blake3:", "operator-v1");
+protocol_id!(UserCredentialId, "xlusercred:blake3:", "user-credential-v1");
+protocol_id!(
+    OperatorCredentialId,
+    "xloperatorcred:blake3:",
+    "operator-credential-v1"
+);
+protocol_id!(NodeCredentialId, "xlnodecred:blake3:", "node-credential-v1");
+protocol_id!(
+    CredentialRevocationId,
+    "xlrevocation:blake3:",
+    "credential-revocation-v1"
+);
 
 impl ClaimId {
     /// Derive a ClaimID from the canonical elaborated formal type under its
@@ -181,6 +195,17 @@ mod tests {
         let claim = ClaimId::from_canonical_elaborated_type(&theory, "same content").unwrap();
         let proof = ProofId::from_canonical_proof_object(&claim, "same content").unwrap();
         assert_ne!(claim.as_str(), proof.as_str());
+    }
+
+    #[test]
+    fn participant_operator_and_node_credentials_are_distinct_domains() {
+        let value = json!({"same": "credential material"});
+        let user = UserCredentialId::derive(&value).unwrap();
+        let operator = OperatorCredentialId::derive(&value).unwrap();
+        let node = NodeCredentialId::derive(&value).unwrap();
+        assert_ne!(user.as_str(), operator.as_str());
+        assert_ne!(operator.as_str(), node.as_str());
+        assert_ne!(user.as_str(), node.as_str());
     }
 
     #[test]

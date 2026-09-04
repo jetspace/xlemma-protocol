@@ -15,3 +15,4 @@ xlemma-consensus = { path = "../xlemma-consensus" }
 xlemma-core = { path = "../xlemma-core" }
 xlemma-economics = { path = "../xlemma-economics" }
 xlemma-storage = { path = "../xlemma-storage" }
+xlemma-xlmp = { path = "../xlemma-xlmp" }

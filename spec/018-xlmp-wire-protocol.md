@@ -34,6 +34,7 @@ Schemas are part of the conformance surface.
 | Plane | Native objects |
 |---|---|
 | Research graph | `ResearcherID`, `TheoryID`, `ClaimID`, `ProofID`, `LemmaCapsule`, `ContributionManifest` |
+| Identity | `VerifiedUserID`, `OperatorID`, `XLMP_UserCredential`, `XLMP_OperatorCredential`, `XLMP_NodeCredential`, `CredentialRevocation` |
 | Node network | `NodeServiceAdvertisement`, `NodeDiscoveryRequest`, `ServiceOrder`, `ServiceMatch`, `NodeReputationSnapshot`, `NodeBond`, `CommitteeSortitionRequest`, `CommitteeSelection` |
 | Verification | `VerificationJob`, `ObservationReceipt`, `PoIRCertificate`, `Challenge`, `QuarantineRecord` |
 | Economics | `ComputeQuote`, `ComputeReceipt`, `ResearchCredit`, `ResearchVault`, `RevenueEvent`, `DependencyDividend` |
@@ -104,13 +105,18 @@ XLMP/1 defines these message discriminators:
 | `XLMP_COMMITTEE` | Publish an exactly reproducible committee selection with per-member rank proofs |
 | `XLMP_REPUTATION` | Publish a superseding multidimensional, evidence-backed node reputation snapshot |
 | `XLMP_BOND` | Publish independently settled eligibility collateral and its slashing policy |
+| `XLMP_USER_CREDENTIAL` | Publish a pseudonymous verified-participant attestation |
+| `XLMP_OPERATOR_CREDENTIAL` | Delegate accountable roles from a verified participant to an operator |
+| `XLMP_NODE_CREDENTIAL` | Delegate exact roles and a public key from an operator to a node |
+| `XLMP_CREDENTIAL_REVOCATION` | Append an effective revocation for an exact credential |
 
 Proof candidates MUST be labeled as candidates. `XLMP_CERTIFICATE` MUST NOT be
 emitted solely from a prover response. `XLMP_OBSERVATION_REVEAL` MUST bind the
 same job, receipt, node, operator cluster, commitment, and commit time as its
 corresponding `XLMP_OBSERVATION_COMMIT`.
 
-Node-network messages are specified further in XLIP-019. Price, bond size, and
+Node-network messages are specified further in XLIP-019 and identity messages
+in XLIP-020. Price, bond size, credential tier, and
 reputation MUST remain service-routing and eligibility inputs; none is formal
 vote weight and none can override checker evidence.
 

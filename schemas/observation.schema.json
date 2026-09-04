@@ -16,10 +16,16 @@
       "type": "string",
       "pattern": "^xlnode:blake3:[0-9a-f]{64}$"
     },
+    "verified_user_id": { "$ref": "identity-common.schema.json#/$defs/verifiedUserId" },
+    "operator_id": { "$ref": "identity-common.schema.json#/$defs/operatorId" },
     "operator_cluster_id": {
       "type": "string",
       "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
     },
+    "user_credential_id": { "$ref": "identity-common.schema.json#/$defs/userCredentialId" },
+    "operator_credential_id": { "$ref": "identity-common.schema.json#/$defs/operatorCredentialId" },
+    "node_credential_id": { "$ref": "identity-common.schema.json#/$defs/nodeCredentialId" },
+    "credential_chain_root": { "$ref": "common.schema.json#/$defs/hash" },
     "checker_family": {
       "type": [
         "string",
@@ -123,7 +129,13 @@
     "receipt_id",
     "job_id",
     "node_id",
+    "verified_user_id",
+    "operator_id",
     "operator_cluster_id",
+    "user_credential_id",
+    "operator_credential_id",
+    "node_credential_id",
+    "credential_chain_root",
     "checker_name",
     "checker_version",
     "checker_binary_digest",

@@ -49,7 +49,13 @@ Every box is a release gate. The reference repository intentionally leaves many 
 - [ ] No scalar reputation, bond amount, or token balance becomes committee or formal-vote weight.
 - [ ] Eligible-set publication is decentralized and committed before randomness reveal.
 - [ ] Production beacon/VRF proofs are authenticated and manipulation-resistant.
-- [ ] Committee ranks, unique operator clusters, provider/region diversity, and selection root reproduce independently.
+- [ ] Committee ranks, unique participants/operators/clusters, provider/region diversity, and selection root reproduce independently.
+- [ ] Committee uniqueness is enforced separately for VerifiedUserID, OperatorID, and OperatorClusterID.
+- [ ] V2-or-higher user/operator/node credential chains are validated before consensus eligibility.
+- [ ] Issuer and both delegation signatures are cryptographically verified under published key-resolution policy.
+- [ ] Fresh non-revocation proofs bind the complete chain to the current append-only registry root.
+- [ ] User, operator, and node revocations cascade to eligibility without rewriting historical receipts.
+- [ ] Issuers retain private identity evidence under reviewed retention, access, breach, and deletion policies; raw legal identity is absent from public protocol records.
 
 ## ASTRA and model layer
 

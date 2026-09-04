@@ -19,7 +19,10 @@ pub fn verify_reveal(receipt: &ObservationReceipt, salt: &[u8]) -> bool {
 mod tests {
     use super::*;
     use chrono::Utc;
-    use xlemma_core::{JobId, NodeId, OperatorClusterId, ReceiptId};
+    use xlemma_core::{
+        JobId, NodeCredentialId, NodeId, OperatorClusterId, OperatorCredentialId, OperatorId,
+        ReceiptId, UserCredentialId, VerifiedUserId,
+    };
 
     #[test]
     fn commitment_binds_verdict_and_root() {
@@ -29,7 +32,13 @@ mod tests {
             receipt_id: ReceiptId::derive(&"receipt").unwrap(),
             job_id: job.clone(),
             node_id: NodeId::derive(&"node").unwrap(),
+            verified_user_id: VerifiedUserId::derive(&"user").unwrap(),
+            operator_id: OperatorId::derive(&"operator-id").unwrap(),
             operator_cluster_id: OperatorClusterId::derive(&"operator").unwrap(),
+            user_credential_id: UserCredentialId::derive(&"user-credential").unwrap(),
+            operator_credential_id: OperatorCredentialId::derive(&"operator-credential").unwrap(),
+            node_credential_id: NodeCredentialId::derive(&"node-credential").unwrap(),
+            credential_chain_root: "blake3:credential-chain-root".into(),
             checker_family: None,
             checker_name: "reference-checker".into(),
             checker_version: "0.1.0".into(),

@@ -7,8 +7,9 @@
 
 use crate::{
     canonical_json_hash, AdvertisementId, Amount, BondId, CanonicalizationError, CheckerFamily,
-    DiscoveryId, IdError, JobId, NodeId, NodeRole, OperatorClusterId, PolicyId, ReputationId,
-    ServiceMatchId, ServiceOrderId, SortitionId, TheoryId,
+    CredentialTier, DiscoveryId, IdError, JobId, NodeCredentialChain, NodeCredentialId, NodeId,
+    NodeRole, OperatorClusterId, OperatorCredentialId, OperatorId, PolicyId, ReputationId,
+    ServiceMatchId, ServiceOrderId, SortitionId, TheoryId, UserCredentialId, VerifiedUserId,
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -105,6 +106,8 @@ pub struct NodeReputationVector {
     pub novelty_calibration: ReputationMetric,
     pub challenge_quality: ReputationMetric,
     pub independence: ReputationMetric,
+    pub storage_quality: ReputationMetric,
+    pub integrity: ReputationMetric,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -115,6 +118,8 @@ pub struct ReputationRequirements {
     pub novelty_calibration: Option<ReputationRequirement>,
     pub challenge_quality: Option<ReputationRequirement>,
     pub independence: Option<ReputationRequirement>,
+    pub storage_quality: Option<ReputationRequirement>,
+    pub integrity: Option<ReputationRequirement>,
 }
 
 impl NodeReputationVector {
@@ -140,9 +145,11 @@ impl NodeReputationVector {
                 requirements.challenge_quality.as_ref(),
             )
             && metric_meets(&self.independence, requirements.independence.as_ref())
+            && metric_meets(&self.storage_quality, requirements.storage_quality.as_ref())
+            && metric_meets(&self.integrity, requirements.integrity.as_ref())
     }
 
-    fn metrics(&self) -> [&ReputationMetric; 6] {
+    fn metrics(&self) -> [&ReputationMetric; 8] {
         [
             &self.formal_accuracy,
             &self.availability,
@@ -150,6 +157,8 @@ impl NodeReputationVector {
             &self.novelty_calibration,
             &self.challenge_quality,
             &self.independence,
+            &self.storage_quality,
+            &self.integrity,
         ]
     }
 }
@@ -165,6 +174,7 @@ fn metric_meets(metric: &ReputationMetric, requirement: Option<&ReputationRequir
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NodeReputationSnapshot {
     pub reputation_id: ReputationId,
+    pub operator_id: OperatorId,
     pub node_id: NodeId,
     pub operator_cluster_id: OperatorClusterId,
     pub vector: NodeReputationVector,
@@ -191,6 +201,7 @@ pub enum NodeBondStatus {
 pub struct NodeBond {
     pub bond_id: BondId,
     pub node_id: NodeId,
+    pub operator_id: OperatorId,
     pub operator_cluster_id: OperatorClusterId,
     pub amount: Amount,
     pub eligible_roles: BTreeSet<NodeRole>,
@@ -206,7 +217,13 @@ pub struct NodeBond {
 pub struct NodeServiceAdvertisement {
     pub advertisement_id: AdvertisementId,
     pub node_id: NodeId,
+    pub operator_id: OperatorId,
     pub operator_cluster_id: OperatorClusterId,
+    pub user_credential_id: UserCredentialId,
+    pub operator_credential_id: OperatorCredentialId,
+    pub node_credential_id: NodeCredentialId,
+    pub credential_chain_root: String,
+    pub jurisdiction_class: String,
     pub sequence: u64,
     pub roles: BTreeSet<NodeRole>,
     pub endpoints: Vec<ServiceEndpoint>,
@@ -217,13 +234,20 @@ pub struct NodeServiceAdvertisement {
     pub valid_from: DateTime<Utc>,
     pub valid_until: DateTime<Utc>,
     pub supersedes: Option<AdvertisementId>,
+    pub delegation_signature: String,
     pub signature: String,
 }
 
 #[derive(Serialize)]
 struct AdvertisementIdentity<'a> {
     node_id: &'a NodeId,
+    operator_id: &'a OperatorId,
     operator_cluster_id: &'a OperatorClusterId,
+    user_credential_id: &'a UserCredentialId,
+    operator_credential_id: &'a OperatorCredentialId,
+    node_credential_id: &'a NodeCredentialId,
+    credential_chain_root: &'a str,
+    jurisdiction_class: &'a str,
     sequence: u64,
     roles: &'a BTreeSet<NodeRole>,
     endpoints: &'a [ServiceEndpoint],
@@ -240,7 +264,13 @@ impl NodeServiceAdvertisement {
     pub fn derive_advertisement_id(&self) -> Result<AdvertisementId, IdError> {
         AdvertisementId::derive(&AdvertisementIdentity {
             node_id: &self.node_id,
+            operator_id: &self.operator_id,
             operator_cluster_id: &self.operator_cluster_id,
+            user_credential_id: &self.user_credential_id,
+            operator_credential_id: &self.operator_credential_id,
+            node_credential_id: &self.node_credential_id,
+            credential_chain_root: &self.credential_chain_root,
+            jurisdiction_class: &self.jurisdiction_class,
             sequence: self.sequence,
             roles: &self.roles,
             endpoints: &self.endpoints,
@@ -311,6 +341,7 @@ pub struct ServiceMatch {
     pub advertisement_id: AdvertisementId,
     pub advertisement_sequence: u64,
     pub node_id: NodeId,
+    pub operator_id: OperatorId,
     pub operator_cluster_id: OperatorClusterId,
     pub service: NodeServiceKind,
     pub reserved_units: u64,
@@ -327,6 +358,7 @@ struct ServiceMatchIdentity<'a> {
     advertisement_id: &'a AdvertisementId,
     advertisement_sequence: u64,
     node_id: &'a NodeId,
+    operator_id: &'a OperatorId,
     operator_cluster_id: &'a OperatorClusterId,
     service: NodeServiceKind,
     reserved_units: u64,
@@ -343,6 +375,7 @@ impl ServiceMatch {
             advertisement_id: &self.advertisement_id,
             advertisement_sequence: self.advertisement_sequence,
             node_id: &self.node_id,
+            operator_id: &self.operator_id,
             operator_cluster_id: &self.operator_cluster_id,
             service: self.service,
             reserved_units: self.reserved_units,
@@ -357,7 +390,9 @@ impl ServiceMatch {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EligibleNode {
     pub node_id: NodeId,
+    pub operator_id: OperatorId,
     pub operator_cluster_id: OperatorClusterId,
+    pub credential_chain: NodeCredentialChain,
     pub advertisement_id: AdvertisementId,
     pub roles: BTreeSet<NodeRole>,
     pub checker_families: BTreeSet<CheckerFamily>,
@@ -377,6 +412,9 @@ pub struct CommitteeRequirement {
     pub minimum_bond: Amount,
     pub reputation_requirements: ReputationRequirements,
     pub required_checker_families: BTreeSet<CheckerFamily>,
+    pub minimum_credential_tier: CredentialTier,
+    pub maximum_status_age_seconds: u64,
+    pub required_qualifications: BTreeSet<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -407,7 +445,14 @@ pub struct SortitionMember {
     pub role: NodeRole,
     pub slot: u16,
     pub node_id: NodeId,
+    pub verified_user_id: VerifiedUserId,
+    pub operator_id: OperatorId,
     pub operator_cluster_id: OperatorClusterId,
+    pub user_credential_id: UserCredentialId,
+    pub operator_credential_id: OperatorCredentialId,
+    pub node_credential_id: NodeCredentialId,
+    pub credential_tier: CredentialTier,
+    pub credential_chain_root: String,
     pub advertisement_id: AdvertisementId,
     pub bond_id: BondId,
     pub reputation_snapshot_id: ReputationId,
@@ -434,6 +479,7 @@ pub fn derive_eligible_set_root(nodes: &[EligibleNode]) -> Result<String, Canoni
     ordered.sort_by(|left, right| {
         left.node_id
             .cmp(&right.node_id)
+            .then_with(|| left.operator_id.cmp(&right.operator_id))
             .then_with(|| left.advertisement_id.cmp(&right.advertisement_id))
             .then_with(|| left.operator_cluster_id.cmp(&right.operator_cluster_id))
             .then_with(|| left.bond_id.cmp(&right.bond_id))
@@ -505,6 +551,8 @@ mod tests {
             novelty_calibration: metric(9_900),
             challenge_quality: metric(9_900),
             independence: metric(9_900),
+            storage_quality: metric(9_900),
+            integrity: metric(9_900),
         };
         let requirements = ReputationRequirements {
             formal_accuracy: Some(ReputationRequirement {

@@ -37,6 +37,7 @@ A `DecentralizedResearcherNode` is the protocol's first-class principal:
 ```text
 DecentralizedResearcherNode
 ├── ResearcherID
+├── optional VerifiedUserID link
 ├── identity and signing keys
 ├── Research Credit Rᵢ
 ├── Research Vault Vᵢ
@@ -49,7 +50,7 @@ DecentralizedResearcherNode
 └── governance and recovery policy
 ```
 
-A researcher may remain pseudonymous while still having a stable cryptographic identity. Legal rights, regulated activity, commercial licensing, or fiat access may require additional identity at specific boundaries, but public theorem participation does not require one universal identity regime.
+A researcher may remain pseudonymous while still having a stable cryptographic identity. Legal rights, regulated activity, commercial licensing, or fiat access may require additional identity at specific boundaries, but public theorem participation does not require one universal identity regime. Consensus node operation does require the privacy-preserving `VerifiedUserID → OperatorID → NodeID` credential chain defined by XLIP-020; issuer-retained legal or uniqueness evidence is not published on protocol.
 
 One researcher or laboratory has one primary research-credit economy and many proof capsules. A separate freely traded token for every lemma is not the default because it would fragment liquidity, reward spam, make dependency accounting unmanageable, and turn scientific objects into speculative micro-assets.
 
@@ -550,13 +551,16 @@ A Gold policy can require:
 2 official-kernel executions
 AND 1 independently implemented checker
 AND 3 operator clusters
+AND 3 OperatorIDs
+AND 3 verified participants or organizations
+AND valid, fresh, non-revoked V2-or-higher credential chains
 AND 2 infrastructure providers
 AND 2 geographic regions
 AND identical artifact/environment/dependency/axiom roots
 AND no unresolved challenge
 ```
 
-A hundred public keys operated by one entity count conservatively as one operator cluster.
+A hundred public keys operated by one participant count as one independence domain, even if presented through multiple OperatorIDs or operator clusters.
 
 ### 11.5 Divergence is not a vote
 
@@ -623,7 +627,7 @@ challenged node ≠ dispute adjudicator
 ### 12.10 Discovery, order book, and immutable matches
 
 A node publishes a signed, expiring `NodeServiceAdvertisement` that binds its
-NodeID, conservative OperatorClusterID, roles, XLMP endpoints,
+NodeID, OperatorID, conservative OperatorClusterID, credential IDs and chain root, roles, XLMP endpoints,
 implementations/checker families, theories and domains, hardware, capacity,
 latency, price, reputation snapshot, eligibility bond, terms root, and
 validity interval. Price or capacity changes create a new content-derived
@@ -639,13 +643,13 @@ protocol actions with different receipts.
 
 ### 12.11 Multidimensional reputation and bonds
 
-Reputation has six separately evidenced dimensions: formal accuracy,
+Reputation has eight separately evidenced dimensions: formal accuracy,
 availability, latency, novelty calibration, challenge quality, and operator
-independence. Policies gate each relevant dimension by minimum score and sample
+independence, storage quality, and integrity. Policies gate each relevant dimension by minimum score and sample
 size. XLMP defines no universal weighted score, so strength in one dimension
 cannot conceal failure in another.
 
-A `NodeBond` binds independently valued collateral to a node, operator cluster,
+A `NodeBond` binds independently valued collateral to a node, OperatorID, operator cluster,
 eligible roles, slashing policy, escrow evidence, and lock period. Bond size
 above the minimum does not increase sortition weight or mathematical authority.
 
@@ -655,7 +659,8 @@ above the minimum does not increase sortition weight or mathematical authority.
 
 ### 13.1 Eligibility and sortition
 
-Active collateral, role capability, checker family, software identity, conflict
+An issuer-verified, non-revoked participant/operator/node credential chain,
+active collateral, role capability, checker family, software identity, conflict
 disclosures, and every required reputation dimension determine eligibility.
 The eligible-set root and a future randomness source are committed before the
 seed is revealed; domain-separated public hash ranking then selects a committee.
@@ -669,13 +674,14 @@ E_n = \mathbf 1[b_n \ge b_{min}]\mathbf 1[q_n=1]
 
 Among eligible nodes, the reference algorithm gives no additional rank weight
 for more bond or a higher reputation score. It deterministically searches the
-publicly ranked candidates for an assignment with unique operator clusters and
+publicly ranked candidates for an assignment with unique VerifiedUserIDs,
+OperatorIDs, and operator clusters and
 the required provider and region diversity, failing closed when none exists.
 
 ### 13.2 Randomness
 
 Selection derives from SortitionID, JobID, policy ID, epoch, role and slot,
-NodeID, the committed eligible-set root, and future manipulation-resistant
+NodeID, OperatorID, VerifiedUserID, the committed eligible-set root, and future manipulation-resistant
 randomness. Each member exposes its rank hash and the committee exposes a
 selection root so any observer can reproduce it exactly. A production
 deployment must authenticate a VRF or equivalent beacon proof rather than use
@@ -1020,7 +1026,8 @@ A token whose value or distributions depend on a researcher's future profits is 
 | Valid proof of misleading theorem | Trusted challenge, raw formal rendering, definition inspection |
 | Solver front-running | Commit-reveal and optional encrypted submission |
 | Node copying | Commit-reveal observations and trace requirements |
-| Sybil verifier cartel | Neutral bond, sortition, operator clustering, implementation/provider/region diversity |
+| Sybil verifier cartel | Verified participant credentials, user/operator/cluster uniqueness, neutral bond, sortition, implementation/provider/region diversity |
+| Credential forgery or revoked control | Content-derived credential chain, issuer/delegation signature adapters, fresh registry-root proof, append-only revocation |
 | Researcher self-verification | Conflict-of-interest exclusion and independent committee |
 | Facilitator capture | Payment/research separation and multiple facilitator paths |
 | Compute-cost manipulation | Signed provider offers, realized reconciliation, benchmark sampling |

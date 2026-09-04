@@ -7,7 +7,13 @@
   "properties": {
     "advertisement_id": { "$ref": "node-network-common.schema.json#/$defs/advertisementId" },
     "node_id": { "$ref": "node-network-common.schema.json#/$defs/nodeId" },
-    "operator_cluster_id": { "$ref": "node-network-common.schema.json#/$defs/operatorId" },
+    "operator_id": { "$ref": "node-network-common.schema.json#/$defs/operatorId" },
+    "operator_cluster_id": { "$ref": "node-network-common.schema.json#/$defs/operatorClusterId" },
+    "user_credential_id": { "$ref": "identity-common.schema.json#/$defs/userCredentialId" },
+    "operator_credential_id": { "$ref": "identity-common.schema.json#/$defs/operatorCredentialId" },
+    "node_credential_id": { "$ref": "identity-common.schema.json#/$defs/nodeCredentialId" },
+    "credential_chain_root": { "$ref": "common.schema.json#/$defs/hash" },
+    "jurisdiction_class": { "type": "string", "minLength": 1 },
     "sequence": { "type": "integer", "minimum": 1 },
     "roles": {
       "type": "array", "minItems": 1, "uniqueItems": true,
@@ -32,11 +38,14 @@
         { "type": "null" }
       ]
     },
+    "delegation_signature": { "$ref": "common.schema.json#/$defs/signature" },
     "signature": { "$ref": "common.schema.json#/$defs/signature" }
   },
   "required": [
-    "advertisement_id", "node_id", "operator_cluster_id", "sequence", "roles",
+    "advertisement_id", "node_id", "operator_id", "operator_cluster_id",
+    "user_credential_id", "operator_credential_id", "node_credential_id",
+    "credential_chain_root", "jurisdiction_class", "sequence", "roles",
     "endpoints", "capabilities", "reputation_snapshot_id", "bond_id", "terms_root",
-    "valid_from", "valid_until", "supersedes", "signature"
+    "valid_from", "valid_until", "supersedes", "delegation_signature", "signature"
   ]
 }

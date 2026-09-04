@@ -40,7 +40,7 @@ conservation. Named external technologies are replaceable adapters:
    Research graph       Node network       Economics
    claims/proofs        PoIR/challenge     credits/revenue
    provenance/rights    discovery/markets  compute/bounties
-   dependencies         sortition/PoIR     dividends
+   dependencies         identity/sortition dividends
          │                  │                  │
          └──────────────────┼──────────────────┘
                             │
@@ -70,8 +70,9 @@ includes `XLMP_CLAIM`, `XLMP_COMMIT`, `XLMP_COMPUTE_QUOTE`,
 `XLMP_FINALIZE`, `XLMP_REVENUE`, `XLMP_REVALIDATE`,
 `XLMP_NODE_ADVERTISE`, `XLMP_DISCOVERY_REQUEST`,
 `XLMP_DISCOVERY_RESPONSE`, `XLMP_SERVICE_ORDER`, `XLMP_SERVICE_MATCH`,
-`XLMP_SORTITION_REQUEST`, `XLMP_COMMITTEE`, `XLMP_REPUTATION`, and
-`XLMP_BOND`.
+`XLMP_SORTITION_REQUEST`, `XLMP_COMMITTEE`, `XLMP_REPUTATION`, `XLMP_BOND`,
+`XLMP_USER_CREDENTIAL`, `XLMP_OPERATOR_CREDENTIAL`, `XLMP_NODE_CREDENTIAL`,
+and `XLMP_CREDENTIAL_REVOCATION`.
 
 Its protocol lifecycle is:
 
@@ -108,13 +109,22 @@ Reputation is deliberately a vector rather than a scalar:
 ```text
 formal accuracy | availability | latency | novelty calibration
 challenge quality | operator independence
+storage quality | integrity
 ```
 
 No dimension compensates for another. Bond and reputation determine
 eligibility only. Committee authority comes from policy-qualified independent
 reproduction, and deterministic sortition uses committed future randomness,
-unique operator clusters, and required provider/region diversity. See
+unique VerifiedUserIDs, OperatorIDs, conservative OperatorClusterIDs, and
+required provider/region diversity. See
 [`spec/019-node-network.md`](spec/019-node-network.md).
+
+No node may contribute to xLemma consensus without a valid, non-revoked
+OperatorCredential ultimately controlled by a verified xLemma participant.
+The public chain is pseudonymous: `VerifiedUserID → OperatorID → NodeID(s)`;
+private legal/uniqueness evidence remains with the credential issuer. Running
+more machines never creates more independence. See
+[`spec/020-identity-credentials.md`](spec/020-identity-credentials.md).
 
 ## The central separation
 
@@ -191,6 +201,7 @@ AND 1 independently implemented checker execution
 AND identical ClaimID, ProofID, ArtifactRoot and DependencyRoot
 AND identical permitted axiom inventory
 AND distinct operator clusters
+AND distinct verified participants and OperatorIDs
 AND no unresolved challenge
 ```
 
@@ -275,11 +286,11 @@ The payment facilitator validates and settles payment payloads. It is intentiona
 
 ```text
 crates/
-  xlemma-core/           IDs, research objects, node-market records, receipts and state types
+  xlemma-core/           IDs, credentials, research objects, node-market records, receipts and state types
   xlemma-xlmp/           XLMP/1 envelopes, messages, lifecycle and adapter traits
   xlemma-crypto/         domain-separated envelopes, signatures and replay protection
   xlemma-consensus/      PoIR, auditable sortition, quorums, commit-reveal and novelty aggregation
-  xlemma-node/           discovery/order book, matching, assignments and receipt workflow
+  xlemma-node/           credential registry, discovery/order book, matching, assignments and receipt workflow
   xlemma-economics/      backed credits, vault conservation, revenue and dividends
   xlemma-compute-curve/  service offers, forward curves and proof-cost quotes
   xlemma-astra/          configurable OpenAI Responses API adapter and proof prompts
@@ -306,13 +317,14 @@ scripts/                  validation, simulation and archiving tools
 ## Start here
 
 1. Read `spec/018-xlmp-wire-protocol.md` for the canonical protocol and adapter boundary.
-2. Read `docs/FULL_DESIGN.md` for the complete integrated architecture.
-3. Read `docs/ARCHITECTURE_DIAGRAMS.md` for system, trust-plane, lifecycle, economic, and deployment diagrams.
-4. Read `docs/TRACEABILITY_MATRIX.md` to locate every requested concept.
-5. Read `docs/RESEARCHER_USER_JOURNEYS.md` for researcher, supporter, node, bounty, reuse, and correction workflows.
-6. Read `spec/000-overview.md` and `spec/003-poir-consensus.md` before modifying consensus.
-7. Review `docs/THREAT_MODEL.md`, `docs/GOVERNANCE_CONSTITUTION.md`, and `docs/LEGAL_BOUNDARIES.md` before deployment.
-8. Use `docs/OPERATOR_RUNBOOK.md`, `docs/TESTING_STRATEGY.md`, and `docs/PRODUCTION_CHECKLIST.md` as implementation gates.
+2. Read `spec/020-identity-credentials.md` for verified-participant, operator, node, privacy, and revocation rules.
+3. Read `docs/FULL_DESIGN.md` for the complete integrated architecture.
+4. Read `docs/ARCHITECTURE_DIAGRAMS.md` for system, trust-plane, lifecycle, economic, and deployment diagrams.
+5. Read `docs/TRACEABILITY_MATRIX.md` to locate every requested concept.
+6. Read `docs/RESEARCHER_USER_JOURNEYS.md` for researcher, supporter, node, bounty, reuse, and correction workflows.
+7. Read `spec/000-overview.md` and `spec/003-poir-consensus.md` before modifying consensus.
+8. Review `docs/THREAT_MODEL.md`, `docs/GOVERNANCE_CONSTITUTION.md`, and `docs/LEGAL_BOUNDARIES.md` before deployment.
+9. Use `docs/OPERATOR_RUNBOOK.md`, `docs/TESTING_STRATEGY.md`, and `docs/PRODUCTION_CHECKLIST.md` as implementation gates.
 9. Run `python3 scripts/validate_repo.py` to validate schemas, OpenAPI references, invariants, the source manifest, and repository completeness.
 10. Verify every source digest with `sha256sum -c MANIFEST.sha256`.
 11. Read `docs/VALIDATION_REPORT.md` for checks executed in this source snapshot and explicit limitations.

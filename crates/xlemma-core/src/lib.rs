@@ -6,6 +6,7 @@
 
 pub mod canonical;
 pub mod id;
+pub mod identity;
 pub mod manifest;
 pub mod money;
 pub mod network;
@@ -15,6 +16,7 @@ pub mod state;
 
 pub use canonical::{canonical_json_bytes, canonical_json_hash, CanonicalizationError};
 pub use id::*;
+pub use identity::*;
 pub use manifest::*;
 pub use money::*;
 pub use network::*;

@@ -28,7 +28,10 @@ aggregate_version
 occurred_at
 observed_at
 actor_id
+verified_user_id when consensus-relevant
+operator_id when consensus-relevant
 operator_cluster_id when applicable
+credential_chain_root when consensus-relevant
 policy_id
 payload_hash
 previous_event_hash
@@ -168,6 +171,7 @@ Training exports must remove secrets, personal data, and restricted artifacts; p
 - use per-job keys and short-lived access grants;
 - keep prompts and proof contents out of ordinary logs;
 - separate identity/compliance data from research graph data;
+- keep legal names, identity documents, addresses, biometrics, and uniqueness evidence with the credential issuer; public telemetry carries only pseudonymous typed IDs and commitments;
 - support private proofs with public commitments and selectively disclosed verification evidence;
 - publish only aggregated compute metrics where exact values leak research direction;
 - permit researchers to choose provider and jurisdiction constraints;

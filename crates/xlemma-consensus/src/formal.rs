@@ -3,11 +3,14 @@ use std::collections::{BTreeMap, BTreeSet};
 use thiserror::Error;
 use xlemma_core::{
     CheckerFamily, FormalStatus, JobId, ObservationReceipt, ObservationVerdict, OperatorClusterId,
+    OperatorId, VerifiedUserId,
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FormalConsensusPolicy {
     pub required_family_counts: BTreeMap<CheckerFamily, usize>,
+    pub minimum_verified_users: usize,
+    pub minimum_operators: usize,
     pub minimum_operator_clusters: usize,
     pub minimum_infrastructure_providers: usize,
     pub minimum_regions: usize,
@@ -30,6 +33,8 @@ pub struct FormalConsensusOutcome {
     pub fail_count: usize,
     pub error_count: usize,
     pub abstain_count: usize,
+    pub verified_users: usize,
+    pub operators: usize,
     pub operator_clusters: usize,
     pub infrastructure_providers: usize,
     pub regions: usize,
@@ -46,11 +51,17 @@ pub enum FormalConsensusError {
     #[error("duplicate node receipt detected")]
     DuplicateNode,
     #[error("an operator cluster supplied more than one formal observation")]
+    DuplicateOperatorCluster,
+    #[error("an OperatorID supplied more than one formal observation")]
     DuplicateOperator,
+    #[error("a VerifiedUserID supplied more than one formal observation")]
+    DuplicateVerifiedUser,
     #[error("missing checker family on a formal observation")]
     MissingCheckerFamily,
     #[error("receipt reveal time precedes its commitment time")]
     InvalidTiming,
+    #[error("receipt contains malformed identity or an empty credential-chain root")]
+    InvalidIdentity,
     #[error("formal consensus policy is invalid: {0}")]
     InvalidPolicy(String),
 }
@@ -69,7 +80,9 @@ pub fn evaluate_formal_consensus(
 
     let job_id = receipts[0].job_id.clone();
     let mut nodes = BTreeSet::new();
-    let mut operators: BTreeSet<OperatorClusterId> = BTreeSet::new();
+    let mut verified_users: BTreeSet<VerifiedUserId> = BTreeSet::new();
+    let mut operators: BTreeSet<OperatorId> = BTreeSet::new();
+    let mut operator_clusters: BTreeSet<OperatorClusterId> = BTreeSet::new();
     let mut providers = BTreeSet::new();
     let mut regions = BTreeSet::new();
     let mut family_counts = BTreeMap::new();
@@ -82,11 +95,28 @@ pub fn evaluate_formal_consensus(
         if receipt.revealed_at < receipt.committed_at {
             return Err(FormalConsensusError::InvalidTiming);
         }
+        if receipt.node_id.validate().is_err()
+            || receipt.verified_user_id.validate().is_err()
+            || receipt.operator_id.validate().is_err()
+            || receipt.operator_cluster_id.validate().is_err()
+            || receipt.user_credential_id.validate().is_err()
+            || receipt.operator_credential_id.validate().is_err()
+            || receipt.node_credential_id.validate().is_err()
+            || receipt.credential_chain_root.trim().is_empty()
+        {
+            return Err(FormalConsensusError::InvalidIdentity);
+        }
         if !nodes.insert(receipt.node_id.clone()) {
             return Err(FormalConsensusError::DuplicateNode);
         }
-        if !operators.insert(receipt.operator_cluster_id.clone()) {
+        if !verified_users.insert(receipt.verified_user_id.clone()) {
+            return Err(FormalConsensusError::DuplicateVerifiedUser);
+        }
+        if !operators.insert(receipt.operator_id.clone()) {
             return Err(FormalConsensusError::DuplicateOperator);
+        }
+        if !operator_clusters.insert(receipt.operator_cluster_id.clone()) {
+            return Err(FormalConsensusError::DuplicateOperatorCluster);
         }
         let _ = providers.insert(receipt.infrastructure_provider.as_str());
         let _ = regions.insert(receipt.region.as_str());
@@ -123,11 +153,25 @@ pub fn evaluate_formal_consensus(
         }
     }
 
-    if operators.len() < policy.minimum_operator_clusters {
+    if verified_users.len() < policy.minimum_verified_users {
+        reasons.push(format!(
+            "requires {} verified participants, found {}",
+            policy.minimum_verified_users,
+            verified_users.len()
+        ));
+    }
+    if operators.len() < policy.minimum_operators {
+        reasons.push(format!(
+            "requires {} independent OperatorIDs, found {}",
+            policy.minimum_operators,
+            operators.len()
+        ));
+    }
+    if operator_clusters.len() < policy.minimum_operator_clusters {
         reasons.push(format!(
             "requires {} independent operator clusters, found {}",
             policy.minimum_operator_clusters,
-            operators.len()
+            operator_clusters.len()
         ));
     }
     if providers.len() < policy.minimum_infrastructure_providers {
@@ -192,7 +236,9 @@ pub fn evaluate_formal_consensus(
         fail_count,
         error_count,
         abstain_count,
-        operator_clusters: operators.len(),
+        verified_users: verified_users.len(),
+        operators: operators.len(),
+        operator_clusters: operator_clusters.len(),
         infrastructure_providers: providers.len(),
         regions: regions.len(),
         checker_families: family_counts,
@@ -201,7 +247,9 @@ pub fn evaluate_formal_consensus(
 }
 
 fn validate_policy(policy: &FormalConsensusPolicy) -> Result<(), FormalConsensusError> {
-    if policy.minimum_operator_clusters == 0
+    if policy.minimum_verified_users == 0
+        || policy.minimum_operators == 0
+        || policy.minimum_operator_clusters == 0
         || policy.minimum_infrastructure_providers == 0
         || policy.minimum_regions == 0
         || policy
@@ -227,7 +275,9 @@ where
 mod tests {
     use super::*;
     use chrono::Utc;
-    use xlemma_core::{NodeId, ReceiptId};
+    use xlemma_core::{
+        NodeCredentialId, NodeId, OperatorCredentialId, ReceiptId, UserCredentialId,
+    };
 
     fn receipt(
         index: usize,
@@ -238,7 +288,18 @@ mod tests {
             receipt_id: ReceiptId::derive(&format!("receipt-{index}")).unwrap(),
             job_id: JobId::derive(&"job").unwrap(),
             node_id: NodeId::derive(&format!("node-{index}")).unwrap(),
+            verified_user_id: VerifiedUserId::derive(&format!("user-{index}")).unwrap(),
+            operator_id: OperatorId::derive(&format!("operator-id-{index}")).unwrap(),
             operator_cluster_id: OperatorClusterId::derive(&format!("operator-{index}")).unwrap(),
+            user_credential_id: UserCredentialId::derive(&format!("user-credential-{index}"))
+                .unwrap(),
+            operator_credential_id: OperatorCredentialId::derive(&format!(
+                "operator-credential-{index}"
+            ))
+            .unwrap(),
+            node_credential_id: NodeCredentialId::derive(&format!("node-credential-{index}"))
+                .unwrap(),
+            credential_chain_root: format!("blake3:credential-chain-{index}"),
             checker_family: Some(family),
             checker_name: format!("checker-{index}"),
             checker_version: "1.0.0".into(),
@@ -271,6 +332,8 @@ mod tests {
                 (CheckerFamily::LeanKernel, 2),
                 (CheckerFamily::Nanoda, 1),
             ]),
+            minimum_verified_users: 3,
+            minimum_operators: 3,
             minimum_operator_clusters: 3,
             minimum_infrastructure_providers: 2,
             minimum_regions: 2,
@@ -319,5 +382,18 @@ mod tests {
         }
         let result = evaluate_formal_consensus(&policy(), &receipts).unwrap();
         assert_eq!(result.status, FormalStatus::Unchecked);
+    }
+
+    #[test]
+    fn multiple_nodes_under_one_verified_user_are_not_independent_observations() {
+        let mut receipts = vec![
+            receipt(1, CheckerFamily::LeanKernel, ObservationVerdict::Pass),
+            receipt(2, CheckerFamily::LeanKernel, ObservationVerdict::Pass),
+        ];
+        receipts[1].verified_user_id = receipts[0].verified_user_id.clone();
+        assert!(matches!(
+            evaluate_formal_consensus(&policy(), &receipts),
+            Err(FormalConsensusError::DuplicateVerifiedUser)
+        ));
     }
 }

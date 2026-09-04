@@ -7,7 +7,8 @@ This runbook applies to reference-service, prover, builder, checker, storage, ag
 - review the protocol invariants and role-conflict matrix;
 - establish a legal operating entity and service terms where required;
 - generate offline root and online receipt-signing keys;
-- register one immutable NodeID per operator identity and role lineage;
+- obtain a pseudonymous UserCredential and V2-or-higher OperatorCredential, then delegate one NodeCredential per node key and role lineage;
+- keep raw legal/uniqueness evidence with the issuer rather than publishing it in protocol records;
 - declare the conservative OperatorClusterID covering common control;
 - publish role, checker/model version, binary/image digest, provider, region, capacity, price, privacy, retention, and contact metadata;
 - bond neutral collateral where policy requires it;
@@ -21,7 +22,7 @@ Never create several nominal NodeIDs to evade operator-diversity requirements.
 
 1. Verify time synchronization and chain head agreement.
 2. Check signing-key availability and rotation status.
-3. Verify current policy registry and revocations.
+3. Verify the current issuer policy, complete credential chain, status-proof freshness, and revocation-registry root.
 4. Recompute checker/model image and binary digests.
 5. Confirm sandbox no-network and resource controls.
 6. Confirm settlement balances, bond state, and vault solvency where applicable.
@@ -38,6 +39,7 @@ Validate:
 
 - assignment signature and randomness reference;
 - role eligibility;
+- exact VerifiedUserID → OperatorID → NodeID delegation, minimum tier, role qualification, and non-revocation proof;
 - no same-job conflict of interest;
 - exact JobID, ClaimID, ArtifactID, TheoryID, and PolicyID;
 - payment/fee terms;
@@ -127,13 +129,13 @@ Settlement assets with transfer fees, rebasing, blacklisting, or unusual callbac
 
 ## 9. Key compromise
 
-1. Activate pre-registered emergency revocation.
+1. Append the exact user, operator, or node credential revocation and distribute the new registry root.
 2. Stop the compromised role at gateways and chain registries.
 3. Rotate to a new operational key signed by the offline root/threshold.
 4. identify every receipt or transaction signed during the exposure interval;
 5. quarantine or revalidate affected objects;
 6. preserve forensic evidence and notify counterparties;
-7. update OperatorClusterID associations rather than pretending a new key is a new operator.
+7. delegate a new NodeCredential while preserving the same VerifiedUserID, OperatorID, and OperatorClusterID rather than pretending a new key is a new operator.
 
 ## 10. Storage failure
 
@@ -169,6 +171,7 @@ Critical alerts:
 - storage threshold failure;
 - unauthorized contract role change;
 - sudden node/operator concentration;
+- expired credential/status proof, issuer failure, revocation-root mismatch, or unexplained user/operator linkage change;
 - anomalous proof pass-rate or cost shift;
 - private content in logs.
 

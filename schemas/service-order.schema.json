@@ -27,7 +27,7 @@
     "reputation_requirements": { "$ref": "node-network-common.schema.json#/$defs/reputationRequirements" },
     "excluded_operator_clusters": {
       "type": "array", "uniqueItems": true,
-      "items": { "$ref": "node-network-common.schema.json#/$defs/operatorId" }
+      "items": { "$ref": "node-network-common.schema.json#/$defs/operatorClusterId" }
     },
     "delivery_deadline": { "type": "string", "format": "date-time" },
     "terms_root": { "$ref": "common.schema.json#/$defs/hash" },

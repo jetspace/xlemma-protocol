@@ -10,19 +10,19 @@ A researcher MUST NOT satisfy independent verification for their own job. A proo
 
 ## Selection
 
-Nodes first satisfy collateral, role, checker-family, active-status, software, conflict, and every required reputation-dimension criterion. A committed future manipulation-resistant random seed then hash-ranks the committed eligible set. The selection and rank hashes MUST be exactly reproducible. Stake above the eligibility threshold MUST NOT create selection weight or formal voting power.
+Nodes first satisfy a valid non-revoked V2-or-higher participant/operator/node credential chain, collateral, role, checker-family, active-status, software, conflict, and every required reputation-dimension criterion. A committed future manipulation-resistant random seed then hash-ranks the committed eligible set. The selection and rank hashes MUST be exactly reproducible. Stake, credential tier above the minimum, and reputation above a gate MUST NOT create selection weight or formal voting power.
 
-Committee selection MUST enforce unique conservative operator clusters and the policy's minimum infrastructure-provider and region diversity. It MUST fail closed if no independent assignment exists. XLIP-019 defines the native sortition request and committee-selection records.
+Committee selection MUST enforce unique VerifiedUserIDs, OperatorIDs, and conservative operator clusters and the policy's minimum infrastructure-provider and region diversity. It MUST fail closed if no independent assignment exists. XLIP-019 defines the native sortition records; XLIP-020 defines identity, delegation, and revocation.
 
 ## Operator clusters
 
-Policies MUST count conservative operator clusters rather than public keys. High assurance SHOULD require multiple operators, checker implementations, providers, and regions.
+Policies MUST count ultimate verified participants and conservative operator clusters rather than public keys. High assurance SHOULD require multiple verified participants, operators, checker implementations, providers, and regions.
 
 ## Discovery and service market
 
 Nodes publish signed, expiring, append-only `NodeServiceAdvertisement` records. Discovery filters explicit service, role, checker family, theory, domain, capacity, latency, price, bond, reputation, and operator-exclusion constraints. A `ServiceMatch` binds an order to one exact advertisement sequence; a later price or capacity update cannot silently rewrite it. See XLIP-019.
 
-Reputation is a six-dimensional evidence vector: formal accuracy, availability, latency, novelty calibration, challenge quality, and independence. No scalar score is authoritative, and strength in one dimension MUST NOT compensate for failure in a required dimension.
+Reputation is an eight-dimensional evidence vector: formal accuracy, availability, latency, novelty calibration, challenge quality, independence, storage quality, and integrity. OperatorID is the accountable primary record and NodeIDs retain machine-specific subrecords. No scalar score is authoritative, and strength in one dimension MUST NOT compensate for failure in a required dimension.
 
 ## Compensation
 

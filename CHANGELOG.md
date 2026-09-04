@@ -3,10 +3,12 @@
 ## Unreleased — XLMP/1 protocol independence
 
 - Added `xlemma-xlmp` as the canonical wire, message, lifecycle, and adapter-contract layer.
-- Added typed, content-derived XLMP MessageIDs and the twenty-one XLMP/1 message discriminators.
+- Added typed, content-derived XLMP MessageIDs and twenty-five XLMP/1 message discriminators, including native user, operator, node credential, and revocation messages.
+- Added the constitutional `VerifiedUserID → OperatorID → NodeID(s)` identity chain, pseudonymous credentials, tiered role qualifications, delegation, fresh non-revocation status, and append-only revocation records.
+- Added an append-only credential registry with a production signature-verifier adapter boundary and exact canonical credential vectors.
 - Added a first-class node-network protocol plane with signed service advertisements, constrained discovery, append-only orders and matches, evidence-backed bonds, and exact advertisement identity vectors.
-- Added six-dimensional node reputation without a composite authority score: formal accuracy, availability, latency, novelty calibration, challenge quality, and independence.
-- Added deterministic committee sortition over a committed eligible set and future randomness, with unique operator clusters, provider/region diversity, and reproducible member-rank and selection roots.
+- Added eight-dimensional operator-primary/node-subrecord reputation without a composite authority score: formal accuracy, availability, latency, novelty calibration, challenge quality, independence, storage quality, and integrity.
+- Added deterministic committee sortition over a credential-bound committed eligible set and future randomness, with unique VerifiedUserIDs, OperatorIDs, operator clusters, provider/region diversity, and reproducible member-rank and selection roots.
 - Elevated verification, challenge, quarantine, compute, credit, vault, revenue, dividend, license, and publication records into provider-neutral core types and schemas.
 - Added canonical HTTP XLMP ingress while retaining REST endpoints as convenience adapters.
 - Recast ASTRA, Lean, x402, chains, transports, and storage providers as replaceable adapters that cannot redefine research consensus.

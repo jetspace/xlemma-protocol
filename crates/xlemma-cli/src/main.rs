@@ -9,11 +9,13 @@ use xlemma_consensus::{
     FormalConsensusPolicy,
 };
 use xlemma_core::{
-    Amount, ArtifactId, ClaimManifest, CommitteeSortitionRequest, EligibleNode,
-    NodeServiceAdvertisement, ObservationReceipt, ProofManifest, TheoryId,
+    Amount, ArtifactId, ClaimManifest, CommitteeSortitionRequest, CredentialRevocation,
+    EligibleNode, NodeCredential, NodeCredentialChain, NodeServiceAdvertisement,
+    ObservationReceipt, OperatorCredential, ProofManifest, TheoryId, UserCredential,
 };
 use xlemma_economics::{compute_savings_dividend, ComputeSavingsEvidence, ComputeSavingsPolicy};
 use xlemma_storage::{build_bundle_manifest, BundleInput};
+use xlemma_xlmp::XlmpEnvelope;
 
 #[derive(Parser)]
 #[command(name = "xlemma", version, about = "xLemma protocol reference CLI")]
@@ -42,6 +44,10 @@ enum Command {
     },
     /// Derive the canonical root of an exact eligible-node JSON array.
     EligibleSetRoot { eligible_nodes: PathBuf },
+    /// Derive the canonical root of a participant/operator/node credential chain.
+    CredentialChainRoot { credential_chain: PathBuf },
+    /// Derive the canonical identifier of an XLMP envelope's message content.
+    MessageId { envelope: PathBuf },
     /// Reproduce an auditable committee selection from committed inputs.
     SelectCommittee {
         request: PathBuf,
@@ -92,6 +98,10 @@ enum IdKind {
     Proof,
     Artifact,
     Advertisement,
+    UserCredential,
+    OperatorCredential,
+    NodeCredential,
+    CredentialRevocation,
 }
 
 fn main() -> Result<()> {
@@ -111,6 +121,20 @@ fn main() -> Result<()> {
                 IdKind::Advertisement => serde_json::from_value::<NodeServiceAdvertisement>(value)?
                     .derive_advertisement_id()?
                     .to_string(),
+                IdKind::UserCredential => serde_json::from_value::<UserCredential>(value)?
+                    .derive_credential_id()?
+                    .to_string(),
+                IdKind::OperatorCredential => serde_json::from_value::<OperatorCredential>(value)?
+                    .derive_credential_id()?
+                    .to_string(),
+                IdKind::NodeCredential => serde_json::from_value::<NodeCredential>(value)?
+                    .derive_credential_id()?
+                    .to_string(),
+                IdKind::CredentialRevocation => {
+                    serde_json::from_value::<CredentialRevocation>(value)?
+                        .derive_revocation_id()?
+                        .to_string()
+                }
             };
             println!("{id}");
         }
@@ -128,6 +152,14 @@ fn main() -> Result<()> {
         Command::EligibleSetRoot { eligible_nodes } => {
             let nodes: Vec<EligibleNode> = read_json(eligible_nodes)?;
             println!("{}", eligible_set_root(&nodes)?);
+        }
+        Command::CredentialChainRoot { credential_chain } => {
+            let chain: NodeCredentialChain = read_json(credential_chain)?;
+            println!("{}", chain.derive_chain_root()?);
+        }
+        Command::MessageId { envelope } => {
+            let envelope: XlmpEnvelope = read_json(envelope)?;
+            println!("{}", envelope.expected_message_id()?);
         }
         Command::SelectCommittee {
             request,

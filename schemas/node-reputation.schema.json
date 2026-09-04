@@ -6,8 +6,9 @@
   "additionalProperties": false,
   "properties": {
     "reputation_id": { "$ref": "node-network-common.schema.json#/$defs/reputationId" },
+    "operator_id": { "$ref": "node-network-common.schema.json#/$defs/operatorId" },
     "node_id": { "$ref": "node-network-common.schema.json#/$defs/nodeId" },
-    "operator_cluster_id": { "$ref": "node-network-common.schema.json#/$defs/operatorId" },
+    "operator_cluster_id": { "$ref": "node-network-common.schema.json#/$defs/operatorClusterId" },
     "vector": {
       "type": "object",
       "additionalProperties": false,
@@ -17,11 +18,13 @@
         "latency": { "$ref": "node-network-common.schema.json#/$defs/reputationMetric" },
         "novelty_calibration": { "$ref": "node-network-common.schema.json#/$defs/reputationMetric" },
         "challenge_quality": { "$ref": "node-network-common.schema.json#/$defs/reputationMetric" },
-        "independence": { "$ref": "node-network-common.schema.json#/$defs/reputationMetric" }
+        "independence": { "$ref": "node-network-common.schema.json#/$defs/reputationMetric" },
+        "storage_quality": { "$ref": "node-network-common.schema.json#/$defs/reputationMetric" },
+        "integrity": { "$ref": "node-network-common.schema.json#/$defs/reputationMetric" }
       },
       "required": [
         "formal_accuracy", "availability", "latency", "novelty_calibration",
-        "challenge_quality", "independence"
+        "challenge_quality", "independence", "storage_quality", "integrity"
       ]
     },
     "policy_id": { "$ref": "node-network-common.schema.json#/$defs/policyId" },
@@ -38,7 +41,7 @@
     "assessor_signature": { "$ref": "common.schema.json#/$defs/signature" }
   },
   "required": [
-    "reputation_id", "node_id", "operator_cluster_id", "vector", "policy_id",
+    "reputation_id", "operator_id", "node_id", "operator_cluster_id", "vector", "policy_id",
     "period_start", "period_end", "evidence_root", "assessed_at", "supersedes",
     "assessor_signature"
   ]

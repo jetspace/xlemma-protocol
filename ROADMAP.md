@@ -10,9 +10,10 @@
 ## Phase 1 — independent verification network
 
 - Harden the XLMP/1 reference sortition into a production beacon/VRF integration and distributed eligible-set registry; deterministic selection and proof reproduction are implemented.
+- Integrate audited credential issuers, issuer/delegation key resolution, privacy-preserving uniqueness proofs, and a distributed revocation accumulator; structural credential records and the verifier adapter boundary are implemented.
 - Harden sandbox isolation with no-network execution, seccomp, namespaces, immutable images and resource controls.
 - Integrate Lean `comparator`, official kernel replay and independent checkers.
-- Deploy PoIR commit-reveal committees with operator-cluster controls.
+- Deploy PoIR commit-reveal committees with verified-user, OperatorID, and operator-cluster controls.
 - Add watcher, dispute, quarantine and revalidation services.
 
 ## Phase 2 — researcher credits and x402
@@ -46,7 +47,7 @@
 
 - Independent cryptographic, smart-contract and sandbox audits.
 - Deterministic Lean exporter and cross-checker test corpus.
-- Sybil- and operator-cluster resistance.
+- Audited participant uniqueness, credential privacy/revocation, and conservative operator-cluster resistance.
 - Economic conservation and insolvency proofs.
 - Privacy, sanctions, identity, tax and jurisdictional review.
 - Incident response, key rotation, disaster recovery and monitoring.

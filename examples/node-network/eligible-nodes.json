@@ -1,65 +1,386 @@
 [
   {
-    "node_id": "xlnode:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "operator_cluster_id": "xloperator:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "active": true,
+    "active_bond": {
+      "asset": "USDC",
+      "decimals": 6,
+      "units": 1000000000
+    },
     "advertisement_id": "xladv:blake3:1111111111111111111111111111111111111111111111111111111111111111",
-    "roles": ["official_kernel_checker"],
-    "checker_families": ["lean_kernel"],
     "bond_id": "xlbond:blake3:4444444444444444444444444444444444444444444444444444444444444444",
-    "active_bond": { "units": 1000000000, "asset": "USDC", "decimals": 6 },
-    "reputation_snapshot_id": "xlreputation:blake3:7777777777777777777777777777777777777777777777777777777777777777",
-    "reputation": {
-      "formal_accuracy": { "score_bps": 9900, "sample_size": 250, "evidence_root": "blake3:a-formal-evidence-v1" },
-      "availability": { "score_bps": 9800, "sample_size": 500, "evidence_root": "blake3:a-availability-evidence-v1" },
-      "latency": { "score_bps": 9500, "sample_size": 500, "evidence_root": "blake3:a-latency-evidence-v1" },
-      "novelty_calibration": { "score_bps": 0, "sample_size": 0, "evidence_root": "blake3:a-novelty-not-applicable-v1" },
-      "challenge_quality": { "score_bps": 9000, "sample_size": 20, "evidence_root": "blake3:a-challenge-evidence-v1" },
-      "independence": { "score_bps": 9900, "sample_size": 20, "evidence_root": "blake3:a-independence-evidence-v1" }
+    "checker_families": [
+      "lean_kernel"
+    ],
+    "credential_chain": {
+      "node": {
+        "authorized_roles": [
+          "official_kernel_checker"
+        ],
+        "credential_id": "xlnodecred:blake3:c94fe9ad1621454c06fc70f3779479fc04ece86ec3bcf9d0d27f8996e1f2b95e",
+        "evidence_root": "blake3:a-node-evidence-root",
+        "expires_at": "2027-09-01T00:00:00Z",
+        "hardware_attestation_root": null,
+        "issued_at": "2026-09-01T00:00:00Z",
+        "node_id": "xlnode:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "node_public_key": "did:key:checker-node-a",
+        "operator_cluster_id": "xloperator:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "operator_credential_id": "xloperatorcred:blake3:33a8631e123761e53abb02af549f534eb57fbb948013d3fd437d8e425c38dc09",
+        "operator_delegation_signature": "example-node-delegation-signature-a",
+        "operator_id": "xlop:blake3:e7e8b7222bc5e3d3781ab251f5cf130fd879d9478162b65d012007deeb7c2e3b"
+      },
+      "operator": {
+        "authorized_roles": [
+          "official_kernel_checker"
+        ],
+        "credential_id": "xloperatorcred:blake3:33a8631e123761e53abb02af549f534eb57fbb948013d3fd437d8e425c38dc09",
+        "evidence_root": "blake3:a-operator-evidence-root",
+        "expires_at": "2027-09-01T00:00:00Z",
+        "holder_delegation_signature": "example-holder-delegation-signature-a",
+        "issued_at": "2026-09-01T00:00:00Z",
+        "issuer_signature": "example-operator-issuer-signature-a",
+        "jurisdiction_class": "privacy-preserving-verified",
+        "operator_cluster_id": "xloperator:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "operator_id": "xlop:blake3:e7e8b7222bc5e3d3781ab251f5cf130fd879d9478162b65d012007deeb7c2e3b",
+        "qualifications": [
+          "lean-kernel"
+        ],
+        "user_credential_id": "xlusercred:blake3:b967ca8a33c289ae8db77ebacf2634962353fe49edea1fe9e17b1e67aa4a2ed9",
+        "verified_user_id": "xluser:blake3:602890a8caaf8bd42a1490bda7d57f6355e52e49a9a0d92bb40656f6ab7c1dce"
+      },
+      "status": {
+        "checked_at": "2026-09-03T12:00:00Z",
+        "issuer_signature": "example-status-issuer-signature-a",
+        "node_credential_id": "xlnodecred:blake3:c94fe9ad1621454c06fc70f3779479fc04ece86ec3bcf9d0d27f8996e1f2b95e",
+        "non_revocation_proof": "example-non-revocation-proof-a",
+        "operator_credential_id": "xloperatorcred:blake3:33a8631e123761e53abb02af549f534eb57fbb948013d3fd437d8e425c38dc09",
+        "revocation_registry_root": "blake3:69b786ed259d73562ee7d087005f27cb05487086af2a747ec222dd4afebc4330",
+        "user_credential_id": "xlusercred:blake3:b967ca8a33c289ae8db77ebacf2634962353fe49edea1fe9e17b1e67aa4a2ed9",
+        "valid_until": "2026-09-03T13:00:00Z"
+      },
+      "user": {
+        "credential_id": "xlusercred:blake3:b967ca8a33c289ae8db77ebacf2634962353fe49edea1fe9e17b1e67aa4a2ed9",
+        "disclosure_policy": "pseudonymous-verified-v1",
+        "evidence_root": "blake3:a-private-user-evidence-root",
+        "expires_at": "2027-09-01T00:00:00Z",
+        "issued_at": "2026-09-01T00:00:00Z",
+        "issuer": "did:web:issuer.xlemma.example",
+        "issuer_signature": "example-user-issuer-signature-a",
+        "public_subject": "did:key:verified-user-a",
+        "qualifications": [
+          "lean-kernel"
+        ],
+        "researcher_id": null,
+        "tier": "v2_verified_operator",
+        "uniqueness_commitment": "blake3:a-private-uniqueness-commitment",
+        "verified_user_id": "xluser:blake3:602890a8caaf8bd42a1490bda7d57f6355e52e49a9a0d92bb40656f6ab7c1dce"
+      }
     },
     "infrastructure_provider": "provider-a",
+    "node_id": "xlnode:blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "operator_cluster_id": "xloperator:blake3:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "operator_id": "xlop:blake3:e7e8b7222bc5e3d3781ab251f5cf130fd879d9478162b65d012007deeb7c2e3b",
     "region": "us-east",
-    "active": true
+    "reputation": {
+      "availability": {
+        "evidence_root": "blake3:a-availability-evidence-v1",
+        "sample_size": 500,
+        "score_bps": 9800
+      },
+      "challenge_quality": {
+        "evidence_root": "blake3:a-challenge-evidence-v1",
+        "sample_size": 20,
+        "score_bps": 9000
+      },
+      "formal_accuracy": {
+        "evidence_root": "blake3:a-formal-evidence-v1",
+        "sample_size": 250,
+        "score_bps": 9900
+      },
+      "independence": {
+        "evidence_root": "blake3:a-independence-evidence-v1",
+        "sample_size": 20,
+        "score_bps": 9800
+      },
+      "integrity": {
+        "evidence_root": "blake3:a-integrity-evidence-v1",
+        "sample_size": 20,
+        "score_bps": 9900
+      },
+      "latency": {
+        "evidence_root": "blake3:a-latency-evidence-v1",
+        "sample_size": 500,
+        "score_bps": 9500
+      },
+      "novelty_calibration": {
+        "evidence_root": "blake3:a-novelty-not-applicable-evidence-v1",
+        "sample_size": 0,
+        "score_bps": 0
+      },
+      "storage_quality": {
+        "evidence_root": "blake3:a-storage-evidence-v1",
+        "sample_size": 20,
+        "score_bps": 9500
+      }
+    },
+    "reputation_snapshot_id": "xlreputation:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+    "roles": [
+      "official_kernel_checker"
+    ]
   },
   {
-    "node_id": "xlnode:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "operator_cluster_id": "xloperator:blake3:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "active": true,
+    "active_bond": {
+      "asset": "USDC",
+      "decimals": 6,
+      "units": 1000000000
+    },
     "advertisement_id": "xladv:blake3:2222222222222222222222222222222222222222222222222222222222222222",
-    "roles": ["official_kernel_checker"],
-    "checker_families": ["lean_kernel"],
     "bond_id": "xlbond:blake3:5555555555555555555555555555555555555555555555555555555555555555",
-    "active_bond": { "units": 1000000000, "asset": "USDC", "decimals": 6 },
-    "reputation_snapshot_id": "xlreputation:blake3:8888888888888888888888888888888888888888888888888888888888888888",
-    "reputation": {
-      "formal_accuracy": { "score_bps": 9850, "sample_size": 220, "evidence_root": "blake3:b-formal-evidence-v1" },
-      "availability": { "score_bps": 9750, "sample_size": 450, "evidence_root": "blake3:b-availability-evidence-v1" },
-      "latency": { "score_bps": 9600, "sample_size": 450, "evidence_root": "blake3:b-latency-evidence-v1" },
-      "novelty_calibration": { "score_bps": 0, "sample_size": 0, "evidence_root": "blake3:b-novelty-not-applicable-v1" },
-      "challenge_quality": { "score_bps": 9100, "sample_size": 18, "evidence_root": "blake3:b-challenge-evidence-v1" },
-      "independence": { "score_bps": 9850, "sample_size": 18, "evidence_root": "blake3:b-independence-evidence-v1" }
+    "checker_families": [
+      "lean_kernel"
+    ],
+    "credential_chain": {
+      "node": {
+        "authorized_roles": [
+          "official_kernel_checker"
+        ],
+        "credential_id": "xlnodecred:blake3:1a7f3a173a39ab43ef3d92814457294dd0c00c1497da583ae893a3d30abd7c2b",
+        "evidence_root": "blake3:b-node-evidence-root",
+        "expires_at": "2027-09-01T00:00:00Z",
+        "hardware_attestation_root": null,
+        "issued_at": "2026-09-01T00:00:00Z",
+        "node_id": "xlnode:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "node_public_key": "did:key:checker-node-b",
+        "operator_cluster_id": "xloperator:blake3:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "operator_credential_id": "xloperatorcred:blake3:3f9d5f0b5b62a5ca692231e94b48ac67ffed0f29ffd5eaa2dc97ebf6c78e03b8",
+        "operator_delegation_signature": "example-node-delegation-signature-b",
+        "operator_id": "xlop:blake3:7df09f28a272c1a15e4572753e1f42b535497b1d3fcb44b2acd45ff29e6375f3"
+      },
+      "operator": {
+        "authorized_roles": [
+          "official_kernel_checker"
+        ],
+        "credential_id": "xloperatorcred:blake3:3f9d5f0b5b62a5ca692231e94b48ac67ffed0f29ffd5eaa2dc97ebf6c78e03b8",
+        "evidence_root": "blake3:b-operator-evidence-root",
+        "expires_at": "2027-09-01T00:00:00Z",
+        "holder_delegation_signature": "example-holder-delegation-signature-b",
+        "issued_at": "2026-09-01T00:00:00Z",
+        "issuer_signature": "example-operator-issuer-signature-b",
+        "jurisdiction_class": "privacy-preserving-verified",
+        "operator_cluster_id": "xloperator:blake3:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "operator_id": "xlop:blake3:7df09f28a272c1a15e4572753e1f42b535497b1d3fcb44b2acd45ff29e6375f3",
+        "qualifications": [
+          "lean-kernel"
+        ],
+        "user_credential_id": "xlusercred:blake3:14b64d97333a31357cfa09bd94def4eb7a8036f3e8213bc5bb42e6dafad13516",
+        "verified_user_id": "xluser:blake3:9621602b583cb460d0cadc5ec7d14e05358b60139f298d2a01efa6eb37935d9f"
+      },
+      "status": {
+        "checked_at": "2026-09-03T12:00:00Z",
+        "issuer_signature": "example-status-issuer-signature-b",
+        "node_credential_id": "xlnodecred:blake3:1a7f3a173a39ab43ef3d92814457294dd0c00c1497da583ae893a3d30abd7c2b",
+        "non_revocation_proof": "example-non-revocation-proof-b",
+        "operator_credential_id": "xloperatorcred:blake3:3f9d5f0b5b62a5ca692231e94b48ac67ffed0f29ffd5eaa2dc97ebf6c78e03b8",
+        "revocation_registry_root": "blake3:69b786ed259d73562ee7d087005f27cb05487086af2a747ec222dd4afebc4330",
+        "user_credential_id": "xlusercred:blake3:14b64d97333a31357cfa09bd94def4eb7a8036f3e8213bc5bb42e6dafad13516",
+        "valid_until": "2026-09-03T13:00:00Z"
+      },
+      "user": {
+        "credential_id": "xlusercred:blake3:14b64d97333a31357cfa09bd94def4eb7a8036f3e8213bc5bb42e6dafad13516",
+        "disclosure_policy": "pseudonymous-verified-v1",
+        "evidence_root": "blake3:b-private-user-evidence-root",
+        "expires_at": "2027-09-01T00:00:00Z",
+        "issued_at": "2026-09-01T00:00:00Z",
+        "issuer": "did:web:issuer.xlemma.example",
+        "issuer_signature": "example-user-issuer-signature-b",
+        "public_subject": "did:key:verified-user-b",
+        "qualifications": [
+          "lean-kernel"
+        ],
+        "researcher_id": null,
+        "tier": "v2_verified_operator",
+        "uniqueness_commitment": "blake3:b-private-uniqueness-commitment",
+        "verified_user_id": "xluser:blake3:9621602b583cb460d0cadc5ec7d14e05358b60139f298d2a01efa6eb37935d9f"
+      }
     },
     "infrastructure_provider": "provider-b",
+    "node_id": "xlnode:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "operator_cluster_id": "xloperator:blake3:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "operator_id": "xlop:blake3:7df09f28a272c1a15e4572753e1f42b535497b1d3fcb44b2acd45ff29e6375f3",
     "region": "eu-west",
-    "active": true
+    "reputation": {
+      "availability": {
+        "evidence_root": "blake3:b-availability-evidence-v1",
+        "sample_size": 500,
+        "score_bps": 9750
+      },
+      "challenge_quality": {
+        "evidence_root": "blake3:b-challenge-evidence-v1",
+        "sample_size": 20,
+        "score_bps": 9000
+      },
+      "formal_accuracy": {
+        "evidence_root": "blake3:b-formal-evidence-v1",
+        "sample_size": 250,
+        "score_bps": 9850
+      },
+      "independence": {
+        "evidence_root": "blake3:b-independence-evidence-v1",
+        "sample_size": 20,
+        "score_bps": 9800
+      },
+      "integrity": {
+        "evidence_root": "blake3:b-integrity-evidence-v1",
+        "sample_size": 20,
+        "score_bps": 9900
+      },
+      "latency": {
+        "evidence_root": "blake3:b-latency-evidence-v1",
+        "sample_size": 500,
+        "score_bps": 9600
+      },
+      "novelty_calibration": {
+        "evidence_root": "blake3:b-novelty-not-applicable-evidence-v1",
+        "sample_size": 0,
+        "score_bps": 0
+      },
+      "storage_quality": {
+        "evidence_root": "blake3:b-storage-evidence-v1",
+        "sample_size": 20,
+        "score_bps": 9500
+      }
+    },
+    "reputation_snapshot_id": "xlreputation:blake3:8888888888888888888888888888888888888888888888888888888888888888",
+    "roles": [
+      "official_kernel_checker"
+    ]
   },
   {
-    "node_id": "xlnode:blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-    "operator_cluster_id": "xloperator:blake3:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "active": true,
+    "active_bond": {
+      "asset": "USDC",
+      "decimals": 6,
+      "units": 1000000000
+    },
     "advertisement_id": "xladv:blake3:3333333333333333333333333333333333333333333333333333333333333333",
-    "roles": ["official_kernel_checker"],
-    "checker_families": ["lean_kernel"],
     "bond_id": "xlbond:blake3:6666666666666666666666666666666666666666666666666666666666666666",
-    "active_bond": { "units": 1000000000, "asset": "USDC", "decimals": 6 },
-    "reputation_snapshot_id": "xlreputation:blake3:9999999999999999999999999999999999999999999999999999999999999999",
-    "reputation": {
-      "formal_accuracy": { "score_bps": 9800, "sample_size": 200, "evidence_root": "blake3:c-formal-evidence-v1" },
-      "availability": { "score_bps": 9700, "sample_size": 400, "evidence_root": "blake3:c-availability-evidence-v1" },
-      "latency": { "score_bps": 9400, "sample_size": 400, "evidence_root": "blake3:c-latency-evidence-v1" },
-      "novelty_calibration": { "score_bps": 0, "sample_size": 0, "evidence_root": "blake3:c-novelty-not-applicable-v1" },
-      "challenge_quality": { "score_bps": 9200, "sample_size": 16, "evidence_root": "blake3:c-challenge-evidence-v1" },
-      "independence": { "score_bps": 9800, "sample_size": 16, "evidence_root": "blake3:c-independence-evidence-v1" }
+    "checker_families": [
+      "lean_kernel"
+    ],
+    "credential_chain": {
+      "node": {
+        "authorized_roles": [
+          "official_kernel_checker"
+        ],
+        "credential_id": "xlnodecred:blake3:6a709baec5d6899cbfce48d86d86234545be8ab8121cf9bbd1bc5c438effc58e",
+        "evidence_root": "blake3:c-node-evidence-root",
+        "expires_at": "2027-09-01T00:00:00Z",
+        "hardware_attestation_root": null,
+        "issued_at": "2026-09-01T00:00:00Z",
+        "node_id": "xlnode:blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "node_public_key": "did:key:checker-node-c",
+        "operator_cluster_id": "xloperator:blake3:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "operator_credential_id": "xloperatorcred:blake3:050a2d1b9f30a3e50f08a862bbd50ec235dc01d8e6e586639a0e54998c9dc19b",
+        "operator_delegation_signature": "example-node-delegation-signature-c",
+        "operator_id": "xlop:blake3:b5ed8b962bfa49a6e454c179509a982cb65d22ab0ee1291ada849cdd5d90f093"
+      },
+      "operator": {
+        "authorized_roles": [
+          "official_kernel_checker"
+        ],
+        "credential_id": "xloperatorcred:blake3:050a2d1b9f30a3e50f08a862bbd50ec235dc01d8e6e586639a0e54998c9dc19b",
+        "evidence_root": "blake3:c-operator-evidence-root",
+        "expires_at": "2027-09-01T00:00:00Z",
+        "holder_delegation_signature": "example-holder-delegation-signature-c",
+        "issued_at": "2026-09-01T00:00:00Z",
+        "issuer_signature": "example-operator-issuer-signature-c",
+        "jurisdiction_class": "privacy-preserving-verified",
+        "operator_cluster_id": "xloperator:blake3:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "operator_id": "xlop:blake3:b5ed8b962bfa49a6e454c179509a982cb65d22ab0ee1291ada849cdd5d90f093",
+        "qualifications": [
+          "lean-kernel"
+        ],
+        "user_credential_id": "xlusercred:blake3:8851c2841377545ee345490ec197f8049966bf9dccffe624bf7cb70b453d3847",
+        "verified_user_id": "xluser:blake3:0ded1df301352682c7d8ced02a3ed89523f87007c5fb5622aaf3c3fa2d0f0d3e"
+      },
+      "status": {
+        "checked_at": "2026-09-03T12:00:00Z",
+        "issuer_signature": "example-status-issuer-signature-c",
+        "node_credential_id": "xlnodecred:blake3:6a709baec5d6899cbfce48d86d86234545be8ab8121cf9bbd1bc5c438effc58e",
+        "non_revocation_proof": "example-non-revocation-proof-c",
+        "operator_credential_id": "xloperatorcred:blake3:050a2d1b9f30a3e50f08a862bbd50ec235dc01d8e6e586639a0e54998c9dc19b",
+        "revocation_registry_root": "blake3:69b786ed259d73562ee7d087005f27cb05487086af2a747ec222dd4afebc4330",
+        "user_credential_id": "xlusercred:blake3:8851c2841377545ee345490ec197f8049966bf9dccffe624bf7cb70b453d3847",
+        "valid_until": "2026-09-03T13:00:00Z"
+      },
+      "user": {
+        "credential_id": "xlusercred:blake3:8851c2841377545ee345490ec197f8049966bf9dccffe624bf7cb70b453d3847",
+        "disclosure_policy": "pseudonymous-verified-v1",
+        "evidence_root": "blake3:c-private-user-evidence-root",
+        "expires_at": "2027-09-01T00:00:00Z",
+        "issued_at": "2026-09-01T00:00:00Z",
+        "issuer": "did:web:issuer.xlemma.example",
+        "issuer_signature": "example-user-issuer-signature-c",
+        "public_subject": "did:key:verified-user-c",
+        "qualifications": [
+          "lean-kernel"
+        ],
+        "researcher_id": null,
+        "tier": "v2_verified_operator",
+        "uniqueness_commitment": "blake3:c-private-uniqueness-commitment",
+        "verified_user_id": "xluser:blake3:0ded1df301352682c7d8ced02a3ed89523f87007c5fb5622aaf3c3fa2d0f0d3e"
+      }
     },
     "infrastructure_provider": "provider-c",
+    "node_id": "xlnode:blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "operator_cluster_id": "xloperator:blake3:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "operator_id": "xlop:blake3:b5ed8b962bfa49a6e454c179509a982cb65d22ab0ee1291ada849cdd5d90f093",
     "region": "ap-southeast",
-    "active": true
+    "reputation": {
+      "availability": {
+        "evidence_root": "blake3:c-availability-evidence-v1",
+        "sample_size": 500,
+        "score_bps": 9700
+      },
+      "challenge_quality": {
+        "evidence_root": "blake3:c-challenge-evidence-v1",
+        "sample_size": 20,
+        "score_bps": 9000
+      },
+      "formal_accuracy": {
+        "evidence_root": "blake3:c-formal-evidence-v1",
+        "sample_size": 250,
+        "score_bps": 9800
+      },
+      "independence": {
+        "evidence_root": "blake3:c-independence-evidence-v1",
+        "sample_size": 20,
+        "score_bps": 9800
+      },
+      "integrity": {
+        "evidence_root": "blake3:c-integrity-evidence-v1",
+        "sample_size": 20,
+        "score_bps": 9900
+      },
+      "latency": {
+        "evidence_root": "blake3:c-latency-evidence-v1",
+        "sample_size": 500,
+        "score_bps": 9400
+      },
+      "novelty_calibration": {
+        "evidence_root": "blake3:c-novelty-not-applicable-evidence-v1",
+        "sample_size": 0,
+        "score_bps": 0
+      },
+      "storage_quality": {
+        "evidence_root": "blake3:c-storage-evidence-v1",
+        "sample_size": 20,
+        "score_bps": 9500
+      }
+    },
+    "reputation_snapshot_id": "xlreputation:blake3:9999999999999999999999999999999999999999999999999999999999999999",
+    "roles": [
+      "official_kernel_checker"
+    ]
   }
 ]

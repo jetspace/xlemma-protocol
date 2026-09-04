@@ -2,7 +2,11 @@
 
 ## Observation
 
-A PoIR observation MUST bind job, node, operator cluster, checker family, artifact root, environment root, dependency root, axiom root, observation root, verdict, timestamps, and signature.
+A PoIR observation MUST bind job, NodeID, VerifiedUserID, OperatorID,
+OperatorClusterID, UserCredentialID, OperatorCredentialID, NodeCredentialID,
+credential-chain root, checker family, artifact root, environment root,
+dependency root, axiom root, observation root, verdict, timestamps, and
+signature. The chain MUST have passed XLIP-020 admission before assignment.
 
 ## Commit-reveal
 
@@ -10,7 +14,9 @@ Nodes SHOULD commit `H(JobID || Verdict || ObservationRoot || Salt)` before reve
 
 ## Generalized quorum
 
-A policy MUST express required checker families and minimum independent operator clusters. High-assurance policies SHOULD additionally require infrastructure-provider and region diversity.
+A policy MUST express required checker families and minimum independent
+VerifiedUserIDs, OperatorIDs, and operator clusters. High-assurance policies
+SHOULD additionally require infrastructure-provider and region diversity.
 
 ## Exact comparison
 

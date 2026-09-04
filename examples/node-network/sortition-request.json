@@ -3,7 +3,7 @@
   "job_id": "xljob:blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "policy_id": "xlpolicy:blake3:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
   "epoch": 7,
-  "eligible_set_root": "blake3:d75663b4ced4e614322d570fe6e9c660a6e2dd442ea552a9fa658d0c5f469ad7",
+  "eligible_set_root": "blake3:2f959e62da1f17a6c36698cb7fa7fb011bc60e4988f0c4873d3ad566f9c7d518",
   "randomness": {
     "source": "drand",
     "round": 123,
@@ -21,9 +21,14 @@
         "latency": { "minimum_score_bps": 9000, "minimum_sample_size": 100 },
         "novelty_calibration": null,
         "challenge_quality": { "minimum_score_bps": 8500, "minimum_sample_size": 10 },
-        "independence": { "minimum_score_bps": 9500, "minimum_sample_size": 10 }
+        "independence": { "minimum_score_bps": 9500, "minimum_sample_size": 10 },
+        "storage_quality": null,
+        "integrity": { "minimum_score_bps": 9500, "minimum_sample_size": 10 }
       },
-      "required_checker_families": ["lean_kernel"]
+      "required_checker_families": ["lean_kernel"],
+      "minimum_credential_tier": "v2_verified_operator",
+      "maximum_status_age_seconds": 3600,
+      "required_qualifications": ["lean-kernel"]
     }
   ],
   "minimum_distinct_providers": 2,

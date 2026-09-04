@@ -14,6 +14,12 @@ Every major concept requested or developed in the design is mapped to its primar
 | Multidimensional node reputation | same | `NodeReputationVector::meets`, reputation schema |
 | Evidence-backed node bonds | same | `NodeBond`, `NodeBondRegistry.sol` |
 | Auditable committee sortition | same | `select_committee`, `verify_committee_selection`, eligible-set/request/selection schemas and vectors |
+| Verified participant → operator → node identity | `spec/020-identity-credentials.md` | `xlemma-core::identity`, credential schemas and vectors |
+| Append-only credentials and revocation | same | `xlemma-node::CredentialRegistry`, `CredentialProofVerifier` |
+| Pseudonymous public identity / issuer-private evidence | same, `spec/016-privacy.md` | `UserCredential`, absence of raw legal-identity fields |
+| User/operator/cluster committee independence | same, `spec/019-node-network.md` | deterministic sortition uniqueness sets |
+| Credential tiers and role qualifications | same | `CredentialTier`, `NodeCredentialChain::validate_for` |
+| Operator-primary reputation with node subrecords | same | `NodeReputationSnapshot.operator_id`, eight-dimensional vector |
 | Protocol lifecycle | `spec/018-xlmp-wire-protocol.md`, `spec/014-api-protocol.md` | `ResearchLifecycleState`, `ensure_lifecycle_transition` |
 | Research prover neutrality | `spec/007-astra-lean.md` | `ResearchProver`; ASTRA reference adapter |
 | Formal-system neutrality | same | `VerifierAdapter`; Lean default adapter |
@@ -59,6 +65,7 @@ Every major concept requested or developed in the design is mapped to its primar
 | LaTeX macros | `docs/LEAN_LATEX_GUIDE.md` | `latex/xlemma.sty` |
 | PresentationID separation | `spec/001-identifiers.md` | presentation metadata and docs |
 | Proof of Independent Reproduction | `spec/003-poir-consensus.md` | `xlemma-consensus` |
+| PoIR observation credential binding | `spec/003-poir-consensus.md`, `spec/020-identity-credentials.md` | `ObservationReceipt`, assignment checks, commit/reveal equality |
 | Evidence consensus, not truth vote | same | `evaluate_formal_consensus` |
 | Five consensus planes | same | `ConsensusDomain` |
 | Generalized role quorum | same | `FormalConsensusPolicy` |

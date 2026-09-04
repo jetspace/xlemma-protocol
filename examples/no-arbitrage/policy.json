@@ -4,6 +4,8 @@
     "nanoda": 1,
     "other_independent": 0
   },
+  "minimum_verified_users": 3,
+  "minimum_operators": 3,
   "minimum_operator_clusters": 3,
   "minimum_infrastructure_providers": 2,
   "minimum_regions": 2,

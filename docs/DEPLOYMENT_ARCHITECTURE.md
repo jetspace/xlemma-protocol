@@ -9,6 +9,7 @@ Launch on an established settlement chain rather than building a new L1. Keep fo
 XLMP/1 is the service-to-service contract. Core services and adapters:
 
 - XLMP message router with HTTP, libp2p, or WebSocket transport adapters;
+- append-only participant/operator/node credential and revocation registry with issuer/key-resolution adapters;
 - optional x402 and other payment adapters;
 - researcher identity/manifest service;
 - quote and compute-curve service;
@@ -35,6 +36,15 @@ Terminates TLS, applies DDoS controls, request size limits, rate limits, authent
 ### Control plane
 
 Stores job metadata, policy selection, committee assignments, deadlines, and idempotency state. Use durable queues and transactional outboxes. The control plane cannot fabricate checker receipts because node signatures and artifact roots are independently verified.
+
+### Identity plane
+
+Publishes pseudonymous UserCredential, OperatorCredential, NodeCredential, and
+revocation records. Issuer adapters verify private identity/uniqueness evidence
+off protocol; key-resolution adapters authenticate issuer and delegation
+signatures. The public service retains only commitments, coarse qualifications,
+validity windows, and short-lived status proofs. Separate issuers and threshold
+registry operation reduce identity-provider capture.
 
 ### Prover plane
 
@@ -112,12 +122,13 @@ researcher identity root
   └── short-lived agent/session keys
 
 node operator root
-  ├── receipt signing key
+  ├── verified participant / operator delegation key
+  ├── node credential and receipt signing key
   ├── infrastructure attestation key
   └── rotation certificates
 ```
 
-Separate keys by role and environment. Publish rotations and revocations as signed append-only events.
+Separate keys by role and environment. Publish credential rotations and revocations as signed append-only events without changing the participant's independence domain.
 
 ## 7. Chain deployment order
 

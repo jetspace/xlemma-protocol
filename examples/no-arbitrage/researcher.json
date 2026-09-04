@@ -1,5 +1,7 @@
 {
   "researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+  "verified_user_id": null,
+  "user_credential_id": null,
   "display_name": "Example Decentralized Researcher",
   "identity_keys": [
     "did:key:example"

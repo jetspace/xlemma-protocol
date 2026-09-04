@@ -222,6 +222,10 @@ pub struct LemmaCapsule {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ResearcherNodeManifest {
     pub researcher_id: ResearcherId,
+    #[serde(default)]
+    pub verified_user_id: Option<crate::VerifiedUserId>,
+    #[serde(default)]
+    pub user_credential_id: Option<crate::UserCredentialId>,
     pub display_name: Option<String>,
     pub identity_keys: Vec<String>,
     pub research_credit_asset: String,

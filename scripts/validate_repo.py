@@ -60,6 +60,7 @@ REQUIRED_FILES = [
     "spec/017-deployment-operations.md",
     "spec/018-xlmp-wire-protocol.md",
     "spec/019-node-network.md",
+    "spec/020-identity-credentials.md",
     "openapi/openapi.yaml",
     "contracts/src/ResearchVault.sol",
     "contracts/src/ResearcherCredit.sol",
@@ -74,6 +75,8 @@ REQUIRED_FILES = [
     "crates/xlemma-crypto/src/lib.rs",
     "crates/xlemma-node/src/lib.rs",
     "crates/xlemma-node/src/marketplace.rs",
+    "crates/xlemma-node/src/credentials.rs",
+    "crates/xlemma-core/src/identity.rs",
     "crates/xlemma-core/src/network.rs",
     "crates/xlemma-xlmp/src/lib.rs",
     "schemas/node-network-common.schema.json",
@@ -87,6 +90,13 @@ REQUIRED_FILES = [
     "schemas/committee-sortition-request.schema.json",
     "schemas/committee-selection.schema.json",
     "schemas/eligible-node.schema.json",
+    "schemas/identity-common.schema.json",
+    "schemas/user-credential.schema.json",
+    "schemas/operator-credential.schema.json",
+    "schemas/node-credential.schema.json",
+    "schemas/credential-status-proof.schema.json",
+    "schemas/node-credential-chain.schema.json",
+    "schemas/credential-revocation.schema.json",
     "examples/node-network/advertisement.json",
     "examples/node-network/reputation.json",
     "examples/node-network/bond.json",
@@ -94,6 +104,12 @@ REQUIRED_FILES = [
     "examples/node-network/eligible-nodes.json",
     "examples/node-network/sortition-request.json",
     "examples/node-network/committee-selection.json",
+    "examples/node-network/user-credential.json",
+    "examples/node-network/operator-credential.json",
+    "examples/node-network/node-credential.json",
+    "examples/node-network/credential-status.json",
+    "examples/node-network/credential-chain.json",
+    "examples/node-network/credential-revocation.json",
 ]
 
 EXAMPLE_SCHEMA_MAP = {
@@ -117,6 +133,12 @@ NODE_EXAMPLE_SCHEMA_MAP = {
     "xlmp-node-advertise.json": "xlmp-envelope.schema.json",
     "sortition-request.json": "committee-sortition-request.schema.json",
     "committee-selection.json": "committee-selection.schema.json",
+    "user-credential.json": "user-credential.schema.json",
+    "operator-credential.json": "operator-credential.schema.json",
+    "node-credential.json": "node-credential.schema.json",
+    "credential-status.json": "credential-status-proof.schema.json",
+    "credential-chain.json": "node-credential-chain.schema.json",
+    "credential-revocation.json": "credential-revocation.schema.json",
 }
 
 
@@ -142,8 +164,8 @@ def validate_json_syntax_and_schemas() -> None:
     for path in sorted(SCHEMAS.glob("*.json")):
         schema_objects[path.name] = load_json(path)
 
-    if len(schema_objects) < 43:
-        fail(f"expected at least 43 protocol schemas, found {len(schema_objects)}")
+    if len(schema_objects) < 50:
+        fail(f"expected at least 50 protocol schemas, found {len(schema_objects)}")
 
     try:
         import jsonschema
@@ -201,8 +223,8 @@ def validate_json_syntax_and_schemas() -> None:
             fail(f"eligible-nodes.json[{index}] invalid: {errors[0].message}")
 
     message_variants = schema_objects["xlmp-envelope.schema.json"]["properties"]["message"]["oneOf"]
-    if len(message_variants) != 21:
-        fail(f"expected exactly 21 XLMP/1 message variants, found {len(message_variants)}")
+    if len(message_variants) != 25:
+        fail(f"expected exactly 25 XLMP/1 message variants, found {len(message_variants)}")
 
     observation_schema = schema_objects["observation.schema.json"]
     observation_validator = schema_validator(observation_schema)
@@ -247,6 +269,14 @@ def validate_toml() -> None:
         fail("default committee slot bound must match XLIP-019")
     if config["committee"]["maximum_search_states"] != 1_000_000:
         fail("default committee search bound must match XLIP-019")
+    if config["committee"]["minimum_credential_tier"] != "v2_verified_operator":
+        fail("committee consensus must require at least a V2 operator credential")
+    if not config["committee"]["verified_user_enforcement"]:
+        fail("committee selection must enforce ultimate verified-user independence")
+    if config["identity"]["raw_legal_identity_on_protocol"]:
+        fail("raw legal identity must remain off protocol")
+    if not config["identity"]["append_only_credentials_and_revocations"]:
+        fail("credential and revocation records must remain append-only")
     if not config["node_marketplace"]["append_only_history"]:
         fail("node marketplace history must remain append-only")
     if not config["node_marketplace"]["checked_integer_prices"]:
@@ -378,6 +408,10 @@ def validate_example_invariants() -> None:
     observations = load_json(EXAMPLE / "observations.json")
     if len({o["operator_cluster_id"] for o in observations}) != len(observations):
         fail("example checker observations are not operator-independent")
+    if len({o["operator_id"] for o in observations}) != len(observations):
+        fail("example checker observations reuse an OperatorID")
+    if len({o["verified_user_id"] for o in observations}) != len(observations):
+        fail("example checker observations reuse a VerifiedUserID")
     if {o["verdict"] for o in observations} != {"pass"}:
         fail("example happy-path observations must all pass")
     for root_name in ["artifact_root", "environment_root", "dependency_root", "axiom_set_root"]:
@@ -389,6 +423,10 @@ def validate_example_invariants() -> None:
         fail("example observations lack required provider diversity")
     if len({o["region"] for o in observations}) < policy["minimum_regions"]:
         fail("example observations lack required regional diversity")
+    if len({o["operator_id"] for o in observations}) < policy["minimum_operators"]:
+        fail("example observations lack required OperatorID diversity")
+    if len({o["verified_user_id"] for o in observations}) < policy["minimum_verified_users"]:
+        fail("example observations lack required verified-participant diversity")
     if policy["required_family_counts"].get("lean_kernel") != 2:
         fail("example policy must require two Lean-kernel observations")
     if policy["required_family_counts"].get("nanoda") != 1:
@@ -418,6 +456,9 @@ def validate_documented_invariants() -> None:
         "astra",
         "multidimensional",
         "service advertisement",
+        "verified participant",
+        "operatorcredential",
+        "non-revocation",
     ]
     missing = [phrase for phrase in required_phrases if phrase not in combined]
     if missing:
@@ -443,8 +484,8 @@ def validate_source_tree() -> None:
         fail(f"expected at least 9 Solidity reference contracts, found {len(solidity)}")
 
     specs = sorted((ROOT / "spec").glob("[0-9][0-9][0-9]-*.md"))
-    if len(specs) < 20:
-        fail(f"expected at least 20 numbered specifications, found {len(specs)}")
+    if len(specs) < 21:
+        fail(f"expected at least 21 numbered specifications, found {len(specs)}")
 
     full_design = (ROOT / "docs/FULL_DESIGN.md").read_text()
     if len(full_design.splitlines()) < 1000:
@@ -466,6 +507,10 @@ def validate_source_tree() -> None:
         "/v1/node-discovery",
         "/v1/service-orders",
         "/v1/committee-sortitions",
+        "/v1/credentials/users",
+        "/v1/credentials/operators",
+        "/v1/credentials/nodes",
+        "/v1/credentials/revocations",
     ]
     missing_paths = [path for path in required_paths if path not in openapi]
     if missing_paths:

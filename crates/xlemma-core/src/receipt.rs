@@ -1,6 +1,7 @@
 use crate::{
-    Amount, ArtifactId, CheckerFamily, ClaimId, ComputeQuoteId, JobId, NodeId, ObservationVerdict,
-    OperatorClusterId, PolicyId, ProofId, ReceiptId, ResearcherId, TheoryId,
+    Amount, ArtifactId, CheckerFamily, ClaimId, ComputeQuoteId, JobId, NodeCredentialId, NodeId,
+    ObservationVerdict, OperatorClusterId, OperatorCredentialId, OperatorId, PolicyId, ProofId,
+    ReceiptId, ResearcherId, TheoryId, UserCredentialId, VerifiedUserId,
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -102,7 +103,13 @@ pub struct ObservationReceipt {
     pub receipt_id: ReceiptId,
     pub job_id: JobId,
     pub node_id: NodeId,
+    pub verified_user_id: VerifiedUserId,
+    pub operator_id: OperatorId,
     pub operator_cluster_id: OperatorClusterId,
+    pub user_credential_id: UserCredentialId,
+    pub operator_credential_id: OperatorCredentialId,
+    pub node_credential_id: NodeCredentialId,
+    pub credential_chain_root: String,
     pub checker_family: Option<CheckerFamily>,
     pub checker_name: String,
     pub checker_version: String,

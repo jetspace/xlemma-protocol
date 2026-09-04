@@ -6,7 +6,7 @@ The reference repository is not complete merely because it compiles. xLemma need
 
 ### Unit tests
 
-Cover canonicalization, typed IDs, XLMP envelope integrity and message round trips, protocol lifecycle transitions, money arithmetic, contribution shares, node advertisement identity and supersession, constrained discovery and order matching, multidimensional reputation, committee eligibility and exact sortition reproduction, commit-reveal, formal quorum, novelty aggregation, quote construction, backing conservation, revenue allocation, dividend caps, payment-adapter encoding, and storage path safety.
+Cover canonicalization, typed IDs, credential-chain integrity, delegation and revocation, XLMP envelope integrity and message round trips, protocol lifecycle transitions, money arithmetic, contribution shares, node advertisement identity and supersession, constrained discovery and order matching, multidimensional reputation, committee eligibility and exact sortition reproduction, commit-reveal, formal quorum, novelty aggregation, quote construction, backing conservation, revenue allocation, dividend caps, payment-adapter encoding, and storage path safety.
 
 ### Property tests
 
@@ -18,7 +18,10 @@ Required properties include:
 - failed operations do not partially mutate state;
 - revenue allocations plus explicit rounding remainder equal net distributable revenue;
 - dividends never exceed policy or downstream-revenue caps;
-- committee selection never chooses two NodeIDs from the same operator cluster for one job;
+- committee selection never chooses two NodeIDs from the same VerifiedUserID, OperatorID, or operator cluster for one job;
+- a V0/V1, expired, malformed, unregistered, or effectively revoked credential chain never enters consensus;
+- adding machines under one verified participant never increases committee independence;
+- credential and revocation publication never overwrites historical records;
 - bond amount and reputation never become sortition or formal-vote weight after eligibility;
 - a strong reputation dimension never compensates for a failed required dimension;
 - service matching never crosses asset, decimal, unit, expiration, capacity, or maximum-price constraints;
@@ -43,6 +46,7 @@ Required properties include:
 - storage expiry and replica replacement.
 - node advertisement to discovery to service order/match to payment authorization;
 - committed eligible set and future beacon reveal to exactly reproduced committee selection;
+- credential issuance and delegation, fresh non-revocation status, committee admission, revocation, and fail-closed rejection;
 
 ### Conformance tests
 
@@ -74,6 +78,8 @@ A Gold release is blocked until the corpus passes through the official Lean path
 Simulate:
 
 - one operator registering many NodeIDs;
+- one verified participant registering multiple OperatorIDs and operator clusters;
+- forged issuer/delegation signatures, stale registry roots, and user/operator/node revocation cascades;
 - correlated cloud/provider failures;
 - committee bribery and selective denial of service;
 - copied reveals;
@@ -155,7 +161,7 @@ Payment success must never set formal status by itself.
 
 ## 7. XLMP transport and downgrade testing
 
-- all twenty-one XLMP/1 message discriminators validate against the canonical schema;
+- all twenty-five XLMP/1 message discriminators validate against the canonical schema;
 - unsupported protocol names and major versions fail closed;
 - unknown required fields fail schema validation;
 - MessageID mutation, sender substitution, correlation substitution, and replay are rejected;

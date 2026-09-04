@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/identity-common.schema.json",
+  "title": "XLMP identity and credential shared types",
+  "$defs": {
+    "verifiedUserId": { "type": "string", "pattern": "^xluser:blake3:[0-9a-f]{64}$" },
+    "operatorId": { "type": "string", "pattern": "^xlop:blake3:[0-9a-f]{64}$" },
+    "userCredentialId": { "type": "string", "pattern": "^xlusercred:blake3:[0-9a-f]{64}$" },
+    "operatorCredentialId": { "type": "string", "pattern": "^xloperatorcred:blake3:[0-9a-f]{64}$" },
+    "nodeCredentialId": { "type": "string", "pattern": "^xlnodecred:blake3:[0-9a-f]{64}$" },
+    "credentialRevocationId": { "type": "string", "pattern": "^xlrevocation:blake3:[0-9a-f]{64}$" },
+    "credentialTier": {
+      "type": "string",
+      "enum": [
+        "v0_observer", "v1_verified_participant", "v2_verified_operator",
+        "v3_institutional_operator", "v4_specialized_authority"
+      ]
+    }
+  }
+}

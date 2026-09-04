@@ -8,6 +8,18 @@
       "type": "string",
       "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$"
     },
+    "verified_user_id": {
+      "anyOf": [
+        { "$ref": "identity-common.schema.json#/$defs/verifiedUserId" },
+        { "type": "null" }
+      ]
+    },
+    "user_credential_id": {
+      "anyOf": [
+        { "$ref": "identity-common.schema.json#/$defs/userCredentialId" },
+        { "type": "null" }
+      ]
+    },
     "display_name": {
       "type": [
         "string",

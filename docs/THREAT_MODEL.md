@@ -23,6 +23,8 @@ XLMP message router
   | transport adapter boundary
 node discovery / append-only order book
   | untrusted market-data and capacity boundary
+credential registry / issuer and delegation verification
+  | private-evidence, key-resolution, uniqueness, and revocation boundary
 payment adapter / facilitator
   | separate paid service boundary
 research prover / ASTRA provider
@@ -61,7 +63,16 @@ Controls: formal outcomes use exact deterministic agreement, not stake-weighted 
 
 ### Sybil or common-control committee
 
-Controls: neutral collateral, role qualification, committed eligible-set roots, future authenticated randomness, deterministic hash ranking, unique operator clusters, provider/region diversity, payout-relationship analysis, exact selection proofs, and public challenge. Bond and reputation are eligibility gates, never sortition or formal-vote weight.
+Controls: privacy-preserving verified-participant credentials, exact participant-to-operator-to-node delegation, fresh non-revocation proofs, neutral collateral, role qualification, committed eligible-set roots, future authenticated randomness, deterministic hash ranking, unique VerifiedUserIDs, OperatorIDs, and operator clusters, provider/region diversity, payout-relationship analysis, exact selection proofs, and public challenge. Bond, credential tier, and reputation are eligibility gates, never sortition or formal-vote weight.
+
+### Credential forgery, issuer capture, or stale revocation
+
+Controls: content-derived credential and revocation IDs, deployment-provided
+issuer/delegation signature verification, nested validity intervals,
+short-lived status proofs bound to an exact append-only registry root, multiple
+accepted issuers, and public challenge. Raw legal or uniqueness evidence stays
+with the issuer and is not placed in XLMP messages. Revocation preserves
+history and removes eligibility; it does not rewrite old observations.
 
 ### False node-market advertisement or discovery manipulation
 
@@ -74,7 +85,7 @@ bound to one exact advertisement sequence and cannot inherit a silent revision.
 
 ### Reputation laundering or scalar-score capture
 
-Controls: six separately evidenced dimensions, minimum sample sizes,
+Controls: eight separately evidenced dimensions, minimum sample sizes,
 policy-specific per-dimension gates, explicit supersession, operator-cluster
 binding, and no universal composite authority score. Honest dissent and valid
 `FAIL` observations are not penalized merely for disagreeing with a majority.
@@ -149,6 +160,7 @@ Slashing requires objectively provable misconduct: equivocation, false artifact 
 - All checker implementations may share a logic flaw.
 - Sandboxing may fail.
 - Operator clustering can be evaded.
+- A credential issuer can mis-verify uniqueness, be compromised, censor applicants, or leak private evidence.
 - Novelty corpora are incomplete.
 - Compute counterfactuals are model-dependent.
 - Rights disputes can exceed what on-chain evidence resolves.
@@ -157,3 +169,4 @@ Slashing requires objectively provable misconduct: equivocation, false artifact 
 - The prototype HTTP ingress does not yet authenticate XLMP signatures.
 - Public beacon/VRF authentication and decentralized eligible-set publication are not yet integrated into the prototype service.
 - Capacity, latency, hardware, reputation evidence, and operator clustering still require independent measurement and challenge infrastructure.
+- The reference credential registry supplies deterministic structure and an adapter boundary; production issuer, delegation-signature, key-resolution, privacy, and accumulator-proof implementations remain deployment work.

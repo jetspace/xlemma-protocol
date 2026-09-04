@@ -3,7 +3,8 @@ use std::collections::BTreeSet;
 use thiserror::Error;
 use xlemma_core::{
     canonical_json_hash, derive_eligible_set_root, CommitteeSelection, CommitteeSortitionRequest,
-    EligibleNode, NodeRole, OperatorClusterId, SortitionMember,
+    CredentialTier, EligibleNode, NodeRole, OperatorClusterId, OperatorId, SortitionMember,
+    VerifiedUserId,
 };
 
 /// Reference-conformance bounds keep adversarial sortition inputs from
@@ -28,7 +29,7 @@ pub enum CommitteeError {
     #[error("eligible set contains a duplicate NodeID")]
     DuplicateEligibleNode,
     #[error(
-        "no committee satisfies role, bond, reputation, checker, and independence constraints"
+        "no committee satisfies credential, role, bond, reputation, checker, and independence constraints"
     )]
     NoIndependentCommittee,
     #[error("committee search exceeded the deterministic conformance bound")]
@@ -93,6 +94,7 @@ pub fn select_committee(
     let mut node_ids = BTreeSet::new();
     for node in nodes {
         node.node_id.validate()?;
+        node.operator_id.validate()?;
         node.operator_cluster_id.validate()?;
         node.advertisement_id.validate()?;
         node.bond_id.validate()?;
@@ -139,7 +141,7 @@ pub fn select_committee(
             let requirement = &request.requirements[slot.requirement_index];
             let mut candidates = nodes
                 .iter()
-                .filter(|node| node_is_eligible(request, requirement, node))
+                .filter(|node| node_is_eligible(request, requirement, node, selected_at))
                 .map(|node| RankedCandidate {
                     rank: rank_candidate(request, revealed_seed, *slot, node),
                     node,
@@ -175,22 +177,41 @@ pub fn select_committee(
     let members = search
         .chosen
         .into_iter()
-        .map(|(slot, candidate)| SortitionMember {
-            role: slot.role,
-            slot: slot.ordinal,
-            node_id: candidate.node.node_id.clone(),
-            operator_cluster_id: candidate.node.operator_cluster_id.clone(),
-            advertisement_id: candidate.node.advertisement_id.clone(),
-            bond_id: candidate.node.bond_id.clone(),
-            reputation_snapshot_id: candidate.node.reputation_snapshot_id.clone(),
-            infrastructure_provider: candidate.node.infrastructure_provider.clone(),
-            region: candidate.node.region.clone(),
-            rank_hash: format!(
-                "blake3:{}",
-                blake3::Hash::from_bytes(candidate.rank).to_hex()
-            ),
+        .map(|(slot, candidate)| {
+            Ok(SortitionMember {
+                role: slot.role,
+                slot: slot.ordinal,
+                node_id: candidate.node.node_id.clone(),
+                verified_user_id: candidate
+                    .node
+                    .credential_chain
+                    .user
+                    .verified_user_id
+                    .clone(),
+                operator_id: candidate.node.operator_id.clone(),
+                operator_cluster_id: candidate.node.operator_cluster_id.clone(),
+                user_credential_id: candidate.node.credential_chain.user.credential_id.clone(),
+                operator_credential_id: candidate
+                    .node
+                    .credential_chain
+                    .operator
+                    .credential_id
+                    .clone(),
+                node_credential_id: candidate.node.credential_chain.node.credential_id.clone(),
+                credential_tier: candidate.node.credential_chain.user.tier,
+                credential_chain_root: candidate.node.credential_chain.derive_chain_root()?,
+                advertisement_id: candidate.node.advertisement_id.clone(),
+                bond_id: candidate.node.bond_id.clone(),
+                reputation_snapshot_id: candidate.node.reputation_snapshot_id.clone(),
+                infrastructure_provider: candidate.node.infrastructure_provider.clone(),
+                region: candidate.node.region.clone(),
+                rank_hash: format!(
+                    "blake3:{}",
+                    blake3::Hash::from_bytes(candidate.rank).to_hex()
+                ),
+            })
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>, CommitteeError>>()?;
 
     let selection_digest = canonical_json_hash(
         "xlemma-committee-selection-v1",
@@ -249,6 +270,8 @@ fn validate_request(request: &CommitteeSortitionRequest) -> Result<(), Committee
                     requirement.role,
                     NodeRole::OfficialKernelChecker | NodeRole::IndependentChecker
                 ) && requirement.required_checker_families.is_empty())
+                || requirement.minimum_credential_tier < CredentialTier::V2VerifiedOperator
+                || requirement.maximum_status_age_seconds == 0
         })
     {
         return Err(CommitteeError::InvalidRequirements);
@@ -273,8 +296,10 @@ fn node_is_eligible(
     request: &CommitteeSortitionRequest,
     requirement: &xlemma_core::CommitteeRequirement,
     node: &EligibleNode,
+    selected_at: DateTime<Utc>,
 ) -> bool {
     node.active
+        && node.operator_id == node.credential_chain.operator.operator_id
         && node.roles.contains(&requirement.role)
         && !request
             .excluded_operator_clusters
@@ -290,6 +315,21 @@ fn node_is_eligible(
         && requirement
             .required_checker_families
             .is_subset(&node.checker_families)
+        && selected_at
+            .signed_duration_since(node.credential_chain.status.checked_at)
+            .num_seconds()
+            <= i64::try_from(requirement.maximum_status_age_seconds).unwrap_or(i64::MAX)
+        && node
+            .credential_chain
+            .validate_for(
+                &node.node_id,
+                &node.operator_cluster_id,
+                requirement.role,
+                requirement.minimum_credential_tier,
+                &requirement.required_qualifications,
+                selected_at,
+            )
+            .is_ok()
 }
 
 fn rank_candidate(
@@ -308,6 +348,15 @@ fn rank_candidate(
     update_field(&mut hasher, role_label(slot.role).as_bytes());
     update_field(&mut hasher, &slot.ordinal.to_le_bytes());
     update_field(&mut hasher, node.node_id.as_str().as_bytes());
+    update_field(&mut hasher, node.operator_id.as_str().as_bytes());
+    update_field(
+        &mut hasher,
+        node.credential_chain
+            .user
+            .verified_user_id
+            .as_str()
+            .as_bytes(),
+    );
     update_field(&mut hasher, request.eligible_set_root.as_bytes());
     *hasher.finalize().as_bytes()
 }
@@ -326,7 +375,9 @@ enum SearchResult {
 
 #[derive(Default)]
 struct SearchState<'a> {
-    operators: BTreeSet<OperatorClusterId>,
+    operator_clusters: BTreeSet<OperatorClusterId>,
+    operators: BTreeSet<OperatorId>,
+    verified_users: BTreeSet<VerifiedUserId>,
     chosen: Vec<(Slot, RankedCandidate<'a>)>,
     explored_states: usize,
 }
@@ -365,9 +416,26 @@ fn choose_independent_committee<'a>(
 
     for candidate in &candidates[index] {
         if !search
-            .operators
+            .operator_clusters
             .insert(candidate.node.operator_cluster_id.clone())
         {
+            continue;
+        }
+        if !search.operators.insert(candidate.node.operator_id.clone()) {
+            let removed = search
+                .operator_clusters
+                .remove(&candidate.node.operator_cluster_id);
+            debug_assert!(removed);
+            continue;
+        }
+        let verified_user_id = &candidate.node.credential_chain.user.verified_user_id;
+        if !search.verified_users.insert(verified_user_id.clone()) {
+            let removed = search.operators.remove(&candidate.node.operator_id);
+            debug_assert!(removed);
+            let removed = search
+                .operator_clusters
+                .remove(&candidate.node.operator_cluster_id);
+            debug_assert!(removed);
             continue;
         }
         search.chosen.push((slots[index], *candidate));
@@ -384,7 +452,13 @@ fn choose_independent_committee<'a>(
         }
         let removed = search.chosen.pop();
         debug_assert!(removed.is_some());
-        let removed = search.operators.remove(&candidate.node.operator_cluster_id);
+        let removed = search.verified_users.remove(verified_user_id);
+        debug_assert!(removed);
+        let removed = search.operators.remove(&candidate.node.operator_id);
+        debug_assert!(removed);
+        let removed = search
+            .operator_clusters
+            .remove(&candidate.node.operator_cluster_id);
         debug_assert!(removed);
         if result == SearchResult::LimitExceeded {
             return result;
@@ -413,10 +487,13 @@ fn role_label(role: NodeRole) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::Duration;
     use xlemma_core::{
-        AdvertisementId, Amount, BondId, CheckerFamily, CommitteeRequirement, JobId,
-        NodeReputationVector, PolicyId, RandomnessBeacon, ReputationId, ReputationMetric,
-        ReputationRequirement, ReputationRequirements, SortitionId,
+        AdvertisementId, Amount, BondId, CheckerFamily, CommitteeRequirement,
+        CredentialStatusProof, JobId, NodeCredential, NodeCredentialChain, NodeCredentialId,
+        NodeReputationVector, OperatorCredential, OperatorCredentialId, PolicyId, RandomnessBeacon,
+        ReputationId, ReputationMetric, ReputationRequirement, ReputationRequirements, SortitionId,
+        UserCredential, UserCredentialId,
     };
 
     fn metric(score_bps: u16) -> ReputationMetric {
@@ -435,6 +512,82 @@ mod tests {
             novelty_calibration: metric(9_000),
             challenge_quality: metric(9_000),
             independence: metric(9_900),
+            storage_quality: metric(9_400),
+            integrity: metric(9_900),
+        }
+    }
+
+    fn credential_chain(
+        label: &str,
+        node_id: &xlemma_core::NodeId,
+        operator_cluster_id: &OperatorClusterId,
+        roles: &BTreeSet<NodeRole>,
+        now: DateTime<Utc>,
+    ) -> NodeCredentialChain {
+        let verified_user_id = VerifiedUserId::derive(&format!("user-{label}")).unwrap();
+        let operator_id = OperatorId::derive(&format!("operator-{label}")).unwrap();
+        let mut user = UserCredential {
+            credential_id: UserCredentialId::derive(&"pending").unwrap(),
+            verified_user_id: verified_user_id.clone(),
+            researcher_id: None,
+            public_subject: format!("did:key:user-{label}"),
+            tier: CredentialTier::V2VerifiedOperator,
+            issuer: "did:web:credential-issuer.example".into(),
+            uniqueness_commitment: format!("blake3:uniqueness-{label}"),
+            qualifications: BTreeSet::from(["lean-kernel".into()]),
+            disclosure_policy: "pseudonymous-v1".into(),
+            issued_at: now - Duration::days(1),
+            expires_at: now + Duration::days(30),
+            evidence_root: format!("blake3:user-evidence-{label}"),
+            issuer_signature: "issuer-signature".into(),
+        };
+        user.credential_id = user.derive_credential_id().unwrap();
+        let mut operator = OperatorCredential {
+            credential_id: OperatorCredentialId::derive(&"pending").unwrap(),
+            operator_id: operator_id.clone(),
+            verified_user_id,
+            user_credential_id: user.credential_id.clone(),
+            operator_cluster_id: operator_cluster_id.clone(),
+            authorized_roles: roles.clone(),
+            qualifications: BTreeSet::from(["lean-kernel".into()]),
+            jurisdiction_class: "privacy-preserving-verified".into(),
+            issued_at: user.issued_at,
+            expires_at: user.expires_at,
+            evidence_root: format!("blake3:operator-evidence-{label}"),
+            holder_delegation_signature: "holder-delegation-signature".into(),
+            issuer_signature: "issuer-signature".into(),
+        };
+        operator.credential_id = operator.derive_credential_id().unwrap();
+        let mut node = NodeCredential {
+            credential_id: NodeCredentialId::derive(&"pending").unwrap(),
+            node_id: node_id.clone(),
+            operator_id,
+            operator_credential_id: operator.credential_id.clone(),
+            operator_cluster_id: operator_cluster_id.clone(),
+            node_public_key: format!("did:key:node-{label}"),
+            authorized_roles: roles.clone(),
+            hardware_attestation_root: None,
+            issued_at: operator.issued_at,
+            expires_at: operator.expires_at,
+            evidence_root: format!("blake3:node-evidence-{label}"),
+            operator_delegation_signature: "operator-delegation-signature".into(),
+        };
+        node.credential_id = node.derive_credential_id().unwrap();
+        let status = CredentialStatusProof {
+            user_credential_id: user.credential_id.clone(),
+            operator_credential_id: operator.credential_id.clone(),
+            node_credential_id: node.credential_id.clone(),
+            revocation_registry_root: "blake3:revocation-registry-root".into(),
+            checked_at: now - Duration::minutes(1),
+            valid_until: now + Duration::hours(1),
+            non_revocation_proof: "non-revocation-proof".into(),
+            issuer_signature: "status-issuer-signature".into(),
+        };
+        NodeCredentialChain {
+            user,
+            operator,
+            node,
+            status,
         }
     }
 
@@ -445,9 +598,15 @@ mod tests {
         provider: &str,
         region: &str,
     ) -> EligibleNode {
+        let now = Utc::now();
+        let node_id = xlemma_core::NodeId::derive(&label).unwrap();
+        let operator_cluster_id = OperatorClusterId::derive(&operator).unwrap();
+        let credential_chain = credential_chain(label, &node_id, &operator_cluster_id, &roles, now);
         EligibleNode {
-            node_id: xlemma_core::NodeId::derive(&label).unwrap(),
-            operator_cluster_id: OperatorClusterId::derive(&operator).unwrap(),
+            node_id,
+            operator_id: credential_chain.operator.operator_id.clone(),
+            operator_cluster_id,
+            credential_chain,
             advertisement_id: AdvertisementId::derive(&label).unwrap(),
             roles,
             checker_families: BTreeSet::from([CheckerFamily::LeanKernel, CheckerFamily::Nanoda]),
@@ -478,6 +637,9 @@ mod tests {
                 NodeRole::IndependentChecker => BTreeSet::from([CheckerFamily::Nanoda]),
                 _ => BTreeSet::new(),
             },
+            minimum_credential_tier: CredentialTier::V2VerifiedOperator,
+            maximum_status_age_seconds: 3_600,
+            required_qualifications: BTreeSet::new(),
         }
     }
 
@@ -553,6 +715,36 @@ mod tests {
     }
 
     #[test]
+    fn one_verified_participant_cannot_gain_independence_with_multiple_operators() {
+        let role = NodeRole::OfficialKernelChecker;
+        let mut nodes = vec![
+            eligible_node("a", "cluster-a", BTreeSet::from([role]), "p-a", "r-a"),
+            eligible_node("b", "cluster-b", BTreeSet::from([role]), "p-b", "r-b"),
+        ];
+        let shared_user = nodes[0].credential_chain.user.clone();
+        let second = &mut nodes[1].credential_chain;
+        second.user = shared_user;
+        second.operator.verified_user_id = second.user.verified_user_id.clone();
+        second.operator.user_credential_id = second.user.credential_id.clone();
+        second.operator.issued_at = second.user.issued_at;
+        second.operator.expires_at = second.user.expires_at;
+        second.operator.credential_id = second.operator.derive_credential_id().unwrap();
+        second.node.operator_credential_id = second.operator.credential_id.clone();
+        second.node.issued_at = second.operator.issued_at;
+        second.node.expires_at = second.operator.expires_at;
+        second.node.credential_id = second.node.derive_credential_id().unwrap();
+        second.status.user_credential_id = second.user.credential_id.clone();
+        second.status.operator_credential_id = second.operator.credential_id.clone();
+        second.status.node_credential_id = second.node.credential_id.clone();
+
+        let request = request(&nodes, vec![requirement(role, 2)]);
+        assert!(matches!(
+            select_committee(&request, b"future-beacon-reveal", &nodes, Utc::now()),
+            Err(CommitteeError::NoIndependentCommittee)
+        ));
+    }
+
+    #[test]
     fn money_and_reputation_are_eligibility_not_rank_weight() {
         let role = NodeRole::OfficialKernelChecker;
         let mut low_accuracy =
@@ -617,6 +809,32 @@ mod tests {
                 Utc::now()
             ),
             Err(CommitteeError::DuplicateEligibleNode)
+        ));
+    }
+
+    #[test]
+    fn stale_non_revocation_status_cannot_enter_consensus() {
+        let role = NodeRole::OfficialKernelChecker;
+        let mut nodes = vec![eligible_node(
+            "stale",
+            "operator-stale",
+            BTreeSet::from([role]),
+            "p-a",
+            "r-a",
+        )];
+        nodes[0].credential_chain.status.checked_at = Utc::now() - Duration::hours(2);
+        nodes[0].credential_chain.status.valid_until = Utc::now() + Duration::hours(1);
+        let mut sortition_request = request(&nodes, vec![requirement(role, 1)]);
+        sortition_request.minimum_distinct_providers = 1;
+        sortition_request.minimum_distinct_regions = 1;
+        assert!(matches!(
+            select_committee(
+                &sortition_request,
+                b"future-beacon-reveal",
+                &nodes,
+                Utc::now()
+            ),
+            Err(CommitteeError::NoIndependentCommittee)
         ));
     }
 

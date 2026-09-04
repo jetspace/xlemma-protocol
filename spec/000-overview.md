@@ -28,3 +28,4 @@ XLMP is xLemma's canonical, provider-neutral protocol for proof production, dete
 16. A public “verified” representation MUST disclose the verification policy or assurance level.
 17. Payment, transport, chain, model, checker, and storage adapters MUST NOT redefine XLMP object identity or research-state transitions.
 18. An XLMP message MUST preserve its content-derived MessageID across transport adapters.
+19. No node may contribute to XLMP consensus without a valid, non-revoked OperatorCredential controlled by a verified participant; multiple nodes under one participant MUST count as one independence domain.
