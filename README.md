@@ -119,11 +119,67 @@ unique VerifiedUserIDs, OperatorIDs, conservative OperatorClusterIDs, and
 required provider/region diversity. See
 [`spec/019-node-network.md`](spec/019-node-network.md).
 
-No node may contribute to xLemma consensus without a valid, non-revoked
-OperatorCredential ultimately controlled by a verified xLemma participant.
-The public chain is pseudonymous: `VerifiedUserID → OperatorID → NodeID(s)`;
-private legal/uniqueness evidence remains with the credential issuer. Running
-more machines never creates more independence. See
+## Constitutional identity and operator independence
+
+> **No node may contribute to xLemma consensus without a valid, non-revoked
+> `OperatorCredential` ultimately controlled by a verified xLemma participant.
+> Multiple nodes controlled by the same participant constitute one
+> operator-independence domain.**
+
+The public identity hierarchy is pseudonymous:
+
+```text
+VerifiedUserID ── controls ──> OperatorID ── delegates ──> NodeID(s)
+       │
+       └── may link ──> ResearcherID
+```
+
+`ResearcherID` is a sibling research persona, not a substitute for an
+accountable operator. Private legal identity and uniqueness evidence remain
+with credential issuers; raw legal names, identity-document numbers,
+addresses, and biometric records do not belong in public XLMP objects.
+
+The credential chain has three independently addressable records:
+
+| Credential | Binds | Signed by |
+|---|---|---|
+| `UserCredential` | Verified participant, optional researcher persona, tier, qualifications, uniqueness commitment, and issuer policy | Credential issuer |
+| `OperatorCredential` | Operator, verified participant, operator cluster, authorized roles, and jurisdiction class | Participant and issuer |
+| `NodeCredential` | Node key, operator, cluster, roles, and optional hardware attestation | Operator |
+
+Credentials and revocations are append-only. A committee candidate must carry
+a fresh issuer-authenticated status proof for the exact user, operator, and
+node credential IDs against a specific revocation-registry root. Revoking a
+user invalidates all descendant operators and nodes; revoking an operator
+invalidates its nodes. Historical receipts remain readable and may be
+quarantined or revalidated under policy rather than silently rewritten.
+
+Credential tiers separate access from consensus authority:
+
+| Tier | Purpose | Consensus authority |
+|---|---|---|
+| V0 observer | Read, index, and locally verify public data | None |
+| V1 verified participant | Attributable participation and low-risk market activity | None |
+| V2 verified operator | Accountable operator with delegated nodes | Eligible under role policy |
+| V3 institutional operator | Accountable organization | Same mathematical authority as V2 |
+| V4 specialized authority | Additional role-specific qualification | Only the role required by policy |
+
+Higher tiers never make a proof more valid and never create extra votes. Gold
+committees require at least three NodeIDs, three OperatorIDs, three verified
+participants, two checker families, two infrastructure providers, and two
+regions. The selector admits at most one committee member per
+`VerifiedUserID`, `OperatorID`, and conservative `OperatorClusterID`; the
+strictest collision rule wins. Running more machines or rotating keys never
+creates more independence.
+
+The reference implementation includes typed credential IDs, canonical XLMP
+credential and revocation messages, an append-only registry behind a required
+cryptographic proof-verifier adapter, exact credential-chain commitments,
+freshness and tier checks, revocation-aware eligibility, and identity-bound
+assignment, observation, commit-reveal, and PoIR records. Production networks
+must still supply and audit their issuer trust policy, key resolution,
+uniqueness process, cryptographic verifier, and decentralized revocation-root
+publication. See
 [`spec/020-identity-credentials.md`](spec/020-identity-credentials.md).
 
 ## The central separation
@@ -325,9 +381,9 @@ scripts/                  validation, simulation and archiving tools
 7. Read `spec/000-overview.md` and `spec/003-poir-consensus.md` before modifying consensus.
 8. Review `docs/THREAT_MODEL.md`, `docs/GOVERNANCE_CONSTITUTION.md`, and `docs/LEGAL_BOUNDARIES.md` before deployment.
 9. Use `docs/OPERATOR_RUNBOOK.md`, `docs/TESTING_STRATEGY.md`, and `docs/PRODUCTION_CHECKLIST.md` as implementation gates.
-9. Run `python3 scripts/validate_repo.py` to validate schemas, OpenAPI references, invariants, the source manifest, and repository completeness.
-10. Verify every source digest with `sha256sum -c MANIFEST.sha256`.
-11. Read `docs/VALIDATION_REPORT.md` for checks executed in this source snapshot and explicit limitations.
+10. Run `python3 scripts/validate_repo.py` to validate schemas, OpenAPI references, invariants, the source manifest, and repository completeness.
+11. Verify every source digest with `sha256sum -c MANIFEST.sha256`.
+12. Read `docs/VALIDATION_REPORT.md` for checks executed in this source snapshot and explicit limitations.
 
 > **Dependency-lock note:** `Cargo.lock` is committed for reproducible reference builds. Contract dependency locks still require review before a production release.
 
@@ -343,6 +399,10 @@ sha256sum -c MANIFEST.sha256
 cargo test --workspace
 cargo run -p xlemma-api
 cargo run -p xlemma-cli -- --help
+
+# Reproduce canonical identity vectors
+cargo run -p xlemma-cli -- derive-id user-credential examples/node-network/user-credential.json
+cargo run -p xlemma-cli -- credential-chain-root examples/node-network/credential-chain.json
 ```
 
 Lean and Solidity toolchains are optional for the structural validator and required for their respective modules.
@@ -363,7 +423,10 @@ Lean and Solidity toolchains are optional for the structural validator and requi
 12. Token ownership cannot rewrite authorship or Lean validity.
 13. A verified Lean theorem may still be trivial, previously known, misleadingly described, or commercially valueless.
 14. Rights manifests cannot create intellectual-property rights the contributor never owned.
-15. Quorum requirements measure independent operator and implementation diversity, not public-key count.
+15. Quorum requirements measure distinct verified participants, operators, conservative control clusters, and implementations—not public-key count.
+16. A node cannot enter consensus without a valid V2-or-higher credential chain and a fresh non-revocation proof.
+17. Credentials qualify accountable participants; they never certify proofs or override exact checker evidence.
+18. Public protocol identity remains pseudonymous; private legal and uniqueness evidence remains outside public XLMP objects.
 
 ## Sources and design basis
 
