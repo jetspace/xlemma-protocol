@@ -9,6 +9,8 @@ These contracts implement the economic and registry projection of xLemma. They a
 | `ResearcherCredit.sol` | Researcher-specific service credit | Restricted transfer; vault-only mint/burn; no validity or profit vote |
 | `ResearchVault.sol` | Holds neutral 1:1 backing | Payee-bound idempotent authorization; actual-only settlement; refund; solvency assertion |
 | `ResearchVaultFactory.sol` | Creates researcher vaults | Self-registration; account-namespaced ResearcherIDs prevent cross-account slot squatting |
+| `DiscoveryRoundEscrow.sol` | Funded open discovery rounds | Seven isolated categories, protected foundation floor, bounded atomic plans, independent approval/holds, exact transfers and refunds |
+| `DiscoveryEvidenceRegistry.sol` | Publish protocol certificate IDs for discovery | Independent qualified relays, exact claim/artifact/policy binding, producer exclusions, delayed finality, irreversible quarantine |
 | `PoIRCertificateRegistry.sol` | Economic finality for off-chain evidence certificates | Content-derived certificate ID; minimum challenge period; challenge/quarantine/reject; exact claim/artifact/policy query |
 | `ProofRegistry.sol` | Append-only proof/certificate roots | Content-derived record ID; challenge-gated finalization; correction by pre-linked child/supersession |
 | `ResearchCommitmentRegistry.sol` | Generic on-chain research-object projection | Commits researcher, claim, artifact, policy, committee, rights, contribution-split, and supersession roots without deciding truth |
@@ -90,3 +92,8 @@ The contracts are unaudited reference implementations. Production work must addr
 - formal verification, fuzzing, static analysis, public contest, and independent audits.
 
 Do not deploy with real funds until `docs/PRODUCTION_CHECKLIST.md` is satisfied and independent reviews are complete.
+
+The [discovery service runbook](../docs/DISCOVERY_SERVICE.md) connects these
+contracts to signed commands and EVM receipt observers. Run
+`python3 scripts/test_discovery_evm.py` from the repository root after building
+the CLI and contracts to exercise the funded settlement path on a fresh Anvil.

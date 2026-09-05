@@ -1,0 +1,150 @@
+{
+  "assisted_submission_slots": 4,
+  "calibration": {
+    "reference": {
+      "accepted_results": 10,
+      "attempts": 20,
+      "outcomes_root": "xla:blake3:76f01322857f4d1afe6fed2bb0e2a8e29e9b473a11be62bfe36a4b98289b78d6",
+      "reference_cost_units": 100,
+      "uncertainty_bps": 500
+    }
+  },
+  "calibration_root": "xla:blake3:16458806d0346b79fa622c3b2fe6a80e672616cf85f64431a43b2fcaed115325",
+  "domain": "foundational-mathematics",
+  "economics": {
+    "appeal_fee_units": 2000000,
+    "appeal_reviewers": [
+      "xloperator:blake3:1d349ad83ce95409bc1805f0fe1b93bdcb6a554c4e0f51e2989f599de554c6d0",
+      "xloperator:blake3:54a7996a75ba46cd2ba4623b6150f4849dd46affd8f7c9f046cf060e5ab0ddf4"
+    ],
+    "appeals_close_at": 1200,
+    "assessment_policy_root": "xla:blake3:938f9713c310d13d1144aca3f0234beba7ab8b30bf4ec24ca5476f163a54c348",
+    "assessors": [
+      "xloperator:blake3:b66f2c1d10771ee14f914aedae5407332541248ab7e2a85a38c2999f677e8598",
+      "xloperator:blake3:ffac826cac0e8cace852bb79c01d7c59dc0655500ad61a871cf45beb374e786f"
+    ],
+    "budgets": {
+      "discovery": {
+        "appeal_units": 50000000,
+        "maximum_weight": 1000,
+        "solver_units": 300000000,
+        "verification_units": 100000000
+      },
+      "formalization": {
+        "appeal_units": 50000000,
+        "maximum_weight": 1000,
+        "solver_units": 300000000,
+        "verification_units": 100000000
+      },
+      "foundational_research": {
+        "appeal_units": 50000000,
+        "maximum_weight": 1000,
+        "solver_units": 300000000,
+        "verification_units": 100000000
+      },
+      "negative_result": {
+        "appeal_units": 50000000,
+        "maximum_weight": 1000,
+        "solver_units": 300000000,
+        "verification_units": 100000000
+      },
+      "proof_improvement": {
+        "appeal_units": 50000000,
+        "maximum_weight": 1000,
+        "solver_units": 300000000,
+        "verification_units": 100000000
+      },
+      "replication": {
+        "appeal_units": 50000000,
+        "maximum_weight": 1000,
+        "solver_units": 300000000,
+        "verification_units": 100000000
+      },
+      "research_tools": {
+        "appeal_units": 50000000,
+        "maximum_weight": 1000,
+        "solver_units": 300000000,
+        "verification_units": 100000000
+      }
+    },
+    "maximum_appeals": 8,
+    "maximum_submissions": 16,
+    "name": "synthetic-open-discovery-pilot-v1",
+    "opens_at": 1000,
+    "profiles": [
+      {
+        "challenge_window_seconds": 100,
+        "class": "formal",
+        "minimum_independent_operators": 2,
+        "minimum_reproductions": 2,
+        "policy_id": "xlpolicy:blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a",
+        "policy_root": "blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a",
+        "required_evidence": [
+          "formal_statement",
+          "proof_object",
+          "pinned_toolchain",
+          "axiom_inventory"
+        ],
+        "verifier_implementations": [
+          "synthetic-independent-a",
+          "synthetic-independent-b"
+        ]
+      },
+      {
+        "challenge_window_seconds": 100,
+        "class": "computational",
+        "minimum_independent_operators": 2,
+        "minimum_reproductions": 2,
+        "policy_id": "xlpolicy:blake3:d9d8e2c475ddb0b0e5ff632d77f25f680287994288b1ee1163d33c2545368b47",
+        "policy_root": "blake3:d9d8e2c475ddb0b0e5ff632d77f25f680287994288b1ee1163d33c2545368b47",
+        "required_evidence": [
+          "reproducible_source",
+          "execution_environment",
+          "dependency_lock",
+          "deterministic_rerun"
+        ],
+        "verifier_implementations": [
+          "synthetic-independent-a",
+          "synthetic-independent-b"
+        ]
+      },
+      {
+        "challenge_window_seconds": 100,
+        "class": "empirical",
+        "minimum_independent_operators": 2,
+        "minimum_reproductions": 2,
+        "policy_id": "xlpolicy:blake3:426e732d555fa291dbdf7a88f3c5d8ce9a9cbbb40f0b4963b49ecf9077356b72",
+        "policy_root": "blake3:426e732d555fa291dbdf7a88f3c5d8ce9a9cbbb40f0b4963b49ecf9077356b72",
+        "required_evidence": [
+          "dataset_provenance",
+          "analysis_plan",
+          "uncertainty_report",
+          "robustness_checks",
+          "protocol_registration",
+          "instrument_manifest",
+          "data_lineage",
+          "independent_replication"
+        ],
+        "verifier_implementations": [
+          "synthetic-independent-a",
+          "synthetic-independent-b"
+        ]
+      }
+    ],
+    "review_deadline": 1300,
+    "submissions_close_at": 1100,
+    "usdc_asset": "simulation:USDC",
+    "verification_fee_units": 1000000
+  },
+  "formal_policy_bindings": {
+    "xlpolicy:blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a": "xlpolicy:blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a"
+  },
+  "max_contributors_per_submission": 4,
+  "maximum_verifier_clusters": 4,
+  "minimum_foundational_bps": 1000,
+  "per_researcher_submission_cap": 4,
+  "prior_art_cutoff": "1970-01-01T00:13:20Z",
+  "reproduction_fee_units": 200000,
+  "settlement_expires_at": 100000,
+  "simultaneous_window_seconds": 60
+}

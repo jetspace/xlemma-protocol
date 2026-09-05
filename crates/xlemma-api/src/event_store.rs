@@ -29,6 +29,10 @@ const MAX_ENTRY_BYTES: u64 = 64 * 1024 * 1024;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "event_type", rename_all = "snake_case", deny_unknown_fields)]
 pub(crate) enum ApiJournalEvent {
+    DiscoveryAccepted {
+        envelope: xlemma_economics::DiscoveryEnvelope,
+        received_at: DateTime<Utc>,
+    },
     MessageAccepted {
         envelope: XlmpEnvelope,
     },
@@ -113,6 +117,7 @@ fn entry_hash(
 
 #[derive(Clone, Default)]
 pub(crate) struct RecoveredState {
+    pub discovery: xlemma_economics::DiscoveryLedger,
     pub projection: xlemma_xlmp::ProtocolProjection,
     pub jobs: BTreeMap<String, VerificationJobRecord>,
     pub messages: BTreeMap<String, XlmpEnvelope>,
@@ -122,6 +127,19 @@ pub(crate) struct RecoveredState {
 impl RecoveredState {
     fn apply(&mut self, event: &ApiJournalEvent) -> Result<(), EventStoreError> {
         match event {
+            ApiJournalEvent::DiscoveryAccepted {
+                envelope,
+                received_at,
+            } => {
+                let source = crate::discovery::EvidenceSource {
+                    jobs: &self.jobs,
+                    messages: &self.messages,
+                    projection: &self.projection,
+                };
+                self.discovery
+                    .apply(envelope, *received_at, &source)
+                    .map_err(|error| EventStoreError::InvalidEvent(error.to_string()))?;
+            }
             ApiJournalEvent::MessageAccepted { envelope } => {
                 envelope
                     .validate_integrity()
@@ -242,7 +260,15 @@ pub(crate) struct EventJournal {
 }
 
 impl EventJournal {
+    #[cfg(test)]
     pub fn open(path: impl AsRef<Path>) -> Result<(Self, RecoveredState), EventStoreError> {
+        Self::open_with_discovery(path, None)
+    }
+
+    pub fn open_with_discovery(
+        path: impl AsRef<Path>,
+        trust: Option<xlemma_economics::DiscoveryTrust>,
+    ) -> Result<(Self, RecoveredState), EventStoreError> {
         let path = path.as_ref().to_path_buf();
         if path.as_os_str().is_empty() {
             return Err(EventStoreError::InvalidPath);
@@ -283,6 +309,10 @@ impl EventJournal {
             File::open(parent)?.sync_all()?;
         }
         let mut recovered = RecoveredState::default();
+        if let Some(trust) = trust {
+            recovered.discovery = xlemma_economics::DiscoveryLedger::new(trust)
+                .map_err(|error| EventStoreError::InvalidEvent(error.to_string()))?;
+        }
         let mut expected_sequence = 0_u64;
         let mut previous_hash = GENESIS_HASH.to_owned();
         let mut reader = BufReader::new(file.try_clone()?);

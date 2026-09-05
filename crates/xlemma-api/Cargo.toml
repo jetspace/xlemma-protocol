@@ -21,6 +21,7 @@ tracing-subscriber.workspace = true
 uuid.workspace = true
 xlemma-consensus = { path = "../xlemma-consensus" }
 xlemma-core = { path = "../xlemma-core" }
+xlemma-economics = { path = "../xlemma-economics" }
 xlemma-xlmp = { path = "../xlemma-xlmp" }
 
 [dev-dependencies]

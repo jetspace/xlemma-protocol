@@ -2,6 +2,7 @@
 
 pub mod credit;
 pub mod discovery;
+pub mod discovery_service;
 pub mod dividend;
 pub mod funding;
 pub mod revenue;
@@ -9,6 +10,7 @@ pub mod upstream;
 
 pub use credit::*;
 pub use discovery::*;
+pub use discovery_service::*;
 pub use dividend::*;
 pub use funding::*;
 pub use revenue::*;

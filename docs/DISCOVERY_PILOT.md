@@ -1,5 +1,9 @@
 # Open discovery pilot
 
+This page describes the offline simulator. The separate [funded discovery
+service](DISCOVERY_SERVICE.md) implements authenticated APIs, actual funding
+observation and EVM settlement; its runbook tracks deployment prerequisites.
+
 The local pilot implements reproducible economic state transitions before any
 funded network activation. `xlemma-economics::discovery` powers the CLI and the
 adversarial runner. It does **not** authenticate funding or evidence, execute
@@ -22,7 +26,7 @@ attack report after reviewing changes. It contains no second reward allocator.
 Input/output schemas are `schemas/discovery-simulation*.schema.json`; these
 are local formats, not new XLMP messages or API settlement endpoints.
 
-## Seven improvements and implementation boundaries
+## Offline boundaries (see the service runbook for implemented integration)
 
 | Improvement | Executable pilot | Required for deployment |
 |---|---|---|
@@ -70,8 +74,8 @@ and unpaid. A subsequent verified packet needs a subsequent reviewed submission.
 
 Finalization waits for the appeal window and all admitted appeals, then
 recalculates the entire batch. Expiry retains unallocated funds and unresolved
-cases without declaring their research false. Refunds and post-settlement
-recovery are not implemented. Each category calculates:
+cases without declaring their research false. The offline runner does not perform refunds or post-settlement
+recovery; the service escrow implements unused-fund refunds. Each category calculates:
 
 ```text
 group award = floor(solver budget * group weight / total eligible group weight)

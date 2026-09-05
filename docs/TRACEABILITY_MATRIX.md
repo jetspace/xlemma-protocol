@@ -4,12 +4,14 @@ Every major concept requested or developed in the design is mapped to its primar
 
 | Concept | Specification / documentation | Reference implementation |
 |---|---|---|
-| Unsolicited discovery funding without a posted bounty, affiliation, or buyer | `spec/024-open-research-mining.md`, `docs/DISCOVERY_PILOT.md` | `simulate_discovery`, CLI and six-category synthetic fixture; no authenticated funding or payment activation |
-| Truth/eligibility separation; partition and replay resistance | `spec/010-novelty-significance.md`, `spec/024-open-research-mining.md` | Exact group/claim and declared history checks, generated partition tests; semantic grouping and calibrated weights remain external inputs |
-| Budget-conserving discovery rounds with shared-denominator appeal holds | `spec/024-open-research-mining.md` | Private offline replay state, whole-batch finalization, integer allocation and reserve properties; atomic live settlement remains an activation gate |
-| Independent accessible appeals of evidence and reward decisions | `spec/013-governance-disputes.md`, `docs/DISCOVERY_PILOT.md` | Pool-funded bounded appeal replay, declared panel conflicts, correction/revalidation/expiry tests; no authenticated or operated appeal service |
-| Institutional funding mandates/conflicts and empirical physics evidence | `docs/DISCOVERY_PILOT.md` | Declared restrictions, fees, donor concentration, profile/registration checks; mandate authentication and qualified laboratories remain activation gates |
-| Honest/hostile discovery outcomes and empirical profile | `docs/DISCOVERY_PILOT.md` | `scripts/simulate_discovery.py`, schema/vector checks, 17-scenario report including known leakage and corrected wrongful exclusion |
+| Unsolicited discovery without a buyer; protected foundational funding | `spec/024-open-research-mining.md`, `docs/DISCOVERY_SERVICE.md` | `DiscoveryLedger`, signed seven-category policies and independent calibration approvals |
+| Truth/eligibility separation and economic farming resistance | same | Exact evidence/profile bindings, group/claim reservation history, calibrated weights, simulator; semantic grouping remains a qualified assessment |
+| Conservative allocation and independent accessible appeals | same | Signed process/reward appeals, contributor consent, dissent retention, whole-batch holds, verdict-neutral fees and timeout plans |
+| Independent simultaneous discoveries | same | Commitment priority, pre-disclosure/control-disjoint eligibility, one group award shared across independently assessed teams |
+| Durable research API and operator tools | `docs/DISCOVERY_SERVICE.md`, OpenAPI and discovery schemas | Ed25519 command envelopes, journal replay, queue/history/publication/settlement routes, CLI preparation/signing and EVM receipt observer |
+| Actual funded settlement and scientific evidence publication | same | `DiscoveryRoundEscrow`, `DiscoveryEvidenceRegistry`, local EVM integration, independent role and dynamic finality checks |
+| Institutional restrictions and empirical physics evidence | same | Confirmed category funding, donor disclosures, registered-study/profile/root checks; operating institutions and qualified laboratories remain deployment gates |
+| Honest/hostile outcomes and conservation | `docs/DISCOVERY_PILOT.md` | Generated Rust properties, contract fuzz tests, 17-scenario report including known semantic leakage and corrected exclusion |
 | Canonical provider-neutral protocol | `spec/018-xlmp-wire-protocol.md` | `xlemma-xlmp`, `xlmp-envelope.schema.json` |
 | XLMP/1 envelope and MessageID integrity | same | `XlmpEnvelope::validate_integrity`, HTTP message ingress |
 | Canonical XLMP message vocabulary | same | `XlmpMessage`, `MessageKind` |

@@ -96,3 +96,23 @@ The dependency scan uses the [RustSec advisory database](https://rustsec.org/adv
 The Solidity dependency review consulted the upstream
 [OpenZeppelin security advisories](https://github.com/OpenZeppelin/openzeppelin-contracts/security/advisories).
 The additional Solidity static scanner is [Slither](https://pypi.org/project/slither-analyzer/).
+
+
+## Discovery service follow-up — 2026-09-05
+
+The [funded discovery service](DISCOVERY_SERVICE.md) adds authenticated,
+journaled round/assessment/appeal operations, exact verification-policy and
+evidence bindings, contributor consent, independent simultaneous-discovery
+sharing, protected category funding, and verdict-neutral reproduction/review
+payments. The USDC escrow and protocol-certificate publication registry are
+connected by executable receipt observers and a local EVM integration.
+
+The updated [security scan](../reports/discovery-security-scan.json) records
+237 Rust dependencies with no known advisories and the complete Slither triage:
+43 remaining warnings across the contract workspace, including the three
+previously reviewed guarded router reentrancy/balance findings. New discovery
+findings are bounded external calls, deadline timestamps and interface
+maintainability; three implicit-zero initialization warnings were removed.
+This is an author-operated review, not an independent audit or production launch.
+Validation counts and reproducible commands are recorded in
+[the service validation report](../reports/discovery-service-validation.json).

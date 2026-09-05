@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/discovery-history.schema.json",
+  "title": "Append-only signed discovery command history",
+  "type": "array",
+  "items": {
+    "$ref": "discovery-envelope.schema.json"
+  },
+  "maxItems": 10000
+}

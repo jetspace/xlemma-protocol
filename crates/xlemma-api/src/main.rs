@@ -1,3 +1,4 @@
+mod discovery;
 mod event_store;
 
 use anyhow::Context;
@@ -44,6 +45,7 @@ use event_store::{ApiJournalEvent, EventJournal};
 
 #[derive(Clone)]
 struct AppState {
+    discovery: Arc<RwLock<xlemma_economics::DiscoveryLedger>>,
     jobs: Arc<RwLock<BTreeMap<String, VerificationJobRecord>>>,
     messages: Arc<RwLock<BTreeMap<String, XlmpEnvelope>>>,
     observation_commits: Arc<RwLock<BTreeMap<String, ObservationCommitMessage>>>,
@@ -198,8 +200,18 @@ impl AppState {
         }
         let event_log_path =
             std::env::var("XLEMMA_EVENT_LOG_PATH").context("XLEMMA_EVENT_LOG_PATH is required")?;
-        let (event_journal, recovered) = EventJournal::open(event_log_path)
-            .context("failed to open or authenticate XLEMMA_EVENT_LOG_PATH")?;
+        let discovery_trust = std::env::var("XLEMMA_DISCOVERY_TRUST_PATH")
+            .ok()
+            .map(|path| -> anyhow::Result<xlemma_economics::DiscoveryTrust> {
+                let trust: xlemma_economics::DiscoveryTrust =
+                    serde_json::from_slice(&std::fs::read(path)?)?;
+                trust.validate()?;
+                Ok(trust)
+            })
+            .transpose()?;
+        let (event_journal, recovered) =
+            EventJournal::open_with_discovery(event_log_path, discovery_trust)
+                .context("failed to open or authenticate XLEMMA_EVENT_LOG_PATH")?;
         tracing::info!(
             path = %event_journal.path().display(),
             recovered_jobs = recovered.jobs.len(),
@@ -207,6 +219,7 @@ impl AppState {
             "recovered durable XLMP protocol state"
         );
         Ok(Self {
+            discovery: Arc::new(RwLock::new(recovered.discovery)),
             jobs: Arc::new(RwLock::new(recovered.jobs)),
             messages: Arc::new(RwLock::new(recovered.messages)),
             observation_commits: Arc::new(RwLock::new(recovered.observation_commits)),
@@ -225,6 +238,7 @@ impl AppState {
             messages: Arc::default(),
             observation_commits: Arc::default(),
             projection: Arc::default(),
+            discovery: Arc::default(),
             auth_token: "test-auth-token-that-is-at-least-32-bytes".into(),
             trusted_signers: Arc::new(BTreeSet::from([trusted_signer])),
             node_signers: Arc::default(),
@@ -283,6 +297,24 @@ async fn main() -> anyhow::Result<()> {
         .route(
             "/v1/artifacts/{artifact_id}/availability",
             get(get_availability),
+        )
+        .route("/v1/discovery/commands", post(discovery::accept))
+        .route(
+            "/v1/discovery/rounds/{round_id}/submissions/{submission_id}/evidence",
+            get(discovery::evidence),
+        )
+        .route("/v1/discovery/rounds", get(discovery::overview))
+        .route(
+            "/v1/discovery/rounds/{round_id}/history",
+            get(discovery::history),
+        )
+        .route(
+            "/v1/discovery/rounds/{round_id}/queue",
+            get(discovery::queue),
+        )
+        .route(
+            "/v1/discovery/rounds/{round_id}/settlement",
+            get(discovery::settlement),
         )
         .route("/v1/verification-jobs", post(create_job))
         .route("/v1/verification-jobs/{job_id}", get(get_job))
@@ -1295,6 +1327,7 @@ mod tests {
             messages: Arc::default(),
             observation_commits: Arc::default(),
             projection: Arc::default(),
+            discovery: Arc::default(),
             auth_token: "test-auth-token-that-is-at-least-32-bytes".into(),
             trusted_signers: Arc::new(BTreeSet::from([signer.clone()])),
             node_signers: Arc::new(BTreeMap::from([(node_id, signer)])),
@@ -1305,6 +1338,7 @@ mod tests {
     fn journal_state(path: &std::path::Path, trusted_signer: String) -> AppState {
         let (journal, recovered) = EventJournal::open(path).unwrap();
         AppState {
+            discovery: Arc::new(RwLock::new(recovered.discovery)),
             jobs: Arc::new(RwLock::new(recovered.jobs)),
             messages: Arc::new(RwLock::new(recovered.messages)),
             observation_commits: Arc::new(RwLock::new(recovered.observation_commits)),
@@ -1316,7 +1350,7 @@ mod tests {
         }
     }
 
-    fn certificate_fixture() -> (
+    pub(crate) fn certificate_fixture() -> (
         VerificationJobRecord,
         PoIRCertificate,
         BTreeMap<String, XlmpEnvelope>,
@@ -1599,6 +1633,7 @@ mod tests {
             messages: Arc::default(),
             observation_commits: Arc::default(),
             projection: Arc::default(),
+            discovery: Arc::default(),
             auth_token: "test-auth-token-that-is-at-least-32-bytes".into(),
             trusted_signers: Arc::new(BTreeSet::from([node_signer.clone(), wrong_signer.clone()])),
             node_signers: Arc::new(BTreeMap::from([(node_id.clone(), node_signer)])),

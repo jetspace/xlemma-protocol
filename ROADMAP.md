@@ -65,23 +65,22 @@ not close the production integrations and trust dependencies listed below.
 
 ### Open research mining — activation gates
 
-The [XLIP-024](spec/024-open-research-mining.md) requirements have an executable
-[offline pilot](docs/DISCOVERY_PILOT.md). Live open mining and the operated
-decision-appeal service are not activated.
+The [funded discovery service](docs/DISCOVERY_SERVICE.md) extends the
+[offline pilot](docs/DISCOVERY_PILOT.md) with authenticated commands and tested
+EVM settlement. Public mining is not activated by a repository commit.
 
-- [x] Implement deterministic local round replay with separate category budgets, contributor splits, bounded review admission, declared institutional restrictions/concentration, appeal holds, corrections and expiry.
-- [x] Add simulation-only schemas, CLI vectors, an empirical physics profile, generated conservation/partition properties, and an adversarial runner measuring leakage and wrongful exclusion.
-
-- [ ] Implement versioned funded rounds, separate evidence/eligibility decisions, signed assessment and appeal records, schemas, lifecycle transitions, and APIs.
-- [ ] Implement domain-specific difficulty calibration, evidence-backed duplicate/partition grouping, cross-round reward history, contributor splits, and institutional fund restrictions.
-- [ ] Implement atomic, replay-safe USDC allocation with costs/reserves, integer rounding, and holds/recalculation for every allocation affected by a timely appeal.
-- [ ] Operate independent appeal panels with conflict exclusions, capped costs/funded access, review deadlines, escalation, expiry, and funded correction remedies.
-- [ ] Qualify physics verification profiles that distinguish model derivation, simulation reproduction, and empirical support with uncertainty and independent replication.
-- [ ] Pass XLIP-024 conservation properties and adversarial farming/appeal scenarios, including legitimate foundational contributions with no buyer.
-- [ ] Complete independent economic/security review, public simulation, and constitutional approval before activating funded discovery mining.
-- [ ] Protect foundational/domain budgets and operate fair commons-assisted queues with published verifier capacity and wait/cost forecasts.
-- [ ] Establish outcome-neutral registered-method contracts, qualified laboratories, and independent experimental replication partnerships.
-- [ ] Establish transparent multi-round institutional commitments and runway reporting, with fundraising separated from allocation and appeals.
+- [x] Implement deterministic category allocation, conservative reserves, generated conservation/partition properties and the adversarial simulator.
+- [x] Implement signed round, calibration, consent, assessment and appeal commands, schemas, APIs, durable replay and readable history.
+- [x] Bind formal awards to exact PoIR/checker policies and other research awards to complete authenticated profile-specific reproduction evidence.
+- [x] Add protected foundational budgets, bounded assisted queues, reference-cost calibration, exact group/claim history and independent simultaneous-discovery sharing.
+- [x] Pay completed reproduction, assessment and appeal work regardless of PASS; retain disagreement and prevent unresolved appeals from unlocking awards.
+- [x] Implement confirmed institutional funding observations, isolated USDC escrow categories, independently reviewed atomic plans, certificate publication/quarantine, refunds and release of confirmed unpaid reservations.
+- [x] Exercise real local-EVM funding, signed Rust allocation, independent certificate publication, exact transfers and donor refunds.
+- [ ] Independently review the economic policy, semantic grouping/error rates, security and constitutional activation decision.
+- [ ] Deploy funded contracts and operate qualified, independent calibration, verification, appeal, relay and watcher teams.
+- [ ] Qualify empirical physics laboratories, instruments, uncertainty/provenance controls and independent replication partnerships.
+- [ ] Establish outcome-neutral registered-method service agreements, real lab/compute capacity and transparent multi-round institutional funding commitments.
+- [ ] Publish operational escalation for rejected/exhausted intake, outage recovery, trust migration and post-settlement corrections; measure queue delays and legitimate exclusion in the field.
 
 ## Phase 4 — compute economics
 

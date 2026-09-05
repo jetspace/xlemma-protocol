@@ -172,3 +172,15 @@ Before opening funded discovery rounds, implement and independently review:
   formalization, a genuinely useful intermediate lemma, independent replication,
   a successful grouping appeal, a checker disagreement that cannot be voted
   away, review timeout, fee assistance, and post-settlement correction.
+
+
+## Authenticated reference implementation
+
+The [service runbook](../docs/DISCOVERY_SERVICE.md) specifies the implemented
+signed command wire format, fixed calibration and formal-policy bindings,
+contributor consent, commitment priority and simultaneous-discovery sharing,
+funded verdict-neutral reproduction/review, independent appeals, durable APIs,
+confirmed chain observations and atomic category escrow. It also specifies the
+explicit offchain certificate-publication trust boundary and deployment gates.
+The independent-review and operational activation requirements above still apply;
+reference implementation and local EVM tests do not activate a production network.

@@ -1,0 +1,921 @@
+[
+  {
+    "command": {
+      "kind": "create_round",
+      "policy": {
+        "assisted_submission_slots": 4,
+        "calibration": {
+          "reference": {
+            "accepted_results": 10,
+            "attempts": 20,
+            "outcomes_root": "xla:blake3:76f01322857f4d1afe6fed2bb0e2a8e29e9b473a11be62bfe36a4b98289b78d6",
+            "reference_cost_units": 100,
+            "uncertainty_bps": 500
+          }
+        },
+        "calibration_root": "xla:blake3:16458806d0346b79fa622c3b2fe6a80e672616cf85f64431a43b2fcaed115325",
+        "domain": "foundational-mathematics",
+        "economics": {
+          "appeal_fee_units": 2000000,
+          "appeal_reviewers": [
+            "xloperator:blake3:1d349ad83ce95409bc1805f0fe1b93bdcb6a554c4e0f51e2989f599de554c6d0",
+            "xloperator:blake3:54a7996a75ba46cd2ba4623b6150f4849dd46affd8f7c9f046cf060e5ab0ddf4"
+          ],
+          "appeals_close_at": 1200,
+          "assessment_policy_root": "xla:blake3:938f9713c310d13d1144aca3f0234beba7ab8b30bf4ec24ca5476f163a54c348",
+          "assessors": [
+            "xloperator:blake3:b66f2c1d10771ee14f914aedae5407332541248ab7e2a85a38c2999f677e8598",
+            "xloperator:blake3:ffac826cac0e8cace852bb79c01d7c59dc0655500ad61a871cf45beb374e786f"
+          ],
+          "budgets": {
+            "discovery": {
+              "appeal_units": 50000000,
+              "maximum_weight": 1000,
+              "solver_units": 300000000,
+              "verification_units": 100000000
+            },
+            "formalization": {
+              "appeal_units": 50000000,
+              "maximum_weight": 1000,
+              "solver_units": 300000000,
+              "verification_units": 100000000
+            },
+            "foundational_research": {
+              "appeal_units": 50000000,
+              "maximum_weight": 1000,
+              "solver_units": 300000000,
+              "verification_units": 100000000
+            },
+            "negative_result": {
+              "appeal_units": 50000000,
+              "maximum_weight": 1000,
+              "solver_units": 300000000,
+              "verification_units": 100000000
+            },
+            "proof_improvement": {
+              "appeal_units": 50000000,
+              "maximum_weight": 1000,
+              "solver_units": 300000000,
+              "verification_units": 100000000
+            },
+            "replication": {
+              "appeal_units": 50000000,
+              "maximum_weight": 1000,
+              "solver_units": 300000000,
+              "verification_units": 100000000
+            },
+            "research_tools": {
+              "appeal_units": 50000000,
+              "maximum_weight": 1000,
+              "solver_units": 300000000,
+              "verification_units": 100000000
+            }
+          },
+          "maximum_appeals": 8,
+          "maximum_submissions": 16,
+          "name": "synthetic-open-discovery-pilot-v1",
+          "opens_at": 1000,
+          "profiles": [
+            {
+              "challenge_window_seconds": 100,
+              "class": "formal",
+              "minimum_independent_operators": 2,
+              "minimum_reproductions": 2,
+              "policy_id": "xlpolicy:blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a",
+              "policy_root": "blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a",
+              "required_evidence": [
+                "formal_statement",
+                "proof_object",
+                "pinned_toolchain",
+                "axiom_inventory"
+              ],
+              "verifier_implementations": [
+                "synthetic-independent-a",
+                "synthetic-independent-b"
+              ]
+            },
+            {
+              "challenge_window_seconds": 100,
+              "class": "computational",
+              "minimum_independent_operators": 2,
+              "minimum_reproductions": 2,
+              "policy_id": "xlpolicy:blake3:d9d8e2c475ddb0b0e5ff632d77f25f680287994288b1ee1163d33c2545368b47",
+              "policy_root": "blake3:d9d8e2c475ddb0b0e5ff632d77f25f680287994288b1ee1163d33c2545368b47",
+              "required_evidence": [
+                "reproducible_source",
+                "execution_environment",
+                "dependency_lock",
+                "deterministic_rerun"
+              ],
+              "verifier_implementations": [
+                "synthetic-independent-a",
+                "synthetic-independent-b"
+              ]
+            },
+            {
+              "challenge_window_seconds": 100,
+              "class": "empirical",
+              "minimum_independent_operators": 2,
+              "minimum_reproductions": 2,
+              "policy_id": "xlpolicy:blake3:426e732d555fa291dbdf7a88f3c5d8ce9a9cbbb40f0b4963b49ecf9077356b72",
+              "policy_root": "blake3:426e732d555fa291dbdf7a88f3c5d8ce9a9cbbb40f0b4963b49ecf9077356b72",
+              "required_evidence": [
+                "dataset_provenance",
+                "analysis_plan",
+                "uncertainty_report",
+                "robustness_checks",
+                "protocol_registration",
+                "instrument_manifest",
+                "data_lineage",
+                "independent_replication"
+              ],
+              "verifier_implementations": [
+                "synthetic-independent-a",
+                "synthetic-independent-b"
+              ]
+            }
+          ],
+          "review_deadline": 1300,
+          "submissions_close_at": 1100,
+          "usdc_asset": "simulation:USDC",
+          "verification_fee_units": 1000000
+        },
+        "formal_policy_bindings": {
+          "xlpolicy:blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a": "xlpolicy:blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a"
+        },
+        "max_contributors_per_submission": 4,
+        "maximum_verifier_clusters": 4,
+        "minimum_foundational_bps": 1000,
+        "per_researcher_submission_cap": 4,
+        "prior_art_cutoff": "1970-01-01T00:13:20Z",
+        "reproduction_fee_units": 200000,
+        "settlement_expires_at": 100000,
+        "simultaneous_window_seconds": 60
+      }
+    },
+    "command_id": "xlr:blake3:eec13ef4305f8078428f9e04b6cf27165086acbfa3c5d30340e66c8bcb1475d9",
+    "expires_at": "1970-01-01T00:16:00Z",
+    "issued_at": "1970-01-01T00:15:00Z",
+    "nonce": "1-900",
+    "signature": "ed25519:2mSBl_gUh7t6d1MnAVjpeU-rq7Qo8LJwquS6FhUWHMbMTNJatBpq4KEXqnI82pZSwyGAS8V5WCsIs9RvtPa2Cw",
+    "signer": "ed25519:iojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "kind": "approve_calibration",
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:3c3d9c24bc20b1cb6d96f65f72d685c6a5884dd6675edece49f9dfd1c7fd1a19",
+    "expires_at": "1970-01-01T00:16:01Z",
+    "issued_at": "1970-01-01T00:15:01Z",
+    "nonce": "6-901",
+    "signature": "ed25519:7nNN73tT5exdV9SnkBDVdIk59wmdF6stdJ8Sg-HFEujw676u0Zh-Gts488wd4sOWzHpeog8Erim6HW9xcsq2Dg",
+    "signer": "ed25519:iodf_x6zhFFXes1a_uQFRWVo3XyJ4JCGOgVXvHr0nxc",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "kind": "approve_calibration",
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:038ba955a53dfdc166aad82bd8ab48d507175157f5f8671c300067716f090267",
+    "expires_at": "1970-01-01T00:16:02Z",
+    "issued_at": "1970-01-01T00:15:02Z",
+    "nonce": "7-902",
+    "signature": "ed25519:9nmYt_J675vKYteY18Eb4lGhCZNpVil1Hk3Olav4hyzcyqxtu0ksZpGRgB6lt6jxlul3X3VJZAMt1YuXsVKeBQ",
+    "signer": "ed25519:6kpsY-KcUgq-9VB7Ey7F-ZVHdq6-vnuSQh7qaRRG0iw",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "foundational_research",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:4580112f38f27baee16c2a84498a6f7987e5fd51daf3dd320b10aa2ddee2a441",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:c2a944684aedf91741d76ad6513548b6d13222fc30908e10051f240b43c18d83",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:dcd3b51d6c0811df6e5c6a82cbd4749c55d06d2f72440e1a0f4818e27a077aea",
+    "expires_at": "1970-01-01T00:16:10Z",
+    "issued_at": "1970-01-01T00:15:10Z",
+    "nonce": "4-910",
+    "signature": "ed25519:n6YD9QNrrOroAIOrGL6TcpDfdaH-EGCvyExG9wtPdfgEJnq4qJkW1sQ2u__JAvRk0kF0W0h-Nu9ROpZ9wYb_BA",
+    "signer": "ed25519:ypOsFwUYcHHWe4PH_w7-gQjo7EUwV113JoeTM9vavnw",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "foundational_research",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:4580112f38f27baee16c2a84498a6f7987e5fd51daf3dd320b10aa2ddee2a441",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:c2a944684aedf91741d76ad6513548b6d13222fc30908e10051f240b43c18d83",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:d7ce25cd469a75c1ad27cabb14ad7032b2c2d5d846b990ca184cc2c481892b50",
+    "expires_at": "1970-01-01T00:16:11Z",
+    "issued_at": "1970-01-01T00:15:11Z",
+    "nonce": "5-911",
+    "signature": "ed25519:-xyYI1Tb-fKYZWyIDJWx0tiZ90KMZZsWMvr6l13MFtYb4z0bMaJrOwt8ccnzDI_cOTuYLkmsRrFNTY-6i8fzDw",
+    "signer": "ed25519:bnoc3Smwt4_ROvTFWY_v9O8qlxZuPKby5Pv8zYBQW_E",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "discovery",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:f4d3b06e72d75e458bf5008a95013a4a93e4457ebe277dcede352f8edc5cedc5",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:0650d7eaf35be5a52684c4b5fd852292c662369a6b7b871b035e0e06f1962ee6",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:6c91ecde1aaedca0d18eebcf4d970d0705ac94b669c6df36806f9a745708fe72",
+    "expires_at": "1970-01-01T00:16:12Z",
+    "issued_at": "1970-01-01T00:15:12Z",
+    "nonce": "4-912",
+    "signature": "ed25519:b9SrZ8ImOA00DvF-LRUyDvdudZdAO3H_MyYsWZjH4aCX4jlACn8ISbF9KaP1jV5U1Iuo5XLyTAmmDeBABFHxCg",
+    "signer": "ed25519:ypOsFwUYcHHWe4PH_w7-gQjo7EUwV113JoeTM9vavnw",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "discovery",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:f4d3b06e72d75e458bf5008a95013a4a93e4457ebe277dcede352f8edc5cedc5",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:0650d7eaf35be5a52684c4b5fd852292c662369a6b7b871b035e0e06f1962ee6",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:71094ba0370635ddd01bcdac767d08b1d556d19ef505b9722b8b6309a7afa261",
+    "expires_at": "1970-01-01T00:16:13Z",
+    "issued_at": "1970-01-01T00:15:13Z",
+    "nonce": "5-913",
+    "signature": "ed25519:b_1t1vFAgTbEWytv4UghREjUnoul1VD13mPkzcEu5QMcHrCbi4X38FFYJo7ZuijqsOdQSASd7ibF3ZPZR9s7AA",
+    "signer": "ed25519:bnoc3Smwt4_ROvTFWY_v9O8qlxZuPKby5Pv8zYBQW_E",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "formalization",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:79875f52034e013e4469493cccb250c22dc24145003dc84ba29f7a29041796b3",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:4c9e25b1ccf71bd9c51943c3aa567d54966827fd579647a466728e0aaf3f0ca4",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:f9a2c5eeab42e1b12e1279577b0dc7a9394365fd49e10dbc233753ee2ca2497d",
+    "expires_at": "1970-01-01T00:16:14Z",
+    "issued_at": "1970-01-01T00:15:14Z",
+    "nonce": "4-914",
+    "signature": "ed25519:QHj2D6xIQuLDqYMeCzgZDUSH38HFF9np8NTUvXIL_I0RBOJTvWdbsRgr4FdnoQenQkXaKZ7KaRUgMqXv0CunCA",
+    "signer": "ed25519:ypOsFwUYcHHWe4PH_w7-gQjo7EUwV113JoeTM9vavnw",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "formalization",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:79875f52034e013e4469493cccb250c22dc24145003dc84ba29f7a29041796b3",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:4c9e25b1ccf71bd9c51943c3aa567d54966827fd579647a466728e0aaf3f0ca4",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:a132f82a8c4f7e5d8dc7bd0613176548d134a66cdb90cf465269970481520849",
+    "expires_at": "1970-01-01T00:16:15Z",
+    "issued_at": "1970-01-01T00:15:15Z",
+    "nonce": "5-915",
+    "signature": "ed25519:Vb89nN-H5P2DiDis6Ggjjb43jqbLhmP__Ugx8_m3mtip0gsQ8Iismn2PGES_nA9Z9SD1pERHLID6u5OnaFmSAg",
+    "signer": "ed25519:bnoc3Smwt4_ROvTFWY_v9O8qlxZuPKby5Pv8zYBQW_E",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "proof_improvement",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:a8956f68f211a18f14fdee2212cf39c21ab4644833fd4e4cd490740d3fc8d6e8",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:b4a5be27d66db2fda8484d5923d57612dd32054d7cf59a227a58bbb53b339705",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:d3eb14720eafa99e618b4c87a39d9c811438fc330207670de9a294609326d27c",
+    "expires_at": "1970-01-01T00:16:16Z",
+    "issued_at": "1970-01-01T00:15:16Z",
+    "nonce": "4-916",
+    "signature": "ed25519:1MSHXxYIOiIQy2b0ztcDq8mbhv0R9Zt0BHRDJ5xQM3j2S5iSTItnxd5pOCUOXNeet_ZFXHIcChxVxJxRK7RrDQ",
+    "signer": "ed25519:ypOsFwUYcHHWe4PH_w7-gQjo7EUwV113JoeTM9vavnw",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "proof_improvement",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:a8956f68f211a18f14fdee2212cf39c21ab4644833fd4e4cd490740d3fc8d6e8",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:b4a5be27d66db2fda8484d5923d57612dd32054d7cf59a227a58bbb53b339705",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:5984777424b427625d336f628aef4d79eb8cf4a6b11beac30635b61ea5802b0c",
+    "expires_at": "1970-01-01T00:16:17Z",
+    "issued_at": "1970-01-01T00:15:17Z",
+    "nonce": "5-917",
+    "signature": "ed25519:wbCDL4L_QeTqRmXF_x-2_-hpkh5WrOSEJUNKadN3-UWF8DGWzyW-vE95lk0EnVpC1eqHWyuxUO4vrUFKJv9QAg",
+    "signer": "ed25519:bnoc3Smwt4_ROvTFWY_v9O8qlxZuPKby5Pv8zYBQW_E",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "replication",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:b86fcdf426a4a006f5a3aeae29de515d01ea36650da546a095da92519271cdee",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:828bb6eb311d690ffbc771349a895b6057c888b4bab2c3f9695cf5f6ffc52059",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:5819ca9d65955c9c5ba0fbf8efda2b298ee2174446891cb2e14668ac770e5517",
+    "expires_at": "1970-01-01T00:16:18Z",
+    "issued_at": "1970-01-01T00:15:18Z",
+    "nonce": "4-918",
+    "signature": "ed25519:14x6T1NDHUNyh6y8pIXZvuX9Er1MHO5rO4e5HldFVzIQq0QyhwRH8GIBKF0aRLp-JOFEsq-ypHCP5HokDOtADA",
+    "signer": "ed25519:ypOsFwUYcHHWe4PH_w7-gQjo7EUwV113JoeTM9vavnw",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "replication",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:b86fcdf426a4a006f5a3aeae29de515d01ea36650da546a095da92519271cdee",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:828bb6eb311d690ffbc771349a895b6057c888b4bab2c3f9695cf5f6ffc52059",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:52508b6f5f7d712dd65acd1eaf945f9cdbf7de572695f022206d4e82ea0be708",
+    "expires_at": "1970-01-01T00:16:19Z",
+    "issued_at": "1970-01-01T00:15:19Z",
+    "nonce": "5-919",
+    "signature": "ed25519:aqciNmuJtMIU0IKNpEe6T0WvV1iYJi09CXW-IZJ3BM61_YP-OsJZ4dvPafLorduCF4n0RNZIrZv6vX3exM2lBg",
+    "signer": "ed25519:bnoc3Smwt4_ROvTFWY_v9O8qlxZuPKby5Pv8zYBQW_E",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "research_tools",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:c729921cff9e938667a70ca964eb83fba5972e00fff14c3390956c83411016d3",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:1abf5ece370e34d4517977dd8e681613b6ddf72186b764ac56c13b1dfb2637b1",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:8e74ab8f17a687df9046a78e5e939131666c903d89c2c4fc12fa9c171be59ae9",
+    "expires_at": "1970-01-01T00:16:20Z",
+    "issued_at": "1970-01-01T00:15:20Z",
+    "nonce": "4-920",
+    "signature": "ed25519:dYGlVL6L4MBhKa9mWZfw-H3Q9uMtXafZVPXRpfKVXJXImOeu9N0zlTn77KRDCkrKRYKTjdmNy3nwl20WnB50DA",
+    "signer": "ed25519:ypOsFwUYcHHWe4PH_w7-gQjo7EUwV113JoeTM9vavnw",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "research_tools",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:c729921cff9e938667a70ca964eb83fba5972e00fff14c3390956c83411016d3",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:1abf5ece370e34d4517977dd8e681613b6ddf72186b764ac56c13b1dfb2637b1",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:fd9e3a19b38d47d817be02c9e0911976616aae13606e4605d811583ec9a98f9e",
+    "expires_at": "1970-01-01T00:16:21Z",
+    "issued_at": "1970-01-01T00:15:21Z",
+    "nonce": "5-921",
+    "signature": "ed25519:IN2X98Ok13cjFaiVPt-3cbDkUO1B9jZIZ0KdWihUgaJLQD5TxupPS45PVx4wTYGqvEfHOE-oLpj5xm3L1dNXDw",
+    "signer": "ed25519:bnoc3Smwt4_ROvTFWY_v9O8qlxZuPKby5Pv8zYBQW_E",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "negative_result",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:840a008ed4cf6994af16e388eeff8501ae4be060a4778e5528d038d28c2497c0",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:65d654090e2d7f5bdce0d9126bddeaba47e8b9593d970e208c388128154adf8b",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:81b6ad70b0d32dd1aab672780ff308182f96d3f2dd562a2593612622b4832547",
+    "expires_at": "1970-01-01T00:16:22Z",
+    "issued_at": "1970-01-01T00:15:22Z",
+    "nonce": "4-922",
+    "signature": "ed25519:NPK3sVxfC9a3-gqGOy1js2wS7AZtMKz-XVXJxE0--cf_TG6JsS7nNU4DInAGk62z9nK2C2xWJiiAthCOYLbSAg",
+    "signer": "ed25519:ypOsFwUYcHHWe4PH_w7-gQjo7EUwV113JoeTM9vavnw",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "administrator_cluster": "xloperator:blake3:a32abad1cc8b5dbccf2496e4335f646d2e97b18cc307e66885203334b91a9bec",
+      "category": "negative_result",
+      "donor_cluster": "xloperator:blake3:6dc6da9d85f784333aee7ffcbd402b43dea5c784b1bed91f58bdcfa1d064ee56",
+      "kind": "observe_funding",
+      "receipt": {
+        "beneficiary_researcher_id": "xlresearcher:blake3:7777777777777777777777777777777777777777777777777777777777777777",
+        "destination_vault": "0x0000000000000000000000000000000000000064",
+        "external_value_evidence_root": "blake3:institutional-bank-settlement",
+        "funding_receipt_id": "xlfunding:blake3:840a008ed4cf6994af16e388eeff8501ae4be060a4778e5528d038d28c2497c0",
+        "payer": "institutional-grant-maker",
+        "policy_id": "xlpolicy:blake3:5892bec64f1783d511d96f81ed6ef6ac683ed0e47ef76b2d8707a3956a2eec1c",
+        "purpose": "foundational_research",
+        "rail": "commons",
+        "related_party": false,
+        "settled_amount": {
+          "asset": "simulation:USDC",
+          "decimals": 6,
+          "units": 500000000
+        },
+        "settled_at": "1970-01-01T00:15:05Z",
+        "settlement_receipt_id": "xlr:blake3:65d654090e2d7f5bdce0d9126bddeaba47e8b9593d970e208c388128154adf8b",
+        "signature": "ed25519:funding-authority"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:076131042abc62393e072e60ed35a722d70413289044c8347620a83edf84d4a2",
+    "expires_at": "1970-01-01T00:16:23Z",
+    "issued_at": "1970-01-01T00:15:23Z",
+    "nonce": "5-923",
+    "signature": "ed25519:EZl3K9zyt02Y43UyNNMecLisCGgaDdveUfpHvYBexvs0ZPZK3ANX4OBlbzSkkNS6ofsEJNv6JgZYXP0dQkxiDg",
+    "signer": "ed25519:bnoc3Smwt4_ROvTFWY_v9O8qlxZuPKby5Pv8zYBQW_E",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "kind": "open_round",
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:fe9d85db89001a1e3bb0189a254408f7313c34c44902aaecb2a8a55de63c1e98",
+    "expires_at": "1970-01-01T00:17:40Z",
+    "issued_at": "1970-01-01T00:16:40Z",
+    "nonce": "1-1000",
+    "signature": "ed25519:04Dzp_0BNhqERCo3P6n9urezZs_DGgTrxlAg-wT9hxlRzY7QcHkF2gewj03WbONyzNl9At9zHA4icrq2BRMTAg",
+    "signer": "ed25519:iojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "commitment": "xlr:blake3:8e7e5b2ea24e3ed31faf75fd1b48e8aaf9771b10845effa9deb054a805c52590",
+      "kind": "commit",
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:1b181cd17285c9926b894ddaa47ad39161f5210ca95e05ed52260fd55deee61d",
+    "expires_at": "1970-01-01T00:17:41Z",
+    "issued_at": "1970-01-01T00:16:41Z",
+    "nonce": "2-1001",
+    "signature": "ed25519:2H8dY_z10Tc4QSMiPkvgTy2PUwSNNIWbOpOGTLqx2EQ-mvq-Ys7rDyNRtMFNA9eANm4dY-d_pvgSWmsGBTKmCw",
+    "signer": "ed25519:gTl3Dqh9F19Wo1Rmw0x-zMuNipG07jeiXfYPW4_Js5Q",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "kind": "reveal",
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9",
+      "salt": "a-private-commit-salt-with-at-least-32-characters",
+      "submission": {
+        "artifact_id": "xla:blake3:5d0175ad66a5f380e9804377de12fd2ebf1e4f67df7f4385e0d0647d7ba6494e",
+        "assisted": true,
+        "category": "foundational_research",
+        "claim_id": "xlc:blake3:c461c624433276c4ec3053bd6599e2f21f74e27422b0542b2aae536137a04f0d",
+        "contributors": [
+          {
+            "operator_cluster_id": "xloperator:blake3:a4bc210076550f32133282562150249d400898c8ad01f6017b3870d808d26815",
+            "researcher_id": "xlresearcher:blake3:2e33b1612d270b99dba343e9886cd8ab6fb1dff9071495e87ef654ff6bbf7932",
+            "share_bps": 7000
+          },
+          {
+            "operator_cluster_id": "xloperator:blake3:935653b486683fc7410f47a74c9e7b8a70e82429bea5c6073ef5364f90ad9845",
+            "researcher_id": "xlresearcher:blake3:8e613ce9fb5b32c58ff2b3622aba3485181db21b0a1f4fed89ffc368e68f525b",
+            "share_bps": 3000
+          }
+        ],
+        "evidence_roots": {
+          "axiom_inventory": "xla:blake3:86707d2f7557a7b3aa3eeb216a83f12bfb917d9a1649fa1f99fc48951991cd6f",
+          "formal_statement": "xla:blake3:a0b4931dbb06f8fd71aac0aaef2e22e9e1d1a4fc93b68fc465c46286ed6cbea2",
+          "pinned_toolchain": "xla:blake3:56f91cb6f7ffc97c7ce73cd3e9ea3a356fb18fb17025b85abac7cd08964ede0c",
+          "proof_object": "xla:blake3:bad244648de8738985fdf1aedfe0c5232903c18abe21dc5b17716afdfa41a9eb"
+        },
+        "manifest_root": "xla:blake3:446808d9b7c7ac3067f3832d9463053c6dc29b6df508f9339602be0fa825220d",
+        "profile_id": "xlpolicy:blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a",
+        "registered_study": null,
+        "research_context_root": "xla:blake3:0260b295cd0687114272b69c7a44b915585cd5b7789d0f3bf81dec4de17ffbec"
+      }
+    },
+    "command_id": "xlr:blake3:a4a15c5c08445432cf5ceb13538da0ca809de7b776fa1089966b077f729c86cb",
+    "expires_at": "1970-01-01T00:17:42Z",
+    "issued_at": "1970-01-01T00:16:42Z",
+    "nonce": "2-1002",
+    "signature": "ed25519:XJ3Wca7gSm81RPuQnLp3hrnH4HsvaGaKfKIygCk-l8yLE6uw71ARusmNbNn1uxrA47-eyFfH3D-9X12-dOGbCA",
+    "signer": "ed25519:gTl3Dqh9F19Wo1Rmw0x-zMuNipG07jeiXfYPW4_Js5Q",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "kind": "consent",
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9",
+      "submission_id": "xlr:blake3:488d9734e52c6a39ffdf9ad7102fe537dbbac107423fd668e138d1fbe4d4cb30"
+    },
+    "command_id": "xlr:blake3:3879c71025150748238281a29db1c19e1ee8d6ef825c94059c5f0bca5a809966",
+    "expires_at": "1970-01-01T00:17:43Z",
+    "issued_at": "1970-01-01T00:16:43Z",
+    "nonce": "3-1003",
+    "signature": "ed25519:nnG9tB8L0aaQxDeH4U0r1bW5_CwIIgNZZFyqHSO02oshHaWPs5m7bOXmzKEmVBOhp089J07HATrYd0SbYxVhCQ",
+    "signer": "ed25519:7UkoxijRwsbq6QM4kFmVYSlZJzpcY_k2NsFGFKyHN9E",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "certificate_message_id": "xlmessage:blake3:0e6ca51b125cb2dbb64b105b3b98389f3c1bbcd1c902fa1f85700d01f909286d",
+      "kind": "attach_evidence",
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9",
+      "submission_id": "xlr:blake3:488d9734e52c6a39ffdf9ad7102fe537dbbac107423fd668e138d1fbe4d4cb30"
+    },
+    "command_id": "xlr:blake3:b9d49de6cb754ab30fdab5d667f35765051fd7e20bc8c12713c176f33e6b82b9",
+    "expires_at": "1970-01-01T00:17:44Z",
+    "issued_at": "1970-01-01T00:16:44Z",
+    "nonce": "2-1004",
+    "signature": "ed25519:wk0Kjapj---qkeLqq3bC21K2SKQObpgfAPgN0wPO7Rb_8bwmOtF213CX0WpLqNcx5fxPhYoJ9b8xR1oA0Y9XAg",
+    "signer": "ed25519:gTl3Dqh9F19Wo1Rmw0x-zMuNipG07jeiXfYPW4_Js5Q",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "assessment": {
+        "additional_contribution_root": "xla:blake3:6390c5b10dd724796b4aca17eb3ccb4b6d6c176cd83786dfb783776b129a69c2",
+        "calibration_tier": "reference",
+        "eligible": true,
+        "group_id": "xlgroup:blake3:6ae62618d0ccbf7fbd167b8a2c7cd2216e0c9637a2f93a5fb8dd925df16f9d2b",
+        "independent_discovery_root": null,
+        "prior_art_root": "xla:blake3:56bedac33dde52e0ff5c017e3c7ff9fc32477fa76f9f6513a3711ef18bc70ab6",
+        "reasons_root": "xla:blake3:e7458d79ecedfc89edaba8dd7a0578151d17b8ff185d73f0177f6b24cea03ed3",
+        "submission_id": "xlr:blake3:488d9734e52c6a39ffdf9ad7102fe537dbbac107423fd668e138d1fbe4d4cb30"
+      },
+      "kind": "assess",
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:572705d8b9f6d8bd5af25f44d6ad1af9c6ce087718a4f7fb2336758a891b0e7c",
+    "expires_at": "1970-01-01T00:17:45Z",
+    "issued_at": "1970-01-01T00:16:45Z",
+    "nonce": "6-1005",
+    "signature": "ed25519:NRusJVCI6WbBf719haOy2ousUd8dHSCIimz21yyINFu5ATNU07NOQl4IiAyGigb5v-_DkmZLFyrxtunHkYfMBg",
+    "signer": "ed25519:iodf_x6zhFFXes1a_uQFRWVo3XyJ4JCGOgVXvHr0nxc",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "assessment": {
+        "additional_contribution_root": "xla:blake3:6390c5b10dd724796b4aca17eb3ccb4b6d6c176cd83786dfb783776b129a69c2",
+        "calibration_tier": "reference",
+        "eligible": true,
+        "group_id": "xlgroup:blake3:6ae62618d0ccbf7fbd167b8a2c7cd2216e0c9637a2f93a5fb8dd925df16f9d2b",
+        "independent_discovery_root": null,
+        "prior_art_root": "xla:blake3:56bedac33dde52e0ff5c017e3c7ff9fc32477fa76f9f6513a3711ef18bc70ab6",
+        "reasons_root": "xla:blake3:e7458d79ecedfc89edaba8dd7a0578151d17b8ff185d73f0177f6b24cea03ed3",
+        "submission_id": "xlr:blake3:488d9734e52c6a39ffdf9ad7102fe537dbbac107423fd668e138d1fbe4d4cb30"
+      },
+      "kind": "assess",
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:1132357f983f7822f4d0f8d7f419a7c9bd89588757a161ea08c6059326abb9ea",
+    "expires_at": "1970-01-01T00:17:46Z",
+    "issued_at": "1970-01-01T00:16:46Z",
+    "nonce": "7-1006",
+    "signature": "ed25519:bUbpit-yDXEC-zD6aJFh8eAe3gbG-UfY2B7YXNgMIf_6_W11vI8rzAH6TqxF7oWHyv09YNuhQvW2GIi8_nt0Bw",
+    "signer": "ed25519:6kpsY-KcUgq-9VB7Ey7F-ZVHdq6-vnuSQh7qaRRG0iw",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "evidence_root": "xla:blake3:8545d8a60ade54fabf10786ab53362b416452701b1496a1375901449831012f6",
+      "grounds": "allocation",
+      "kind": "appeal",
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9",
+      "submission_id": "xlr:blake3:488d9734e52c6a39ffdf9ad7102fe537dbbac107423fd668e138d1fbe4d4cb30"
+    },
+    "command_id": "xlr:blake3:0eae5184e4367b5e1706c779b45c1517281a78c488a349b11dc4db57c9356ccd",
+    "expires_at": "1970-01-01T00:19:30Z",
+    "issued_at": "1970-01-01T00:18:30Z",
+    "nonce": "2-1110",
+    "signature": "ed25519:dqa_qQ9XZhc6BkqxgmYdAWGJsvHPwjQy38y3vjeFVgQteekDiKtykpnxO1n9G5jeCcIOeEl2Vt0GnAcU4Re1Bw",
+    "signer": "ed25519:gTl3Dqh9F19Wo1Rmw0x-zMuNipG07jeiXfYPW4_Js5Q",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "appeal_id": "xlr:blake3:0eae5184e4367b5e1706c779b45c1517281a78c488a349b11dc4db57c9356ccd",
+      "kind": "resolve_appeal",
+      "reasons_root": "xla:blake3:515999853a753647cc40b454fc22fe253d8aac5ec9d663945de7d169de4c80a3",
+      "remedy": {
+        "kind": "uphold"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:770f83712bbf9ea24e2aab7c7de8fb9b8ead3cdc31b3a2049d623982d2c6a6aa",
+    "expires_at": "1970-01-01T00:19:40Z",
+    "issued_at": "1970-01-01T00:18:40Z",
+    "nonce": "8-1120",
+    "signature": "ed25519:Ki18i_3L9j3F3hLiTOuDNtp4JOPLRw4C5kEqPgOhk8QDZsUVjebFhcea317hmLPXSVzbbKH9UWnOlgKmbILzDA",
+    "signer": "ed25519:E5j2LG0aRXxRumpLXz29L2n8qTIWIY3ImX5Ba9F9k8o",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "appeal_id": "xlr:blake3:0eae5184e4367b5e1706c779b45c1517281a78c488a349b11dc4db57c9356ccd",
+      "kind": "resolve_appeal",
+      "reasons_root": "xla:blake3:515999853a753647cc40b454fc22fe253d8aac5ec9d663945de7d169de4c80a3",
+      "remedy": {
+        "kind": "uphold"
+      },
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:dd93ed8adbe2f499e1b4daad64fe52f135598771daf8f357e33c6229e0458b6f",
+    "expires_at": "1970-01-01T00:19:41Z",
+    "issued_at": "1970-01-01T00:18:41Z",
+    "nonce": "9-1121",
+    "signature": "ed25519:exRLbVprY5_nLEEVBJZ487Qzpa8M6_1icVCWAZc82E2Ls7tCG-NnJW60oIh3yGcoqhiyPJntibTrbaCcGJoJAg",
+    "signer": "ed25519:_RckOFqgx1tk-3jNYC-h2ZH96_drE8WO1wLqyDXp9hg",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "kind": "finalize",
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9"
+    },
+    "command_id": "xlr:blake3:3ba99911acf1e5c58334923071123149754cdebbcba8eb44f2d78848fe2a944c",
+    "expires_at": "1970-01-01T00:21:10Z",
+    "issued_at": "1970-01-01T00:20:10Z",
+    "nonce": "1-1210",
+    "signature": "ed25519:YEffe9TYUYrkDQ-qFcvgo7aTgObOALgCjVjjToDpv01Hz1IWFSl4Tqrz4IwMmFY8wcu-Hj-8ebVqHOH8T1J4BQ",
+    "signer": "ed25519:iojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "block_hash": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "kind": "observe_settlement",
+      "plan_id": "xlr:blake3:12e8ceb4238595f42daca1205b5fbdad8900568133eac5c78587f99663638384",
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9",
+      "transaction_hash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "command_id": "xlr:blake3:0b9b8aa04e0c875095cee3b27e4917e86e7fae41f84f26b6fc99c5571ab23d8f",
+    "expires_at": "1970-01-01T00:21:20Z",
+    "issued_at": "1970-01-01T00:20:20Z",
+    "nonce": "10-1220",
+    "signature": "ed25519:-0_aiQ6J_xplUd-bcljvcwlx4mBzhPnxXRQrokW8P7jMzLe6IzOXgopthwCbeCHEi3tgxZOFUQe28OE4mmREDg",
+    "signer": "ed25519:Q6cucUQBdi32a2jCbfvfJoKq7J8kdOykYT5CSg-6_Tw",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  },
+  {
+    "command": {
+      "block_hash": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "kind": "observe_settlement",
+      "plan_id": "xlr:blake3:12e8ceb4238595f42daca1205b5fbdad8900568133eac5c78587f99663638384",
+      "round_id": "xlround:blake3:c5a25b83aaae80e275655aea7ad4c6dfe594fac288e0ce951f2020cf4aa104c9",
+      "transaction_hash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "command_id": "xlr:blake3:fae405b6a7b191463a344ce91fe93e9815f943eef7565a42e1f774a50c35ee5d",
+    "expires_at": "1970-01-01T00:21:21Z",
+    "issued_at": "1970-01-01T00:20:21Z",
+    "nonce": "11-1221",
+    "signature": "ed25519:5sTViUamp2GhYiDt5DNWF0oRsNuTfSzgM0vtYdms0z_A0SqDiaUXscUS93dmo7685xoEhT873s-ng42DDvptAA",
+    "signer": "ed25519:Zr5-Myx6RTMyvZ0Kf32wVfXF7xoGraZtmLOftoEMRzo",
+    "trust_root": "xlpolicy:blake3:191be815503c910bbcc7e39f8cd5ce8725d4fc7d98519d9ac9a603520f501f56"
+  }
+]

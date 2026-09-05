@@ -68,8 +68,8 @@ The offline `xlemma-economics::discovery` model exercises restricted budgets,
 contributor splits, declared control exclusions, review capacity, outcome-neutral
 fees, append-only appeal replay and whole-batch holds. Its CLI accepts synthetic
 facts and cannot certify or pay. All funding, grouping, evidence verdicts,
-control identities and histories remain unauthenticated inputs. Production
-authentication and atomic settlement remain **unimplemented activation gates**.
+control identities and histories remain unauthenticated inputs. The separate authenticated service and escrow now implement these boundaries;
+production activation and independent review remain required.
 Novelty, difficulty, grouping, institutional independence, and prior-art
 coverage remain uncertain external assessments. Formal identity is not a
 complete equivalence detector. Publish uncertainty and assess both farming and
@@ -396,3 +396,52 @@ The repository audit and remaining integration gaps are recorded in
   secrets, key files, environment files except `.env.example`, runtime artifacts,
   and agent configuration. Arbitrarily named unpublished material still requires
   an explicit release review; filename filters are not a data-classification system.
+
+
+## Authenticated discovery deployment boundary
+
+`discovery_service` verifies Ed25519 command IDs, pinned trust roots, bounded
+expiry/nonces and roles before atomically advancing state. The API rejects
+unknown fields, fsyncs before acknowledgement and rejects inconsistent replay.
+Evidence comes from accepted XLMP records, never from a caller-supplied status.
+Formal certificates use exact PoIR policy bindings and artifact/environment/
+axiom roots. Generalized certificates must include all authenticated observations;
+formal proofs cannot bypass PoIR through a generic reproduction certificate.
+
+The service reserves fixed outcome-neutral reproduction and panel fees before
+admission. Dissent remains in signed history. Fresh appeal reviewers exclude
+producers, original assessors, appellants and disclosed funder/admin control.
+Reward corrections cannot change a checker verdict. An unresolved denominator
+holds the whole batch; expiry can pay completed work while retaining research
+as unresolved. Independent simultaneous contributions share one group budget,
+require control-disjoint pre-disclosure commitments and explicit independence
+evidence, and cannot increase that group's weight merely by splitting accounts.
+
+`DiscoveryRoundEscrow` checks actual token balances, per-category solver/review
+caps, unique plan identity, delayed independent approvals and live certificate
+finality before atomic transfers. It checks both debited and credited amounts,
+uses a reentrancy guard, rechecks revoked reviewer roles/control mappings, and
+retains rounding dust. Hold roots cannot be replayed to reuse old resolutions.
+`DiscoveryEvidenceRegistry` binds protocol certificate digests to exact objects,
+requires independent qualified relays, excludes declared producer clusters,
+rechecks relay authority and makes quarantine irreversible for that digest.
+Publication authority is a trust boundary, not onchain execution of Lean or
+laboratory measurements. Watchers must communicate new dissent before payment.
+
+Funding/settlement observations require two registered control clusters. The
+operator tool checks canonical confirmed chain receipts, implementation hash,
+asset, policy, dates, caps and event/item commitments. Dishonest RPCs, colluding
+observers, hidden common control, a compromised role administrator or dishonest
+publication relays remain deployment risks. Escrow balance/cap checks conserve
+money even if offchain assessment is wrong; they cannot establish scientific
+novelty. Expired unpaid allocations remain reserved until independently observed
+onchain expiry releases them; already settled history is never silently removed.
+
+Trust-file changes fail closed on replay. Key migration, pre-admission overload
+appeals and missed settlement-grace deadlines need published operating procedures.
+No automatic recovery of spent USDC or experimentally qualified physics is claimed.
+
+Reproduction fees are reserved once per authenticated job/operator pair across
+submissions and rounds. Each paid review has a distinct work commitment; escrow
+rejects a completed-work invoice already paid in any round. Reusing a certificate
+or adding it to multiple contribution manifests does not repeat verifier fees.

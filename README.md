@@ -498,29 +498,28 @@ cannot exceed settled funds after verification costs and reserves. No funds
 means no promised USDC payout. Research credits are not required to earn a
 direct discovery reward.
 
-**Implementation status:** an [executable local pilot](docs/DISCOVERY_PILOT.md)
-models category budgets, contributor allocations, review capacity, funding
-disclosures, and appeals, with an adversarial simulator. It uses declared
-synthetic evidence and funding; it does not certify research or transfer USDC.
-Existing funding receipts, verification profiles, PoIR, and bounty escrow
-provide integration foundations. Authenticated open-round settlement,
-semantic duplicate/splitting assessment, difficulty calibration, and operated
-appeal panels remain activation work. Their normative
-requirements and activation tests are in
-[XLIP-024](spec/024-open-research-mining.md), with remaining work in
-[the roadmap](ROADMAP.md#open-research-mining--activation-gates).
+**Implementation status:** the [funded discovery service](docs/DISCOVERY_SERVICE.md)
+implements signed rounds, contributor consent, independently assessed rewards,
+funded verification and appeals, durable APIs, and atomic USDC settlement.
+Separate foundational, discovery, formalization, proof-improvement, replication,
+tools and negative-result budgets protect research freedom. Independent teams
+can share a simultaneous discovery without multiplying its contribution award.
+The local EVM integration exercises deposits, signed allocation, certificate
+publication, transfers and refunds.
+
+The [offline adversarial pilot](docs/DISCOVERY_PILOT.md) remains explicitly
+synthetic. It demonstrates that missed semantic duplication can leak rewards;
+signed assessment is not a perfect novelty oracle. Public activation still
+requires independent review, funded deployments, qualified operators and
+laboratories, and staffed appeals. See [XLIP-024](spec/024-open-research-mining.md)
+and [the roadmap](ROADMAP.md#open-research-mining--activation-gates).
 
 ```sh
-cargo run --locked -p xlemma-cli -- simulate-discovery examples/discovery/pilot.json
+cargo test --locked --workspace
 python3 scripts/simulate_discovery.py --check
+# After building the CLI and contracts, with Foundry installed:
+python3 scripts/test_discovery_evm.py
 ```
-
-The pilot covers discovery, formalization, proof improvement, replication,
-research tools, and informative negative results with separate budgets. Its
-empirical profile requires methods, uncertainty, and replication evidence.
-A constructed undetected duplicate still leaks rewards in the simulator:
-identifying that failure is part of testing the design, not evidence that
-the mining service is ready.
 
 ## Verification and appeals
 

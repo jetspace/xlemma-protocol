@@ -17,6 +17,7 @@ const MAX_EVENTS: usize = 10_000;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum RewardCategory {
+    FoundationalResearch,
     Discovery,
     Formalization,
     ProofImprovement,
@@ -326,6 +327,13 @@ struct PendingAppeal {
 /// A report is never a certificate, signed settlement instruction, or payment receipt.
 pub fn simulate_discovery(
     input: &DiscoverySimulation,
+) -> Result<DiscoverySimulationReport, DiscoveryError> {
+    simulate_discovery_ordered(input, None)
+}
+
+pub(crate) fn simulate_discovery_ordered(
+    input: &DiscoverySimulation,
+    priority: Option<&BTreeMap<ReceiptId, (chrono::DateTime<chrono::Utc>, ReceiptId)>>,
 ) -> Result<DiscoverySimulationReport, DiscoveryError> {
     let p = &input.policy;
     require(
@@ -726,7 +734,10 @@ pub fn simulate_discovery(
     let mut seen_claims = input.previously_rewarded_claims.clone();
     let mut selected = Vec::new();
     let mut excluded = BTreeMap::new();
-    // The original assessment order is deterministic. Duplicate arrivals cannot
+    if let Some(priority) = priority {
+        submission_order.sort_by_key(|id| priority.get(id));
+    }
+    // The original assessment order is deterministic for offline inputs. Duplicate arrivals cannot
     // replace a group's payees or increase its weight; corrections require appeal.
     for id in &submission_order {
         let s = &submissions[id];
@@ -737,10 +748,20 @@ pub fn simulate_discovery(
         } else if seen_groups.contains(&s.group_id)
             || (matches!(
                 s.category,
-                RewardCategory::Discovery | RewardCategory::Formalization
-            ) && seen_claims
-                .get(&s.category)
-                .is_some_and(|claims| !claims.is_disjoint(&s.claims)))
+                RewardCategory::FoundationalResearch
+                    | RewardCategory::Discovery
+                    | RewardCategory::Formalization
+            ) && seen_claims.iter().any(|(category, claims)| {
+                (*category == s.category
+                    || (matches!(
+                        s.category,
+                        RewardCategory::FoundationalResearch | RewardCategory::Discovery
+                    ) && matches!(
+                        category,
+                        RewardCategory::FoundationalResearch | RewardCategory::Discovery
+                    )))
+                    && !claims.is_disjoint(&s.claims)
+            }))
         {
             Some("already_accounted_contribution")
         } else {

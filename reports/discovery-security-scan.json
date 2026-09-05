@@ -1,0 +1,92 @@
+{
+  "generated_at": "2026-09-05T20:10:51.374520+00:00",
+  "baseline_commit": "902c67048099bcfcdcdac95787e91dc94ccd6a2c",
+  "author_operated_review": true,
+  "independent_security_audit": false,
+  "rustsec": {
+    "tool": "cargo-audit 0.22.2",
+    "dependencies": 237,
+    "advisories": 1239,
+    "denied_warnings": 0,
+    "vulnerabilities": 0,
+    "database_commit": "5a0ebedfe8bdd2e295b171f4162f8c977bcad9a5"
+  },
+  "slither": {
+    "version": "0.11.6",
+    "analysis_succeeded": true,
+    "detectors": 102,
+    "analyzed_contracts_including_interfaces_and_dependencies": 41,
+    "remaining_warning_count": 43,
+    "groups": [
+      {
+        "detector": "calls-loop",
+        "count": 17,
+        "severity": "Low",
+        "triage": "accepted_reference_limitation",
+        "reason": "Recipients and vaults are selected by the payer; a failing recipient reverts the entire transaction. Gas limits and reverting endpoints remain service-availability considerations. Discovery settlement is bounded to 256 items and guarded against reentrancy; registry checks and exact transfers fail the entire batch on error."
+      },
+      {
+        "detector": "cyclomatic-complexity",
+        "count": 1,
+        "severity": "Informational",
+        "triage": "maintainability",
+        "reason": "Routing validation is deliberately explicit; unit, callback, conservation and compounding tests cover the changed branches."
+      },
+      {
+        "detector": "missing-inheritance",
+        "count": 2,
+        "severity": "Informational",
+        "triage": "maintainability",
+        "reason": "The certificate registry exposes the expected interface ABI; bounty integration tests exercise it. Explicit interface inheritance remains an optional type-checking improvement. Discovery publication implements the same exact-object query; local EVM integration exercises the deployed ABI."
+      },
+      {
+        "detector": "reentrancy-balance",
+        "count": 3,
+        "severity": "High",
+        "triage": "reviewed_guarded",
+        "reason": "Both public routing entry points are nonReentrant; the callback regression confirms nested routing is rejected. Before/after balances intentionally enforce exact asset consumption. Malicious/rebasing settlement assets remain unsupported."
+      },
+      {
+        "detector": "timestamp",
+        "count": 20,
+        "severity": "Low",
+        "triage": "accepted_chain_assumption",
+        "reason": "Timestamps enforce expiry, unbond and challenge deadlines, not randomness or truth. Deployment must account for the selected chain timestamp and finality rules."
+      }
+    ],
+    "resolved_new_warnings": {
+      "uninitialized-local": 3
+    }
+  },
+  "source_sha256": {
+    "contracts/src/BountyEscrow.sol": "5a41b89d3eba7a109ca9b1df5051d4002cf6ab7db98e92ab2023a95a4014dc7a",
+    "contracts/src/DiscoveryEvidenceRegistry.sol": "a3faf1903f63696990a93c2ca3af79eae12ea2a2051e8beab0f4e75852a9c899",
+    "contracts/src/DiscoveryRoundEscrow.sol": "a196432574554b472eb8e18c803becd7043288266ee3456ecb7702746bb184fd",
+    "contracts/src/LemmaCapsule1155.sol": "d9157ab43340dcd3fda9c2097ef4373e47a721204501d2e0cc46c13da8a9f185",
+    "contracts/src/NodeBondRegistry.sol": "2187531c3c40e9c465ecee2d7baf66ba22d6e7177ee9653854b3759a7da27005",
+    "contracts/src/PoIRCertificateRegistry.sol": "6661c6532cde545e6646a45c159c465e8cc12ee29d74516e9f8987f6b4953172",
+    "contracts/src/ProofRegistry.sol": "7d2baeea0ff221e422fcf55af82b4f03d5056bce28d7056c3a488680db13285d",
+    "contracts/src/ResearchCommitmentRegistry.sol": "1aff8aa19dab4c924297c79b44314267402498fca54b662e0249037c42ceccb0",
+    "contracts/src/ResearchVault.sol": "5a5f0ebeda85b23e48d01bedd2ccb98d50982d6ccdd4fdb477a7b0b5edd0b969",
+    "contracts/src/ResearchVaultFactory.sol": "50913277cbcc181b166644991f5004c0a6de9c175d8f7c1e0d62a2157ec6539b",
+    "contracts/src/ResearcherCredit.sol": "674a5b2cee9100bdada5ec61e67c1298dcd01db4fd473d5604479d644a8955d6",
+    "contracts/src/RevenueRouter.sol": "759ecab38b59303024bad0127cddbf2f53148fd837124629d66631ab06d9a8c7"
+  },
+  "new_boundary_fixes": [
+    "Funding Amount u128 JSON round-trip in signed commands",
+    "Exact formal consensus policy and evidence-root bindings; generic formal-certificate bypass rejected",
+    "Independent dissent retained; completed reproduction and review paid without PASS",
+    "Bounded expiry review plans and independently confirmed release of abandoned award reservations",
+    "Live relay/reviewer qualification checks and irreversible certificate quarantine",
+    "Hold-root replay prevention and live resolution authority checks",
+    "Exact debit/credit checks; category caps; immutable settlement proposals",
+    "Clock rollback rejection; escrow cannot be a configured payout recipient",
+    "Original reproduction operators excluded from appeal panels; pending evidence appeals and revalidation hold publication",
+    "Checking-job/operator reservations prevent duplicate reproduction billing across submissions and rounds; escrow rejects replayed completed-work invoices"
+  ],
+  "limitations": [
+    "Qualified beneficial-control identities, semantic novelty/grouping and laboratory competence remain external evidence.",
+    "RPC/observer/relay independence and prompt onchain quarantine are deployment trust and liveness assumptions.",
+    "The EVM integration uses mock USDC and an explicit research-checker test double."
+  ]
+}

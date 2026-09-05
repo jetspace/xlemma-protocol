@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/discovery-trust.schema.json",
+  "title": "Pinned discovery principals and settlement domain",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "network": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "chain_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "escrow_address": {
+      "type": "string",
+      "pattern": "^0x[0-9a-fA-F]{40}$"
+    },
+    "usdc_asset": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "principals": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^ed25519:[A-Za-z0-9_-]{43}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "researcher_id": {
+            "type": "string",
+            "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$"
+          },
+          "cluster_id": {
+            "type": "string",
+            "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+          },
+          "payout_address": {
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$"
+          },
+          "credential_root": {
+            "type": "string",
+            "pattern": "^xla:blake3:[0-9a-f]{64}$"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "administrator",
+                "researcher",
+                "funding_observer",
+                "assessor",
+                "appeal_reviewer",
+                "settlement_observer",
+                "verifier"
+              ]
+            },
+            "maxItems": 7,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "researcher_id",
+          "cluster_id",
+          "payout_address",
+          "credential_root",
+          "roles"
+        ]
+      }
+    }
+  },
+  "required": [
+    "network",
+    "chain_id",
+    "escrow_address",
+    "usdc_asset",
+    "principals"
+  ]
+}

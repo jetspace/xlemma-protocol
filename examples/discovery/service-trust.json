@@ -1,0 +1,143 @@
+{
+  "chain_id": 31337,
+  "escrow_address": "0x0000000000000000000000000000000000000064",
+  "network": "local-development",
+  "principals": {
+    "ed25519:6kpsY-KcUgq-9VB7Ey7F-ZVHdq6-vnuSQh7qaRRG0iw": {
+      "cluster_id": "xloperator:blake3:ffac826cac0e8cace852bb79c01d7c59dc0655500ad61a871cf45beb374e786f",
+      "credential_root": "xla:blake3:fe3cc052be8794b3a1858ac30466203d98419246b24c476cd9aa5b60cae0ca84",
+      "payout_address": "0x0000000000000000000000000000000000000007",
+      "researcher_id": "xlresearcher:blake3:712de72f617d8d4717ca1386b51fe8085da9283a9cefa40909762dd9d7a80b33",
+      "roles": [
+        "assessor"
+      ]
+    },
+    "ed25519:7UkoxijRwsbq6QM4kFmVYSlZJzpcY_k2NsFGFKyHN9E": {
+      "cluster_id": "xloperator:blake3:935653b486683fc7410f47a74c9e7b8a70e82429bea5c6073ef5364f90ad9845",
+      "credential_root": "xla:blake3:391e7b25675b1961d35defc846fc548cee7fc150f0489b867ab2b5d92abde044",
+      "payout_address": "0x0000000000000000000000000000000000000003",
+      "researcher_id": "xlresearcher:blake3:8e613ce9fb5b32c58ff2b3622aba3485181db21b0a1f4fed89ffc368e68f525b",
+      "roles": [
+        "researcher"
+      ]
+    },
+    "ed25519:C1E62bSSQBXKCQLtB5BE06xdvsIwbwaUjBDajrbjny0": {
+      "cluster_id": "xloperator:blake3:2998b4166abb65a4430873140bd389819f7cf3ef844a8f964011bd05906b4146",
+      "credential_root": "xla:blake3:49cb822f81fc5504e11d74f872387b801cf84089e039cc907280b4656cdbc561",
+      "payout_address": "0x000000000000000000000000000000000000000c",
+      "researcher_id": "xlresearcher:blake3:7ee8343403b7436e37a464a3c533fc66506a526e7a4ea0671c9924a10b39ba81",
+      "roles": [
+        "researcher"
+      ]
+    },
+    "ed25519:E5j2LG0aRXxRumpLXz29L2n8qTIWIY3ImX5Ba9F9k8o": {
+      "cluster_id": "xloperator:blake3:54a7996a75ba46cd2ba4623b6150f4849dd46affd8f7c9f046cf060e5ab0ddf4",
+      "credential_root": "xla:blake3:c793d75e83133fe6aafdbbe9a2a345479d1b4b975e1fbed3bc9357d76cf238c5",
+      "payout_address": "0x0000000000000000000000000000000000000008",
+      "researcher_id": "xlresearcher:blake3:8552670b3800cdb2636a1f0a9d7248d2de48ad90ca3c5056acc96765b8c6b520",
+      "roles": [
+        "appeal_reviewer"
+      ]
+    },
+    "ed25519:Q6cucUQBdi32a2jCbfvfJoKq7J8kdOykYT5CSg-6_Tw": {
+      "cluster_id": "xloperator:blake3:f49669c1ecfa87d1042ace6ecd0f30e19d4788da660df687a500cc71c13a915c",
+      "credential_root": "xla:blake3:698859e99640e63ce60e639dc9d7b7cf68e2d891d70368f2bd395f6def32d60c",
+      "payout_address": "0x000000000000000000000000000000000000000a",
+      "researcher_id": "xlresearcher:blake3:cc9a259b54be6d55c2c80da49e7dfd40d570104eaf3e618463e13c1f96986834",
+      "roles": [
+        "settlement_observer"
+      ]
+    },
+    "ed25519:QwRr_kCSs-lJlOraFdzCDYqqB7ZY_TlU644O-4vcpd4": {
+      "cluster_id": "xloperator:blake3:ee154156de137f37048ae0944a2aa9e1854eee07aaf182abdd39b7e8bae6724f",
+      "credential_root": "xla:blake3:9b783c096fe634421350dbddc6155b133874046a1806e6f6689f272b3fc2bbf5",
+      "payout_address": "0x000000000000000000000000000000000000001f",
+      "researcher_id": "xlresearcher:blake3:fc690cab02c24824b397dac718d642fcf48c37d115ab6ccbf9cc7b3fdb36d9da",
+      "roles": [
+        "verifier"
+      ]
+    },
+    "ed25519:Zr5-Myx6RTMyvZ0Kf32wVfXF7xoGraZtmLOftoEMRzo": {
+      "cluster_id": "xloperator:blake3:28f1d21f5418b01f4fb65310d9ffb7b95ddcd55d9026a086d6f77b66dbdcbc3a",
+      "credential_root": "xla:blake3:67c9f9eb6130b44bbcf21918bdb9573529a8ece05f92409aeeef3ce7ccf4d61d",
+      "payout_address": "0x000000000000000000000000000000000000000b",
+      "researcher_id": "xlresearcher:blake3:8436200f571f987fc5da08d4f0d4c6dd24c2dad759e4ea7b5fdba5b2ecda9daa",
+      "roles": [
+        "settlement_observer"
+      ]
+    },
+    "ed25519:_RckOFqgx1tk-3jNYC-h2ZH96_drE8WO1wLqyDXp9hg": {
+      "cluster_id": "xloperator:blake3:1d349ad83ce95409bc1805f0fe1b93bdcb6a554c4e0f51e2989f599de554c6d0",
+      "credential_root": "xla:blake3:d97d5a139fd3f24f278ea73e2ecdf7d157974e65403fd372ea26d18cbe38a777",
+      "payout_address": "0x0000000000000000000000000000000000000009",
+      "researcher_id": "xlresearcher:blake3:151d4c588982456f832170c3b309906bf728b75df854f03309f0103c943d800f",
+      "roles": [
+        "appeal_reviewer"
+      ]
+    },
+    "ed25519:bnoc3Smwt4_ROvTFWY_v9O8qlxZuPKby5Pv8zYBQW_E": {
+      "cluster_id": "xloperator:blake3:b74adf32c5a083a4cced9091f29be94e0fde91f8b7626028c329b64e672bb67c",
+      "credential_root": "xla:blake3:b71a0cb0b0a434742338ac61d08c42925143582994c4195c4a19dffe853572b7",
+      "payout_address": "0x0000000000000000000000000000000000000005",
+      "researcher_id": "xlresearcher:blake3:2ffe58a9e3604c9d91d08811a4961d1439b3f730b7caa6334406af3a234161f9",
+      "roles": [
+        "funding_observer"
+      ]
+    },
+    "ed25519:gTl3Dqh9F19Wo1Rmw0x-zMuNipG07jeiXfYPW4_Js5Q": {
+      "cluster_id": "xloperator:blake3:a4bc210076550f32133282562150249d400898c8ad01f6017b3870d808d26815",
+      "credential_root": "xla:blake3:e590e840c290575571ad57c56fb6b4ede6c55fed457245593e94a3eee9f224be",
+      "payout_address": "0x0000000000000000000000000000000000000002",
+      "researcher_id": "xlresearcher:blake3:2e33b1612d270b99dba343e9886cd8ab6fb1dff9071495e87ef654ff6bbf7932",
+      "roles": [
+        "researcher"
+      ]
+    },
+    "ed25519:iodf_x6zhFFXes1a_uQFRWVo3XyJ4JCGOgVXvHr0nxc": {
+      "cluster_id": "xloperator:blake3:b66f2c1d10771ee14f914aedae5407332541248ab7e2a85a38c2999f677e8598",
+      "credential_root": "xla:blake3:60a3df7984995fb6b0a3a183dd2f69cbd4e17717e2c98ae3d15dda659a2f8429",
+      "payout_address": "0x0000000000000000000000000000000000000006",
+      "researcher_id": "xlresearcher:blake3:cf5b17ed858236718c0e64577c7e832adef37fa6b4fd58698c02df865c00f08c",
+      "roles": [
+        "assessor"
+      ]
+    },
+    "ed25519:iojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w": {
+      "cluster_id": "xloperator:blake3:d8e1adad49bf6d202cd95a375a7a429e4822483ea327e23b4a0f86a8a856125d",
+      "credential_root": "xla:blake3:a8fdadb04e7bd2cb73ddf65a697aa3c816477330a5032966faa648982aae8fef",
+      "payout_address": "0x0000000000000000000000000000000000000001",
+      "researcher_id": "xlresearcher:blake3:d4951989a8997f8c6cdac7b156a534f5486b5a88e4e59e9c70ca086101d2ee67",
+      "roles": [
+        "administrator"
+      ]
+    },
+    "ed25519:kaKKC3Q4FZOk2UaVeSCJJq_IrYLIg5t2RDWbnrqaSzo": {
+      "cluster_id": "xloperator:blake3:ef580407e89167cdff8242fc8e606f9ed05bdd0e8885a2e7890d3654aab88404",
+      "credential_root": "xla:blake3:388135fa6f646f084611f43268042752d3c674c87da6b1ed029f24aeb7ab7fed",
+      "payout_address": "0x000000000000000000000000000000000000000d",
+      "researcher_id": "xlresearcher:blake3:c7352243a49e6a73217e7d8be759eefad49ce0acc720da37a7ec8a029e4b8214",
+      "roles": [
+        "researcher"
+      ]
+    },
+    "ed25519:rNsOKXQ_DMuGhtChBMuW4Fq-_sFTh2XnWVhp99yMSao": {
+      "cluster_id": "xloperator:blake3:9feda46861de31fbc8c680494efb77e7711c640836e22a3900a766091b481d53",
+      "credential_root": "xla:blake3:9c2fc1ddf6f444a258f76c294af5142dddfa31d3912eb6d3fb407bad6243fe2b",
+      "payout_address": "0x000000000000000000000000000000000000001e",
+      "researcher_id": "xlresearcher:blake3:c58eafbd9c4d8d9d71a488691266a662ac1ff4d38fd517a326ffd84924280163",
+      "roles": [
+        "verifier"
+      ]
+    },
+    "ed25519:ypOsFwUYcHHWe4PH_w7-gQjo7EUwV113JoeTM9vavnw": {
+      "cluster_id": "xloperator:blake3:06c3deadab32bce5274847ef8a16caad4da78bd6720e3460f454b2a462f27d10",
+      "credential_root": "xla:blake3:22ecbad609683e0c5d6f41101a03b9fc8d77d97957765612fa4760323635bcef",
+      "payout_address": "0x0000000000000000000000000000000000000004",
+      "researcher_id": "xlresearcher:blake3:7cb305418e9033e7fce9d25daa6f454cad8c6d647d944767b3e988d8ab3c452d",
+      "roles": [
+        "funding_observer"
+      ]
+    }
+  },
+  "usdc_asset": "simulation:USDC"
+}

@@ -344,6 +344,13 @@ def validate_json_syntax_and_schemas() -> None:
         ("examples/discovery/pilot.json", "discovery-simulation.schema.json"),
         ("examples/discovery/expected-report.json", "discovery-simulation-report.schema.json"),
         ("examples/discovery/physics-profile.json", "verification-profile.schema.json"),
+        ("examples/discovery/service-trust.json", "discovery-trust.schema.json"),
+        ("examples/discovery/service-policy.json", "discovery-round-policy.schema.json"),
+        ("examples/discovery/service-submission.json", "discovery-submission.schema.json"),
+        ("examples/discovery/service-create-command.json", "discovery-command.schema.json"),
+        ("examples/discovery/service-create-envelope.json", "discovery-envelope.schema.json"),
+        ("examples/discovery/service-round-history.json", "discovery-history.schema.json"),
+        ("examples/discovery/service-settlement-plan.json", "discovery-settlement-plan.schema.json"),
     ]:
         errors = list(schema_validator(schema_objects[schema_name]).iter_errors(load_json(ROOT / path)))
         if errors:
@@ -872,6 +879,9 @@ def validate_source_tree() -> None:
         "/v1/compute/quote",
         "/v1/node-advertisements",
         "/v1/node-discovery",
+        "/v1/discovery/commands",
+        "/v1/discovery/rounds",
+        "/v1/discovery/rounds/{round_id}/settlement",
         "/v1/service-orders",
         "/v1/committee-sortitions",
         "/v1/credentials/users",

@@ -14,6 +14,125 @@ servers:
 security:
   - bearerAuth: []
 paths:
+  /v1/discovery/commands:
+    post:
+      operationId: acceptDiscoveryCommand
+      summary: Authenticate and durably append a discovery command
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '../schemas/discovery-envelope.schema.json' }
+      responses:
+        '202':
+          description: Fsynced command accepted; not a payment receipt
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [command_id, accepted_at]
+                properties:
+                  command_id: { type: string }
+                  accepted_at: { type: string, format: date-time }
+        '400': { description: Invalid signature, replay, evidence or state transition }
+        '401': { description: Missing or invalid API authentication }
+        '500': { description: Durable storage unavailable; command not acknowledged }
+  /v1/discovery/rounds:
+    get:
+      operationId: discoveryRounds
+      summary: Published policies, confirmed funding, capacity and settlement status
+      responses:
+        '200':
+          description: Published policies, confirmed funding, capacity and settlement status
+          content:
+            application/json:
+              schema:
+                type: object
+        '400': { description: Invalid identifier or unavailable evidence }
+        '401': { description: Missing or invalid API authentication }
+        '404': { description: Requested record not found }
+  /v1/discovery/rounds/{round_id}/queue:
+    get:
+      operationId: discoveryQueue
+      summary: Commitment-ordered admitted work; admission is not scientific importance
+      parameters:
+        - name: round_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Commitment-ordered admitted work; admission is not scientific importance
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { type: object }
+        '400': { description: Invalid identifier or unavailable evidence }
+        '401': { description: Missing or invalid API authentication }
+        '404': { description: Requested record not found }
+  /v1/discovery/rounds/{round_id}/history:
+    get:
+      operationId: discoveryHistory
+      summary: Signed append-only commands and decision commitments
+      parameters:
+        - name: round_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Signed append-only commands and decision commitments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '../schemas/discovery-envelope.schema.json' }
+        '400': { description: Invalid identifier or unavailable evidence }
+        '401': { description: Missing or invalid API authentication }
+        '404': { description: Requested record not found }
+  /v1/discovery/rounds/{round_id}/settlement:
+    get:
+      operationId: discoverySettlement
+      summary: Immutable provisional settlement plan
+      parameters:
+        - name: round_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Immutable provisional settlement plan
+          content:
+            application/json:
+              schema:
+                $ref: '../schemas/discovery-settlement-plan.schema.json'
+        '400': { description: Invalid identifier or unavailable evidence }
+        '401': { description: Missing or invalid API authentication }
+        '404': { description: Requested record not found }
+  /v1/discovery/rounds/{round_id}/submissions/{submission_id}/evidence:
+    get:
+      operationId: discoveryEvidencePublication
+      summary: Revalidated exact certificate publication payload
+      parameters:
+        - name: round_id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: submission_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Revalidated exact certificate publication payload
+          content:
+            application/json:
+              schema:
+                type: object
+        '400': { description: Invalid identifier or unavailable evidence }
+        '401': { description: Missing or invalid API authentication }
+        '404': { description: Requested record not found }
   /health:
     get:
       security: []

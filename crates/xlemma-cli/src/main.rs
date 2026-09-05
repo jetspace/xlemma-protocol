@@ -1,3 +1,4 @@
+mod discovery;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use clap::{Parser, Subcommand, ValueEnum};
@@ -39,6 +40,25 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Prepare exact discovery evidence commitments from an XLMP certificate (not authentication).
+    DiscoveryEvidenceInputs { envelope: PathBuf },
+    /// Derive the public round, policy and trust roots; optionally prepare a submission commitment.
+    DiscoveryPrepare {
+        trust: PathBuf,
+        policy: PathBuf,
+        #[arg(long)]
+        submission: Option<PathBuf>,
+        #[arg(long)]
+        salt: Option<String>,
+    },
+    /// Sign a discovery command using a private 32-byte seed file (mode 0600).
+    DiscoverySign {
+        trust: PathBuf,
+        command: PathBuf,
+        key_file: PathBuf,
+        #[arg(long)]
+        nonce: String,
+    },
     /// Replay synthetic discovery funding, assessment and appeal events; never certifies or pays.
     SimulateDiscovery { scenario: PathBuf },
     /// Derive a domain-separated protocol identifier from a JSON object.
@@ -137,6 +157,8 @@ enum Command {
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
 enum IdKind {
+    /// Content commitment for an external action (does not authenticate that action).
+    Receipt,
     Theory,
     Claim,
     Proof,
@@ -178,6 +200,19 @@ enum IdKind {
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
+        Command::DiscoveryEvidenceInputs { envelope } => discovery::evidence_inputs(envelope)?,
+        Command::DiscoveryPrepare {
+            trust,
+            policy,
+            submission,
+            salt,
+        } => discovery::prepare(trust, policy, submission, salt)?,
+        Command::DiscoverySign {
+            trust,
+            command,
+            key_file,
+            nonce,
+        } => discovery::sign(trust, command, key_file, nonce)?,
         Command::SimulateDiscovery { scenario } => {
             let scenario: DiscoverySimulation = read_json(scenario)?;
             print_json(&simulate_discovery(&scenario)?)?;
@@ -185,6 +220,7 @@ fn main() -> Result<()> {
         Command::DeriveId { kind, input } => {
             let value: serde_json::Value = read_json(input)?;
             let id = match kind {
+                IdKind::Receipt => xlemma_core::ReceiptId::derive(&value)?.to_string(),
                 IdKind::Theory => TheoryId::derive(&value)?.to_string(),
                 IdKind::Claim => serde_json::from_value::<ClaimManifest>(value)?
                     .derive_claim_id()?

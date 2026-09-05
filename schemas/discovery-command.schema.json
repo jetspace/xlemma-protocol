@@ -1,0 +1,433 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/discovery-command.schema.json",
+  "title": "Authenticated discovery command content",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "create_round"
+        },
+        "policy": {
+          "$ref": "discovery-round-policy.schema.json"
+        }
+      },
+      "required": [
+        "kind",
+        "policy"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "approve_calibration"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "round_id"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "open_round"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "round_id"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "finalize"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "round_id"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "expire"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "round_id"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "observe_funding"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        },
+        "receipt": {
+          "$ref": "funding-receipt.schema.json"
+        },
+        "category": {
+          "enum": [
+            "foundational_research",
+            "discovery",
+            "formalization",
+            "proof_improvement",
+            "replication",
+            "research_tools",
+            "negative_result"
+          ]
+        },
+        "donor_cluster": {
+          "type": "string",
+          "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+        },
+        "administrator_cluster": {
+          "type": "string",
+          "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "round_id",
+        "receipt",
+        "category",
+        "donor_cluster",
+        "administrator_cluster"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "commit"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        },
+        "commitment": {
+          "type": "string",
+          "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "round_id",
+        "commitment"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "reveal"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        },
+        "submission": {
+          "$ref": "discovery-submission.schema.json"
+        },
+        "salt": {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "kind",
+        "round_id",
+        "submission",
+        "salt"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "consent"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        },
+        "submission_id": {
+          "type": "string",
+          "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "round_id",
+        "submission_id"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "attach_evidence"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        },
+        "submission_id": {
+          "type": "string",
+          "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+        },
+        "certificate_message_id": {
+          "type": "string",
+          "pattern": "^xlmessage:blake3:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "round_id",
+        "submission_id",
+        "certificate_message_id"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "assess"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        },
+        "assessment": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "submission_id": {
+              "type": "string",
+              "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+            },
+            "group_id": {
+              "type": "string",
+              "pattern": "^xlgroup:blake3:[0-9a-f]{64}$"
+            },
+            "eligible": {
+              "type": "boolean"
+            },
+            "calibration_tier": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "prior_art_root": {
+              "type": "string",
+              "pattern": "^xla:blake3:[0-9a-f]{64}$"
+            },
+            "additional_contribution_root": {
+              "type": "string",
+              "pattern": "^xla:blake3:[0-9a-f]{64}$"
+            },
+            "reasons_root": {
+              "type": "string",
+              "pattern": "^xla:blake3:[0-9a-f]{64}$"
+            },
+            "independent_discovery_root": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^xla:blake3:[0-9a-f]{64}$"
+                }
+              ]
+            }
+          },
+          "required": [
+            "submission_id",
+            "group_id",
+            "eligible",
+            "calibration_tier",
+            "prior_art_root",
+            "additional_contribution_root",
+            "reasons_root",
+            "independent_discovery_root"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "round_id",
+        "assessment"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "appeal"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        },
+        "submission_id": {
+          "type": "string",
+          "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+        },
+        "grounds": {
+          "enum": [
+            "evidence",
+            "grouping",
+            "eligibility",
+            "allocation",
+            "attribution",
+            "process"
+          ]
+        },
+        "evidence_root": {
+          "type": "string",
+          "pattern": "^xla:blake3:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "round_id",
+        "submission_id",
+        "grounds",
+        "evidence_root"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "resolve_appeal"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        },
+        "appeal_id": {
+          "type": "string",
+          "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+        },
+        "reasons_root": {
+          "type": "string",
+          "pattern": "^xla:blake3:[0-9a-f]{64}$"
+        },
+        "remedy": {
+          "$ref": "discovery-simulation.schema.json#/$defs/remedy"
+        }
+      },
+      "required": [
+        "kind",
+        "round_id",
+        "appeal_id",
+        "reasons_root",
+        "remedy"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "observe_settlement"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        },
+        "plan_id": {
+          "type": "string",
+          "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+        },
+        "transaction_hash": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{64}$"
+        },
+        "block_hash": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "round_id",
+        "plan_id",
+        "transaction_hash",
+        "block_hash"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "observe_expiry"
+        },
+        "round_id": {
+          "type": "string",
+          "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+        },
+        "transaction_hash": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{64}$"
+        },
+        "block_hash": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{64}$"
+        }
+      },
+      "required": [
+        "kind",
+        "round_id",
+        "transaction_hash",
+        "block_hash"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/discovery-submission.schema.json",
+  "title": "Committed research and contributor agreement",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "claim_id": {
+      "type": "string",
+      "pattern": "^xlc:blake3:[0-9a-f]{64}$"
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^xla:blake3:[0-9a-f]{64}$"
+    },
+    "profile_id": {
+      "type": "string",
+      "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+    },
+    "category": {
+      "enum": [
+        "foundational_research",
+        "discovery",
+        "formalization",
+        "proof_improvement",
+        "replication",
+        "research_tools",
+        "negative_result"
+      ]
+    },
+    "contributors": {
+      "type": "array",
+      "items": {
+        "$ref": "discovery-simulation.schema.json#/$defs/share"
+      },
+      "maxItems": 254,
+      "uniqueItems": true
+    },
+    "manifest_root": {
+      "type": "string",
+      "pattern": "^xla:blake3:[0-9a-f]{64}$"
+    },
+    "evidence_roots": {
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "formal_statement",
+          "proof_object",
+          "pinned_toolchain",
+          "axiom_inventory",
+          "reproducible_source",
+          "execution_environment",
+          "dependency_lock",
+          "deterministic_rerun",
+          "dataset_provenance",
+          "analysis_plan",
+          "uncertainty_report",
+          "robustness_checks",
+          "model_definition",
+          "random_seeds",
+          "parameter_ranges",
+          "convergence_analysis",
+          "sensitivity_analysis",
+          "protocol_registration",
+          "instrument_manifest",
+          "data_lineage",
+          "independent_replication"
+        ]
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^xla:blake3:[0-9a-f]{64}$"
+      }
+    },
+    "registered_study": {
+      "anyOf": [
+        {
+          "$ref": "discovery-simulation.schema.json#/$defs/study"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "assisted": {
+      "type": "boolean"
+    },
+    "research_context_root": {
+      "type": "string",
+      "pattern": "^xla:blake3:[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "claim_id",
+    "artifact_id",
+    "profile_id",
+    "category",
+    "contributors",
+    "manifest_root",
+    "evidence_roots",
+    "registered_study",
+    "assisted",
+    "research_context_root"
+  ]
+}

@@ -86,3 +86,10 @@ jobs:
           forge fmt --check
           forge build --sizes
           forge test -vvv
+
+      - uses: dtolnay/rust-toolchain@271ea64dfe6a2ce0953f640d4ac3de19c5f75523 # 1.82.0
+        with:
+          toolchain: 1.82.0
+      - run: cargo build --locked -p xlemma-cli
+      - name: Funded discovery EVM integration
+        run: python3 scripts/test_discovery_evm.py

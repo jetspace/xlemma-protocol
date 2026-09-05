@@ -111,6 +111,7 @@
           },
           "category": {
             "enum": [
+              "foundational_research",
               "discovery",
               "formalization",
               "proof_improvement",

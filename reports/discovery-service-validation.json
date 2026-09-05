@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-09-05T20:10:51.374520+00:00",
+  "baseline_commit": "902c67048099bcfcdcdac95787e91dc94ccd6a2c",
+  "author_operated": true,
+  "production_activated": false,
+  "checks": {
+    "rust_workspace": {
+      "passed": 223,
+      "failed": 0,
+      "evm_fixture_run_separately": 1,
+      "command": "cargo test --locked --workspace"
+    },
+    "clippy": {
+      "status": "passed",
+      "warnings_denied": true,
+      "command": "cargo clippy --locked --workspace --all-targets -- -D warnings"
+    },
+    "contracts": {
+      "passed": 53,
+      "failed": 0,
+      "discovery_conservation_fuzz_runs": 1000,
+      "command": "cd contracts && forge test"
+    },
+    "python": {
+      "passed": 6,
+      "command": "python3 -m unittest discover -s scripts -p 'test_*.py'"
+    },
+    "evm_integration": {
+      "status": "passed",
+      "chain": "isolated local Anvil",
+      "asset": "mock six-decimal USDC",
+      "checker": "explicit test double",
+      "stages": [
+        "confirmed onchain funding",
+        "signed Rust lifecycle",
+        "independent certificate publication",
+        "plan approvals",
+        "exact payout",
+        "category refunds",
+        "confirmed unpaid expiry"
+      ],
+      "command": "python3 scripts/test_discovery_evm.py"
+    },
+    "adversarial_economics": {
+      "passed": 17,
+      "command": "python3 scripts/simulate_discovery.py --check",
+      "semantic_duplicate_failure_is_documented": true
+    },
+    "lean": {
+      "build": "passed",
+      "export_vector": "passed",
+      "independent_checker_qualification": false
+    }
+  },
+  "source_sha256": {
+    "crates/xlemma-economics/src/discovery_service.rs": "3b5b855be07f7ec14af4bb6791d7cd5c45a34fcce00c42b24542f836cb83c51c",
+    "crates/xlemma-api/src/discovery.rs": "3553b39905e762ce6bd8c3b1d99a0b0cc009fa8e0f15bdfd8c33316a7cbb0df8",
+    "crates/xlemma-api/src/event_store.rs": "1c1a3d9996d56c8b58c2e7f08712f3292471c30433f558647dec75078b9c05ca",
+    "crates/xlemma-cli/src/discovery.rs": "f97819ed294bf0c3929b196b470f6affde393bcb60675dc7b6996e91ff3163ba",
+    "scripts/discovery_chain.py": "4bf0bc752b67acc2401c9d53a798d2842fc580ebffa7e75a2e72d2b713d34aad",
+    "scripts/test_discovery_evm.py": "4491e805beb1fb93fae38669298fdb57592f369cf8aa7dae3de845e11d71501b"
+  },
+  "deployment_gates": [
+    "Independent economic/security and semantic-grouping review",
+    "Qualified operator identities, independent RPCs, relays and watchers",
+    "Actual USDC-funded deployment and staffed appeals",
+    "Qualified empirical laboratories and outcome-neutral service agreements",
+    "Published trust migration, overload escalation and recovery procedures"
+  ]
+}

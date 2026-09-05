@@ -2073,6 +2073,7 @@ dependencies = [
  "uuid",
  "xlemma-consensus",
  "xlemma-core",
+ "xlemma-economics",
  "xlemma-xlmp",
 ]
 
@@ -2096,8 +2097,12 @@ name = "xlemma-cli"
 version = "0.2.0"
 dependencies = [
  "anyhow",
+ "base64",
  "chrono",
  "clap",
+ "ed25519-dalek",
+ "hex",
+ "libc",
  "serde",
  "serde_json",
  "xlemma-compute-curve",

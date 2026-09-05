@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/discovery-round-policy.schema.json",
+  "title": "Prospective funded discovery service policy",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "economics": {
+      "$ref": "discovery-simulation.schema.json#/$defs/policy"
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "settlement_expires_at": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "minimum_foundational_bps": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "calibration": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 32,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reference_cost_units": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 10,
+            "maximum": 4294967295
+          },
+          "accepted_results": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4294967295
+          },
+          "uncertainty_bps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "outcomes_root": {
+            "type": "string",
+            "pattern": "^xla:blake3:[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "reference_cost_units",
+          "attempts",
+          "accepted_results",
+          "uncertainty_bps",
+          "outcomes_root"
+        ]
+      }
+    },
+    "calibration_root": {
+      "type": "string",
+      "pattern": "^xla:blake3:[0-9a-f]{64}$"
+    },
+    "prior_art_cutoff": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "assisted_submission_slots": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "per_researcher_submission_cap": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "max_contributors_per_submission": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 254
+    },
+    "simultaneous_window_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "reproduction_fee_units": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "maximum_verifier_clusters": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 8
+    },
+    "formal_policy_bindings": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+      }
+    }
+  },
+  "required": [
+    "economics",
+    "domain",
+    "settlement_expires_at",
+    "minimum_foundational_bps",
+    "calibration",
+    "calibration_root",
+    "prior_art_cutoff",
+    "assisted_submission_slots",
+    "per_researcher_submission_cap",
+    "max_contributors_per_submission",
+    "simultaneous_window_seconds",
+    "reproduction_fee_units",
+    "maximum_verifier_clusters",
+    "formal_policy_bindings"
+  ]
+}
