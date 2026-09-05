@@ -8,7 +8,24 @@ The latest repository-wide audit and verified fixes are in
 [`docs/REPOSITORY_AUDIT.md`](docs/REPOSITORY_AUDIT.md). Passing local tests does
 not close the production integrations and trust dependencies listed below.
 
-## Current execution focus — Phase 0 closure
+## Current execution focus — funded discovery pilot readiness
+
+Commit `96aa47e` adds the funded discovery reference service and local EVM
+integration. Reproducible checks and review limitations are recorded in the
+[service validation report](reports/discovery-service-validation.json) and
+[discovery security scan](reports/discovery-security-scan.json).
+
+The next milestone is a bounded, independently reviewed, actually funded pilot
+for unsolicited formal results, first formalizations and proof improvements.
+Before opening it, qualify independent checkers and operating teams, publish
+reviewed calibration and reward rules, fund the deployed escrow, and exercise
+appeals, quarantine and recovery. Qualify an empirical physics profile alongside
+this work; local test evidence does not establish experimental support.
+
+The open research mining activation gates below remain the launch checklist.
+Phase 0 encoding and independent-reproduction work remains open in parallel.
+
+### Phase 0 reference implementation progress
 
 - [x] Publish versioned, domain-separated ID derivation and RFC 8785 canonicalization code.
 - [x] Provide a safe content-addressed bundle builder with an explicit timestamp and a byte-for-byte deterministic vector.
@@ -74,6 +91,7 @@ EVM settlement. Public mining is not activated by a repository commit.
 - [x] Bind formal awards to exact PoIR/checker policies and other research awards to complete authenticated profile-specific reproduction evidence.
 - [x] Add protected foundational budgets, bounded assisted queues, reference-cost calibration, exact group/claim history and independent simultaneous-discovery sharing.
 - [x] Pay completed reproduction, assessment and appeal work regardless of PASS; retain disagreement and prevent unresolved appeals from unlocking awards.
+- [x] Prevent duplicate checking-job/operator charges across submissions and rounds, and reject replayed completed-work invoices in escrow.
 - [x] Implement confirmed institutional funding observations, isolated USDC escrow categories, independently reviewed atomic plans, certificate publication/quarantine, refunds and release of confirmed unpaid reservations.
 - [x] Exercise real local-EVM funding, signed Rust allocation, independent certificate publication, exact transfers and donor refunds.
 - [ ] Independently review the economic policy, semantic grouping/error rates, security and constitutional activation decision.
@@ -87,7 +105,7 @@ EVM settlement. Public mining is not activated by a repository commit.
 - Publish spot and forward compute offers.
 - Train independent protocol success estimators on proof-state, model, domain and checker telemetry; provider self-estimates do not control routing.
 - Introduce conservative compute-impact signals with randomized holdout re-proving and separately authorized bounded impact pools.
-- Add public-goods and negative-result funding.
+- Fund and operate the reference service's foundational and negative-result categories; qualify outcome-neutral service agreements and independently reconcile actual settlement.
 - Deploy the implemented market, commons, and assurance rails with independently reconciled external settlement.
 - Defer tradeable compute futures until service profiles and settlement history are standardized and liquid.
 
