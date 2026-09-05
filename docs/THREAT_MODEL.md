@@ -45,6 +45,46 @@ storage network
 
 ## Principal threats and controls
 
+### Open discovery reward farming and appeal capture
+
+Attack: generate unlimited true identities, rename or split a proof, rotate
+identities or rounds, fabricate costly compute or independent replication,
+front-run a reveal, or collude with institutional fund administrators to claim
+the shared research budget. Alternatively, overbroad grouping can exclude a
+genuine foundational result; expensive or captured appeals can entrench that
+exclusion. Flooded verification or repeated appeals can exhaust reserves and
+prevent settlement. A successful weight appeal can also invalidate every
+previously calculated reward sharing its denominator.
+
+Required controls: separate evidence and reward decisions; published prospective
+round policies; evidence-backed grouping and cross-round reward history;
+independent calibration rather than self-reported compute; commit/reveal with
+explicit priority rules; disclosed fund restrictions and control relationships;
+bounded service admission; funded verification regardless of verdict; accessible
+independent appeals; append-only reasons and remedies; and atomic conservation,
+replay protection, and holds covering the full affected allocation set.
+
+The offline `xlemma-economics::discovery` model exercises restricted budgets,
+contributor splits, declared control exclusions, review capacity, outcome-neutral
+fees, append-only appeal replay and whole-batch holds. Its CLI accepts synthetic
+facts and cannot certify or pay. All funding, grouping, evidence verdicts,
+control identities and histories remain unauthenticated inputs. Production
+authentication and atomic settlement remain **unimplemented activation gates**.
+Novelty, difficulty, grouping, institutional independence, and prior-art
+coverage remain uncertain external assessments. Formal identity is not a
+complete equivalence detector. Publish uncertainty and assess both farming and
+wrongful exclusion; governance cannot invent a formal equivalence proof or vote
+a failed proof into validity. Physics profiles must distinguish model proofs
+and simulations from empirical support. See
+[XLIP-024](../spec/024-open-research-mining.md) and its activation tests.
+
+The committed discovery attack report deliberately records 150 simulated USDC
+of leakage for an unrecognized semantic duplicate, and one legitimate exclusion
+corrected by appeal. These are constructed failure cases, not measured field
+error rates. Exact identity/group replay checks do not solve semantic grouping.
+Pool-funded appeal capacity can still be exhausted; bounded costs cannot
+replace fair admission, authenticated control mapping and independent review.
+
 ### False proof through source or environment substitution
 
 Controls: TheoryID, exact challenge, pinned toolchain, dependency lock, artifact root, environment root, proof export, multiple checker families, and append-only receipts.

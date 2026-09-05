@@ -24,8 +24,8 @@ use xlemma_core::{
     VerificationProfile,
 };
 use xlemma_economics::{
-    compute_impact_pool_allocation, ComputeSavingsEvidence, ComputeSavingsPolicy, FundingReceipt,
-    ImpactPoolAuthorization,
+    compute_impact_pool_allocation, simulate_discovery, ComputeSavingsEvidence,
+    ComputeSavingsPolicy, DiscoverySimulation, FundingReceipt, ImpactPoolAuthorization,
 };
 use xlemma_storage::{build_bundle_manifest_at, BundleInput};
 use xlemma_xlmp::XlmpEnvelope;
@@ -39,6 +39,8 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Replay synthetic discovery funding, assessment and appeal events; never certifies or pays.
+    SimulateDiscovery { scenario: PathBuf },
     /// Derive a domain-separated protocol identifier from a JSON object.
     DeriveId {
         #[arg(value_enum)]
@@ -176,6 +178,10 @@ enum IdKind {
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
+        Command::SimulateDiscovery { scenario } => {
+            let scenario: DiscoverySimulation = read_json(scenario)?;
+            print_json(&simulate_discovery(&scenario)?)?;
+        }
         Command::DeriveId { kind, input } => {
             let value: serde_json::Value = read_json(input)?;
             let id = match kind {

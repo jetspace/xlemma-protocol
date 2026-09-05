@@ -1,5 +1,20 @@
 # Testing and verification strategy
 
+## Open discovery pilot
+
+`cargo test --locked -p xlemma-economics --test discovery` exercises the local
+economic state machine, including 256 generated cases for varied weights,
+budgets, rounding, contributor splits, and partition-count invariance. Other
+cases cover funding restrictions/replay, review conflicts, appeals, timeouts,
+outcome-neutral replication and empirical evidence requirements.
+
+`python3 scripts/simulate_discovery.py --check` runs 17 synthetic scenarios
+through the Rust CLI and checks committed reference/attack reports. It must
+preserve the deliberately modeled leakage from unrecognized duplication and
+the wrongful-exclusion/appeal pair. These are not real-world detection rates.
+Structural validation checks the new schemas and profile fixture. The pilot
+adds no Solidity settlement or Lean checker execution path.
+
 The reference repository is not complete merely because it compiles. xLemma needs cross-layer tests that attack formal, economic, distributed-systems, privacy, and smart-contract assumptions.
 
 ## 1. Test pyramid

@@ -90,6 +90,12 @@ protocol_id!(ReceiptId, "xlr:blake3:", "receipt-v1");
 protocol_id!(LemmaId, "xll:blake3:", "lemma-v1");
 protocol_id!(ResearcherId, "xlresearcher:blake3:", "researcher-v1");
 protocol_id!(JobId, "xljob:blake3:", "job-v1");
+protocol_id!(DiscoveryRoundId, "xlround:blake3:", "discovery-round-v1");
+protocol_id!(
+    ContributionGroupId,
+    "xlgroup:blake3:",
+    "contribution-group-v1"
+);
 protocol_id!(PolicyId, "xlpolicy:blake3:", "policy-v1");
 protocol_id!(NodeId, "xlnode:blake3:", "node-v1");
 protocol_id!(

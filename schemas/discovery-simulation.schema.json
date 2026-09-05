@@ -1,0 +1,740 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/discovery-simulation.schema.json",
+  "title": "Offline discovery simulation inputs (unauthenticated synthetic facts)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "policy": {
+      "$ref": "#/$defs/policy"
+    },
+    "funding": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/funding"
+      },
+      "minItems": 0,
+      "maxItems": 1000
+    },
+    "pledged_units": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "previously_rewarded_groups": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^xlgroup:blake3:[0-9a-f]{64}$"
+      },
+      "minItems": 0,
+      "maxItems": 10000,
+      "uniqueItems": true
+    },
+    "previously_rewarded_claims": {
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "discovery",
+          "formalization",
+          "proof_improvement",
+          "replication",
+          "research_tools",
+          "negative_result"
+        ]
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^xlc:blake3:[0-9a-f]{64}$"
+        },
+        "minItems": 0,
+        "maxItems": 10000,
+        "uniqueItems": true
+      },
+      "minProperties": 0,
+      "maxProperties": 6
+    },
+    "previously_consumed_settlements": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+      },
+      "minItems": 0,
+      "maxItems": 10000,
+      "uniqueItems": true
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/event"
+      },
+      "minItems": 0,
+      "maxItems": 10000
+    }
+  },
+  "required": [
+    "policy",
+    "funding",
+    "pledged_units",
+    "previously_rewarded_groups",
+    "previously_rewarded_claims",
+    "previously_consumed_settlements",
+    "events"
+  ],
+  "$defs": {
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "solver_units": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "verification_units": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "appeal_units": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maximum_weight": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        }
+      },
+      "required": [
+        "solver_units",
+        "verification_units",
+        "appeal_units",
+        "maximum_weight"
+      ]
+    },
+    "funding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "settlement_receipt_id": {
+          "type": "string",
+          "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+        },
+        "donor_cluster": {
+          "type": "string",
+          "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+        },
+        "administrator_cluster": {
+          "type": "string",
+          "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+        },
+        "category": {
+          "enum": [
+            "discovery",
+            "formalization",
+            "proof_improvement",
+            "replication",
+            "research_tools",
+            "negative_result"
+          ]
+        },
+        "gross_units": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "administrator_fee_units": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "mandate_root": {
+          "type": "string",
+          "pattern": "^xla:blake3:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "settlement_receipt_id",
+        "donor_cluster",
+        "administrator_cluster",
+        "category",
+        "gross_units",
+        "administrator_fee_units",
+        "mandate_root"
+      ]
+    },
+    "share": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "researcher_id": {
+          "type": "string",
+          "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$"
+        },
+        "operator_cluster_id": {
+          "type": "string",
+          "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+        },
+        "share_bps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "researcher_id",
+        "operator_cluster_id",
+        "share_bps"
+      ]
+    },
+    "study": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "registration_root": {
+          "type": "string",
+          "pattern": "^xla:blake3:[0-9a-f]{64}$"
+        },
+        "registered_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "data_collection_started_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "outcome": {
+          "enum": [
+            "positive",
+            "null",
+            "counterexample"
+          ]
+        }
+      },
+      "required": [
+        "registration_root",
+        "registered_at",
+        "data_collection_started_at",
+        "outcome"
+      ]
+    },
+    "submission": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "submission_id": {
+          "type": "string",
+          "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+        },
+        "group_id": {
+          "type": "string",
+          "pattern": "^xlgroup:blake3:[0-9a-f]{64}$"
+        },
+        "category": {
+          "enum": [
+            "discovery",
+            "formalization",
+            "proof_improvement",
+            "replication",
+            "research_tools",
+            "negative_result"
+          ]
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^xlc:blake3:[0-9a-f]{64}$"
+          },
+          "minItems": 1,
+          "maxItems": 100,
+          "uniqueItems": true
+        },
+        "contributors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/share"
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "contribution_manifest_root": {
+          "type": "string",
+          "pattern": "^xla:blake3:[0-9a-f]{64}$"
+        },
+        "profile_id": {
+          "type": "string",
+          "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+        },
+        "evidence_roots": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "formal_statement",
+              "proof_object",
+              "pinned_toolchain",
+              "axiom_inventory",
+              "reproducible_source",
+              "execution_environment",
+              "dependency_lock",
+              "deterministic_rerun",
+              "dataset_provenance",
+              "analysis_plan",
+              "uncertainty_report",
+              "robustness_checks",
+              "model_definition",
+              "random_seeds",
+              "parameter_ranges",
+              "convergence_analysis",
+              "sensitivity_analysis",
+              "protocol_registration",
+              "instrument_manifest",
+              "data_lineage",
+              "independent_replication"
+            ]
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^xla:blake3:[0-9a-f]{64}$"
+          }
+        },
+        "declared_evidence_status": {
+          "enum": [
+            "supported",
+            "rejected",
+            "divergent",
+            "inconclusive"
+          ]
+        },
+        "reward_eligible": {
+          "type": "boolean"
+        },
+        "assessed_weight": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "assessment_root": {
+          "type": "string",
+          "pattern": "^xla:blake3:[0-9a-f]{64}$"
+        },
+        "assessors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+          },
+          "minItems": 2,
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "reported_tokens": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "reported_compute_units": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "registered_study": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/study"
+            }
+          ]
+        }
+      },
+      "required": [
+        "submission_id",
+        "group_id",
+        "category",
+        "claims",
+        "contributors",
+        "contribution_manifest_root",
+        "profile_id",
+        "evidence_roots",
+        "declared_evidence_status",
+        "reward_eligible",
+        "assessed_weight",
+        "assessment_root",
+        "assessors",
+        "reported_tokens",
+        "reported_compute_units",
+        "registered_study"
+      ]
+    },
+    "remedy": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "uphold"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "correct_reward"
+            },
+            "group_id": {
+              "type": "string",
+              "pattern": "^xlgroup:blake3:[0-9a-f]{64}$"
+            },
+            "eligible": {
+              "type": "boolean"
+            },
+            "weight": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            }
+          },
+          "required": [
+            "kind",
+            "group_id",
+            "eligible",
+            "weight"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "correct_contributors"
+            },
+            "contributors": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/share"
+              },
+              "minItems": 1,
+              "maxItems": 100
+            },
+            "manifest_root": {
+              "type": "string",
+              "pattern": "^xla:blake3:[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "kind",
+            "contributors",
+            "manifest_root"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "require_revalidation"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        }
+      ]
+    },
+    "event": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "submit"
+            },
+            "at": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "submission": {
+              "$ref": "#/$defs/submission"
+            }
+          },
+          "required": [
+            "kind",
+            "at",
+            "submission"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "appeal"
+            },
+            "at": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "appeal_id": {
+              "type": "string",
+              "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+            },
+            "submission_id": {
+              "type": "string",
+              "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+            },
+            "appellant": {
+              "type": "string",
+              "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$"
+            },
+            "grounds": {
+              "enum": [
+                "evidence",
+                "grouping",
+                "eligibility",
+                "allocation",
+                "attribution",
+                "process"
+              ]
+            },
+            "evidence_root": {
+              "type": "string",
+              "pattern": "^xla:blake3:[0-9a-f]{64}$"
+            },
+            "appellant_cluster": {
+              "type": "string",
+              "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "kind",
+            "at",
+            "appeal_id",
+            "submission_id",
+            "appellant",
+            "grounds",
+            "evidence_root",
+            "appellant_cluster"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "resolve"
+            },
+            "at": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "appeal_id": {
+              "type": "string",
+              "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+            },
+            "reviewers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+              },
+              "minItems": 2,
+              "maxItems": 1000,
+              "uniqueItems": true
+            },
+            "reasons_root": {
+              "type": "string",
+              "pattern": "^xla:blake3:[0-9a-f]{64}$"
+            },
+            "remedy": {
+              "$ref": "#/$defs/remedy"
+            }
+          },
+          "required": [
+            "kind",
+            "at",
+            "appeal_id",
+            "reviewers",
+            "reasons_root",
+            "remedy"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "finalize"
+            },
+            "at": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "kind",
+            "at"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "expire"
+            },
+            "at": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "kind",
+            "at"
+          ]
+        }
+      ]
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "usdc_asset": {
+          "type": "string",
+          "minLength": 1
+        },
+        "opens_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "submissions_close_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "appeals_close_at": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "review_deadline": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maximum_submissions": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "maximum_appeals": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "verification_fee_units": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "appeal_fee_units": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "assessors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+          },
+          "minItems": 2,
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "appeal_reviewers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^xloperator:blake3:[0-9a-f]{64}$"
+          },
+          "minItems": 2,
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "budgets": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "discovery",
+              "formalization",
+              "proof_improvement",
+              "replication",
+              "research_tools",
+              "negative_result"
+            ]
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/budget"
+          },
+          "minProperties": 1,
+          "maxProperties": 6
+        },
+        "profiles": {
+          "type": "array",
+          "items": {
+            "$ref": "verification-profile.schema.json"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        },
+        "assessment_policy_root": {
+          "type": "string",
+          "pattern": "^xla:blake3:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "name",
+        "usdc_asset",
+        "opens_at",
+        "submissions_close_at",
+        "appeals_close_at",
+        "review_deadline",
+        "maximum_submissions",
+        "maximum_appeals",
+        "verification_fee_units",
+        "appeal_fee_units",
+        "assessors",
+        "appeal_reviewers",
+        "budgets",
+        "profiles",
+        "assessment_policy_root"
+      ]
+    }
+  }
+}

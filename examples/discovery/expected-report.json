@@ -1,0 +1,118 @@
+{
+  "simulation_only": true,
+  "authenticates_evidence": false,
+  "executes_payments": false,
+  "round_id": "xlround:blake3:b050123f8fe4d051ae1cb8dd563ce69473215f6af708358cb950a241a1ff4258",
+  "state": "finalized",
+  "declared_funding_units": 3000000000,
+  "ignored_pledged_units": 1000000000,
+  "administrator_fees_units": 60000000,
+  "largest_donor_share_bps": 3333,
+  "verification_spent_units": 7000000,
+  "appeal_spent_units": 2000000,
+  "pending_appeal_reserved_units": 0,
+  "allocated_units": 1800000000,
+  "retained_units": 1131000000,
+  "admitted_submissions": 7,
+  "remaining_submission_capacity": 93,
+  "unresolved_appeals": 0,
+  "excluded_submissions": {},
+  "allocations": [
+    {
+      "group_id": "xlgroup:blake3:289f8b01adac7224101aeba7f153c572c3def3c9d6205ee795a689df07f5d419",
+      "submission_id": "xlr:blake3:062c55ab3d112c77170ea00c8bcc11496027d75f367165dfb928cf3ed9bec793",
+      "category": "discovery",
+      "gross_units": 150000000,
+      "contributor_units": {
+        "xlresearcher:blake3:604c7a8af9cd126e29ba34aee3c2e9c043478c7575ba54fb1b490f8c823e594a": 105000000,
+        "xlresearcher:blake3:8174cf683db6754b07d23f443f1c954133d322e558307f4697a33b067c0a9798": 45000000
+      },
+      "split_remainder_units": 0
+    },
+    {
+      "group_id": "xlgroup:blake3:cc8da4117743483ba4be22d7c3a04da94273a035238b15916cd68ebdefbece82",
+      "submission_id": "xlr:blake3:95d2ccc2e9d5702da2398bac5d0b6b4943684a49febea8815658ca09d2641ad2",
+      "category": "discovery",
+      "gross_units": 150000000,
+      "contributor_units": {
+        "xlresearcher:blake3:604c7a8af9cd126e29ba34aee3c2e9c043478c7575ba54fb1b490f8c823e594a": 105000000,
+        "xlresearcher:blake3:8174cf683db6754b07d23f443f1c954133d322e558307f4697a33b067c0a9798": 45000000
+      },
+      "split_remainder_units": 0
+    },
+    {
+      "group_id": "xlgroup:blake3:6fa2bfe628569ac121d54aa055e14e5dfddca30fc7815b1f0b225806c22db4bd",
+      "submission_id": "xlr:blake3:ecf30b96c8147e8e97a080be8b01ee53e25be5b364c939e86e86856f99c4f514",
+      "category": "formalization",
+      "gross_units": 300000000,
+      "contributor_units": {
+        "xlresearcher:blake3:36957af4acdae61c9310d97a4b2cad7b7ce65268b1ea546556c48159d9161a95": 90000000,
+        "xlresearcher:blake3:6ee8709aec0229f5785514bd50d4ea9f23b7f5ee2b49a319e907b20723fae93e": 210000000
+      },
+      "split_remainder_units": 0
+    },
+    {
+      "group_id": "xlgroup:blake3:e43955f7960a1f6dc493548e7c8d446be1ca7265e172fd9b08c89659cd626593",
+      "submission_id": "xlr:blake3:0fc4d78b69e83f46a7340479335b1211c5d72876efaee1f4ba43bcfec0b871d3",
+      "category": "proof_improvement",
+      "gross_units": 300000000,
+      "contributor_units": {
+        "xlresearcher:blake3:48b4ac94e5679833d91412ac3128d6fb4e6c4f37d5519933924992bb34823cbc": 90000000,
+        "xlresearcher:blake3:67f9b96f3a246bce9b74df9e99840c60cbb6a960e79d7245716f817192ac96cc": 210000000
+      },
+      "split_remainder_units": 0
+    },
+    {
+      "group_id": "xlgroup:blake3:92f07b363b8cf29bb923fdf8dc5ef8868ca5d9bbeba4b0d7c768894386fe8345",
+      "submission_id": "xlr:blake3:b454739bc115c0d9401be67e46d974402a25a612114251b90a64d30308a6caee",
+      "category": "replication",
+      "gross_units": 300000000,
+      "contributor_units": {
+        "xlresearcher:blake3:4b3e472bf94fb2e9f6be9f76ca96fe4c7b567f711f4308cbbd45b6a0937a19e3": 90000000,
+        "xlresearcher:blake3:e4db119e74ed0d2ba8b0be700c55fb31488b48bae3f07f2d5c7debd09cfa561d": 210000000
+      },
+      "split_remainder_units": 0
+    },
+    {
+      "group_id": "xlgroup:blake3:7c6edefef64b540168dff4b34ec8fbec956288d5e9f79c918e9bdd5e5c9f1de2",
+      "submission_id": "xlr:blake3:9bb537705e4a86e6a38e42e1f652de73f260b0c62c2921fa6ed25c113dd5f1b9",
+      "category": "research_tools",
+      "gross_units": 300000000,
+      "contributor_units": {
+        "xlresearcher:blake3:139bffa2bd0298b015ac8e36ec942648c95bbcbe8522cc3d643ee5ded1fb732c": 210000000,
+        "xlresearcher:blake3:3621cdcad7b4c32d3a75946e8601cbf3eb7b0f9cfef31007ebbe57f25b8807f7": 90000000
+      },
+      "split_remainder_units": 0
+    },
+    {
+      "group_id": "xlgroup:blake3:35a84a5c7d0bb794698841f7375eb847521d88b496581bcbb5aeeb7930223525",
+      "submission_id": "xlr:blake3:a7a1e32e307d79fb54a1b43da50d0457d9efdc85eef3c67de65fdad9b5c76251",
+      "category": "negative_result",
+      "gross_units": 300000000,
+      "contributor_units": {
+        "xlresearcher:blake3:4cb427f62bbf358e01e9772e37b3660672fef6391bcf691ca9630448d318fa47": 90000000,
+        "xlresearcher:blake3:b7f78abb35c1d5502837bbcd80634170522cd95e3ff6be4ef252ff8e44d0d611": 210000000
+      },
+      "split_remainder_units": 0
+    }
+  ],
+  "event_receipts": [
+    "xlr:blake3:593cb60de81b4fb55b1e07bbd2f6433ef0d4cfdaf22d4e42449c227be0ba2609",
+    "xlr:blake3:e5912abc36bc483719f5bd0f5c8585b76784acc59e7d89895eef8b6ee8124bdc",
+    "xlr:blake3:c5583ebfc75e1d1a1e5fd581ea245bc071ca95f3cc774fd57168061a190f2419",
+    "xlr:blake3:4b09dc16459fba29b56e6c6b3645aedf5907ff8ca0fd0fc65f8050c154185a1d",
+    "xlr:blake3:05e72541827ba599299705856eed3742fb08e75a51a1cba6c19a4a4e072e994e",
+    "xlr:blake3:14d877896bc902f1027334548ca584bf74485c075589d959baab61374f493d55",
+    "xlr:blake3:5b5d59340b71abdf5507408cfcfe61b68e0d28d9eef8739c6e8424c37bbc9481",
+    "xlr:blake3:a8c9ae2a94d4457389c209d94671c9d2b0d24d379643fc357e27a22b89f997b1",
+    "xlr:blake3:0bae1d95a39e8c7f6e7cfac9598a1ed123bf03e00bebb5e58972b4b78674aded",
+    "xlr:blake3:7ff8f53c33c30da07a7edab414b69021b72694b3fd90aeb5e6503596534c258a"
+  ],
+  "limitations": [
+    "Synthetic funding, verdicts, grouping, qualifications, mandates and histories are not authenticated.",
+    "Fresh group IDs or altered claims can evade grouping; no semantic novelty/difficulty oracle is implemented.",
+    "Empirical evidence presence does not verify an instrument, experiment, uncertainty analysis or law of nature.",
+    "All review access is pool-funded and bounded; expiry retains funds and unresolved cases without declaring them false.",
+    "Reports cannot authorize USDC transfers; production requires signed admission, verification, independent assessment and durable atomic settlement."
+  ]
+}

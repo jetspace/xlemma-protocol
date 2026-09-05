@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/discovery-simulation-report.schema.json",
+  "title": "Offline discovery simulation report (never a payment authorization)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "simulation_only": {
+      "const": true
+    },
+    "authenticates_evidence": {
+      "const": false
+    },
+    "executes_payments": {
+      "const": false
+    },
+    "round_id": {
+      "type": "string",
+      "pattern": "^xlround:blake3:[0-9a-f]{64}$"
+    },
+    "state": {
+      "enum": [
+        "reviewing",
+        "finalized",
+        "expired"
+      ]
+    },
+    "declared_funding_units": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "ignored_pledged_units": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "administrator_fees_units": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "verification_spent_units": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "appeal_spent_units": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "pending_appeal_reserved_units": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "allocated_units": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "retained_units": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "admitted_submissions": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "remaining_submission_capacity": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "unresolved_appeals": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "largest_donor_share_bps": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "excluded_submissions": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "allocations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "pattern": "^xlgroup:blake3:[0-9a-f]{64}$"
+          },
+          "submission_id": {
+            "type": "string",
+            "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+          },
+          "category": {
+            "enum": [
+              "discovery",
+              "formalization",
+              "proof_improvement",
+              "replication",
+              "research_tools",
+              "negative_result"
+            ]
+          },
+          "gross_units": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "contributor_units": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$"
+            },
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "split_remainder_units": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "group_id",
+          "submission_id",
+          "category",
+          "gross_units",
+          "contributor_units",
+          "split_remainder_units"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 1000
+    },
+    "event_receipts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+      },
+      "minItems": 0,
+      "maxItems": 10000
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "maxItems": 20
+    }
+  },
+  "required": [
+    "simulation_only",
+    "authenticates_evidence",
+    "executes_payments",
+    "round_id",
+    "state",
+    "declared_funding_units",
+    "ignored_pledged_units",
+    "administrator_fees_units",
+    "verification_spent_units",
+    "appeal_spent_units",
+    "pending_appeal_reserved_units",
+    "allocated_units",
+    "retained_units",
+    "admitted_submissions",
+    "remaining_submission_capacity",
+    "unresolved_appeals",
+    "largest_donor_share_bps",
+    "excluded_submissions",
+    "allocations",
+    "event_receipts",
+    "limitations"
+  ]
+}

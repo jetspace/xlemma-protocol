@@ -32,6 +32,18 @@ XLIP-023.
 
 ReceiptID MUST be domain-separated by receipt kind and bind all consensus-critical fields.
 
+## Offline discovery pilot identifiers
+
+The local XLIP-024 simulation uses `DiscoveryRoundID` (`xlround:blake3:`,
+`discovery-round-v1`) for the entire immutable round policy and
+`ContributionGroupID` (`xlgroup:blake3:`, `contribution-group-v1`) for economic
+grouping assertions. Group identity is not a proof of formal equivalence.
+Simulation event ReceiptIDs bind an explicit simulation domain, RoundID, the
+previous receipt and the entire event. The initial receipt also commits
+declared funding and prior settlement/contribution histories. They are local
+audit records, not authenticated evidence or payment receipts. Existing formal
+ClaimID/ProofID derivation is unchanged.
+
 ## Participant, operator, node, and credential identity
 
 `VerifiedUserID`, `OperatorID`, and `NodeID` are separate typed domains.

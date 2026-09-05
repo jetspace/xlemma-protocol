@@ -4,6 +4,12 @@ Every major concept requested or developed in the design is mapped to its primar
 
 | Concept | Specification / documentation | Reference implementation |
 |---|---|---|
+| Unsolicited discovery funding without a posted bounty, affiliation, or buyer | `spec/024-open-research-mining.md`, `docs/DISCOVERY_PILOT.md` | `simulate_discovery`, CLI and six-category synthetic fixture; no authenticated funding or payment activation |
+| Truth/eligibility separation; partition and replay resistance | `spec/010-novelty-significance.md`, `spec/024-open-research-mining.md` | Exact group/claim and declared history checks, generated partition tests; semantic grouping and calibrated weights remain external inputs |
+| Budget-conserving discovery rounds with shared-denominator appeal holds | `spec/024-open-research-mining.md` | Private offline replay state, whole-batch finalization, integer allocation and reserve properties; atomic live settlement remains an activation gate |
+| Independent accessible appeals of evidence and reward decisions | `spec/013-governance-disputes.md`, `docs/DISCOVERY_PILOT.md` | Pool-funded bounded appeal replay, declared panel conflicts, correction/revalidation/expiry tests; no authenticated or operated appeal service |
+| Institutional funding mandates/conflicts and empirical physics evidence | `docs/DISCOVERY_PILOT.md` | Declared restrictions, fees, donor concentration, profile/registration checks; mandate authentication and qualified laboratories remain activation gates |
+| Honest/hostile discovery outcomes and empirical profile | `docs/DISCOVERY_PILOT.md` | `scripts/simulate_discovery.py`, schema/vector checks, 17-scenario report including known leakage and corrected wrongful exclusion |
 | Canonical provider-neutral protocol | `spec/018-xlmp-wire-protocol.md` | `xlemma-xlmp`, `xlmp-envelope.schema.json` |
 | XLMP/1 envelope and MessageID integrity | same | `XlmpEnvelope::validate_integrity`, HTTP message ingress |
 | Canonical XLMP message vocabulary | same | `XlmpMessage`, `MessageKind` |

@@ -8,9 +8,18 @@
   />
 </p>
 
-**Proof-carrying infrastructure for financing, producing, independently
-reproducing, attributing, licensing, and funding the reuse of research
-artifacts.**
+**Open research mining for mathematics and physics: freely explore, independently
+verify, and reward contributions to knowledge with pooled USDC funding.**
+
+Researchers freely choose what to discover; pooled funding rewards verified
+contributions under transparent, budget-conserving rules. Institutions help
+finance that freedom, while independent verification determines what the
+evidence supports.
+
+xLemma aims to help researchers uncover new mathematics and new physics,
+including foundational work whose applications are not yet known. A posted
+bounty, institutional affiliation, or immediate commercial buyer is not a
+prerequisite for submitting a discovery to the open research pool.
 
 > Status: architectural reference implementation and prototype. The Rust, Lean, Solidity, payment, and cryptographic components have not been independently audited. Do not deploy with real funds until the missing production work in `ROADMAP.md` is complete.
 
@@ -19,7 +28,9 @@ artifacts.**
 [Node network](#first-class-node-network) ·
 [Researcher sovereignty](#researcher-sovereignty-and-portable-exit) ·
 [PoIR](#proof-of-independent-reproduction) ·
-[Economics](#research-credit-economics) · [Repository map](#repository-map) ·
+[Open research mining](#open-research-mining) ·
+[Verification and appeals](#verification-and-appeals) ·
+[Research credits](#research-credit-economics) · [Repository map](#repository-map) ·
 [Start here](#start-here)
 
 ## Why xLemma
@@ -184,19 +195,22 @@ CLAIM → COMMIT → FORMALIZE → PROVE → REPRODUCE → CERTIFY → CHALLENGE
       → FINALIZE → PUBLISH → REUSE → REWARD → REVALIDATE
 ```
 
-The flywheel is:
+The intended discovery funding loop is:
 
 ```text
-research funding
-  → prover-adapter compute
-  → formal proof candidate
+settled pooled funding / institutional support / sponsored bounty
+  → researcher-chosen question and research work
+  → claim with proof or domain-specific evidence
   → independent reproduction
-  → certified lemma capsule
-  → paid use / bounty / license / service
-  → settled external revenue
-  → researcher income + newly backed research credits
+  → separate verification and contribution assessment
+  → appeal resolution and funded USDC reward
   → more research
 ```
+
+Later paid use, licenses, and services can contribute additional settled
+revenue. They are not prerequisites for open discovery rewards. The open
+mining assessment, allocation, and appeal services remain activation work
+described below; the existing XLMP lifecycle does not yet implement this loop.
 
 ## First-class node network
 
@@ -442,7 +456,113 @@ AND no unresolved challenge
 
 If one required checker family disagrees, the result is `DIVERGENT` and moves to `QUARANTINED`. It is never accepted by a 2-to-1 vote.
 
+## Open research mining
+
+Researchers choose their own questions and submit evidence of what they find.
+The proposed discovery economy combines an open USDC research fund,
+institutional pools for broad fields, and optional bounties for specific
+problems. Universities, foundations, companies, donors, and public research
+programs can finance discovery directly or through accountable intermediaries.
+Fundraising and institutional advocacy can grow these pools; only settled
+funds count toward spendable rewards. Intermediaries must disclose their
+mandates, fees, restrictions, and conflicts, and cannot certify their own work.
+
+**Verified knowledge and rewardable contributions are separate decisions.**
+
+| Decision | What it establishes |
+|---|---|
+| Verified knowledge | The artifact meets a declared verification profile, with explicit assumptions, evidence, and limitations. |
+| Rewardable contribution | It adds new knowledge, a first formalization, a materially better proof, or independently useful replication under published funding rules. |
+
+Truth alone does not create a payment claim. Generating endless arithmetic
+identities, renaming a theorem, or splitting one proof into thousands of
+lemmas must not increase the aggregate reward. Distinct identifiers alone do
+not establish distinct contributions. Reward assessment groups supported
+duplicates and artificial subdivisions while preserving each contributor's
+attribution and an appeal path. Genuine intermediate lemmas remain eligible
+when evidence establishes an additional contribution.
+
+Foundational mathematics can receive discovery funding before its applications
+are known. Known mathematics can receive formalization funding without being
+advertised as a new discovery. Commercial demand is not an eligibility
+requirement for the open pool; restricted institutional pools publish their
+scope in advance.
+
+For open mining, a proposed funding round divides its available solver budget
+among eligible contributions using independently assessed weights. Difficulty
+and reference compute cost inform assessment; raw token counts, wall time,
+proof length, and submission count never directly determine rewards. Policies
+and submission cutoffs are fixed before the round opens. Individual payouts
+remain provisional until review and appeals close, and total allocations
+cannot exceed settled funds after verification costs and reserves. No funds
+means no promised USDC payout. Research credits are not required to earn a
+direct discovery reward.
+
+**Implementation status:** an [executable local pilot](docs/DISCOVERY_PILOT.md)
+models category budgets, contributor allocations, review capacity, funding
+disclosures, and appeals, with an adversarial simulator. It uses declared
+synthetic evidence and funding; it does not certify research or transfer USDC.
+Existing funding receipts, verification profiles, PoIR, and bounty escrow
+provide integration foundations. Authenticated open-round settlement,
+semantic duplicate/splitting assessment, difficulty calibration, and operated
+appeal panels remain activation work. Their normative
+requirements and activation tests are in
+[XLIP-024](spec/024-open-research-mining.md), with remaining work in
+[the roadmap](ROADMAP.md#open-research-mining--activation-gates).
+
+```sh
+cargo run --locked -p xlemma-cli -- simulate-discovery examples/discovery/pilot.json
+python3 scripts/simulate_discovery.py --check
+```
+
+The pilot covers discovery, formalization, proof improvement, replication,
+research tools, and informative negative results with separate budgets. Its
+empirical profile requires methods, uncertainty, and replication evidence.
+A constructed undetected duplicate still leaks rewards in the simulator:
+identifying that failure is part of testing the design, not evidence that
+the mining service is ready.
+
+## Verification and appeals
+
+The standard is a common evidence process with domain-specific verification
+profiles, rather than one universal claim of truth:
+
+1. **Commit the claim and evidence.** Bind artifacts, assumptions, dependencies,
+   contribution history, and the exact verification and reward policy versions.
+   Commit-reveal protects submission priority under published deadlines; it
+   does not establish novelty or guarantee a prize for arriving first.
+2. **Reproduce independently.** Qualified operators execute the required
+   checks. Formal proofs bind the theory, axioms, and pinned checkers. Physics
+   submissions distinguish derivations within a model from experimental
+   support, with data, methods, uncertainty, and independent replication as
+   required by their profile. Simulations alone do not establish a new law of
+   nature.
+3. **Publish separate evidence and reward decisions.** Signed reasons identify
+   the checks performed, prior-art coverage, contribution category, reward
+   assessment, conflicts, and limitations. Honest checking earns its agreed
+   fee for passing, failing, or inconclusive results. Required checker
+   disagreement causes quarantine, never majority certification.
+4. **Allow an evidence-backed appeal.** Researchers and challengers can contest
+   verification, prior art, grouping, attribution, or allocation. A separate
+   panel with no conflicting control relationship reviews the relevant
+   evidence under published deadlines, costs, and remedies. Reward disputes
+   hold affected allocations; evidence disputes hold affected certification
+   and payouts. Review cannot vote a failed proof into validity.
+5. **Finalize with an auditable remedy.** Corrections and appeal outcomes append
+   new records. No response is automatic approval; unresolved affected funds
+   remain held and follow the published escalation or expiry policy. Later
+   discoveries use funded correction/revalidation procedures without erasing
+   history or promising recovery of already spent funds.
+
+The appeal design must include a capped-cost or independently funded access
+route so wealth and institutional sponsorship do not determine who can seek
+review. The detailed process is specified in
+[XLIP-024](spec/024-open-research-mining.md#verification-and-appeals).
+
 ## Research-credit economics
+
+Backed credits provide a separate way to prepay research services. They do not
+replace the proposed direct USDC discovery rewards or create new reward funds.
 
 `Rᵢ` is initially a **fully backed research service credit**, not a speculative profit token.
 
@@ -723,6 +843,14 @@ satisfy the independent checker or clean-room reproduction gates.
 16. A node cannot enter consensus without a valid V2-or-higher credential chain and a fresh non-revocation proof.
 17. Credentials qualify accountable participants; they never certify proofs or override exact checker evidence.
 18. Public protocol identity remains pseudonymous; private legal and uniqueness evidence remains outside public XLMP objects.
+19. Verified truth alone never creates a reward entitlement; novelty, formalization, proof improvement, and replication have separate, published eligibility rules.
+20. Renaming, duplicating, or artificially splitting the same contribution cannot increase its aggregate reward; raw compute expenditure and submission speed cannot bypass this rule.
+21. Open-pool eligibility does not require a posted bounty, institutional affiliation, or immediate commercial demand.
+22. Discovery allocations and reserved liabilities cannot exceed settled funding; reward policies are fixed before a round opens and affected payouts wait for timely appeals.
+23. Evidence and reward decisions have independent, reasoned, append-only appeal paths; neither funders nor appeal panels can vote a failed proof into validity.
+
+The open-mining invariants are requirements for activation; the implementation
+gaps are explicitly tracked in XLIP-024 and the roadmap.
 
 ## Sources and design basis
 

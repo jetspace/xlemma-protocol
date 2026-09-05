@@ -1,0 +1,22 @@
+{
+  "policy_id": "xlpolicy:blake3:426e732d555fa291dbdf7a88f3c5d8ce9a9cbbb40f0b4963b49ecf9077356b72",
+  "class": "empirical",
+  "required_evidence": [
+    "protocol_registration",
+    "instrument_manifest",
+    "data_lineage",
+    "independent_replication",
+    "dataset_provenance",
+    "analysis_plan",
+    "uncertainty_report",
+    "robustness_checks"
+  ],
+  "verifier_implementations": [
+    "synthetic-independent-a",
+    "synthetic-independent-b"
+  ],
+  "minimum_reproductions": 2,
+  "minimum_independent_operators": 2,
+  "challenge_window_seconds": 100,
+  "policy_root": "blake3:426e732d555fa291dbdf7a88f3c5d8ce9a9cbbb40f0b4963b49ecf9077356b72"
+}

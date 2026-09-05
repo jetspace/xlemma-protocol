@@ -1,0 +1,532 @@
+{
+  "policy": {
+    "name": "synthetic-open-discovery-pilot-v1",
+    "usdc_asset": "simulation:USDC",
+    "opens_at": 0,
+    "submissions_close_at": 100,
+    "appeals_close_at": 200,
+    "review_deadline": 300,
+    "maximum_submissions": 100,
+    "maximum_appeals": 20,
+    "verification_fee_units": 1000000,
+    "appeal_fee_units": 2000000,
+    "assessors": [
+      "xloperator:blake3:b6203ec080398fad0b9cae2e466db925e14b49e22c1440ca676a47a92d0c0d3c",
+      "xloperator:blake3:3f77e3bf272dc0ed7b5f1d9f861a5cb349ca15dc28b16e724a4e401c40d2aff1"
+    ],
+    "appeal_reviewers": [
+      "xloperator:blake3:26ad13ef3ab1b2a5684589878cb85b402dc124f1839dac43d8516ca03168b5b8",
+      "xloperator:blake3:c62cf65c55d5d6243083ca192e470e1b7fb3de9f8d24e4c188cd80d6de75d8b1"
+    ],
+    "budgets": {
+      "discovery": {
+        "solver_units": 300000000,
+        "verification_units": 100000000,
+        "appeal_units": 50000000,
+        "maximum_weight": 1000
+      },
+      "formalization": {
+        "solver_units": 300000000,
+        "verification_units": 100000000,
+        "appeal_units": 50000000,
+        "maximum_weight": 1000
+      },
+      "proof_improvement": {
+        "solver_units": 300000000,
+        "verification_units": 100000000,
+        "appeal_units": 50000000,
+        "maximum_weight": 1000
+      },
+      "replication": {
+        "solver_units": 300000000,
+        "verification_units": 100000000,
+        "appeal_units": 50000000,
+        "maximum_weight": 1000
+      },
+      "research_tools": {
+        "solver_units": 300000000,
+        "verification_units": 100000000,
+        "appeal_units": 50000000,
+        "maximum_weight": 1000
+      },
+      "negative_result": {
+        "solver_units": 300000000,
+        "verification_units": 100000000,
+        "appeal_units": 50000000,
+        "maximum_weight": 1000
+      }
+    },
+    "profiles": [
+      {
+        "policy_id": "xlpolicy:blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a",
+        "class": "formal",
+        "required_evidence": [
+          "formal_statement",
+          "proof_object",
+          "pinned_toolchain",
+          "axiom_inventory"
+        ],
+        "verifier_implementations": [
+          "synthetic-independent-a",
+          "synthetic-independent-b"
+        ],
+        "minimum_reproductions": 2,
+        "minimum_independent_operators": 2,
+        "challenge_window_seconds": 100,
+        "policy_root": "blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a"
+      },
+      {
+        "policy_id": "xlpolicy:blake3:d9d8e2c475ddb0b0e5ff632d77f25f680287994288b1ee1163d33c2545368b47",
+        "class": "computational",
+        "required_evidence": [
+          "reproducible_source",
+          "execution_environment",
+          "dependency_lock",
+          "deterministic_rerun"
+        ],
+        "verifier_implementations": [
+          "synthetic-independent-a",
+          "synthetic-independent-b"
+        ],
+        "minimum_reproductions": 2,
+        "minimum_independent_operators": 2,
+        "challenge_window_seconds": 100,
+        "policy_root": "blake3:d9d8e2c475ddb0b0e5ff632d77f25f680287994288b1ee1163d33c2545368b47"
+      },
+      {
+        "policy_id": "xlpolicy:blake3:426e732d555fa291dbdf7a88f3c5d8ce9a9cbbb40f0b4963b49ecf9077356b72",
+        "class": "empirical",
+        "required_evidence": [
+          "protocol_registration",
+          "instrument_manifest",
+          "data_lineage",
+          "independent_replication",
+          "dataset_provenance",
+          "analysis_plan",
+          "uncertainty_report",
+          "robustness_checks"
+        ],
+        "verifier_implementations": [
+          "synthetic-independent-a",
+          "synthetic-independent-b"
+        ],
+        "minimum_reproductions": 2,
+        "minimum_independent_operators": 2,
+        "challenge_window_seconds": 100,
+        "policy_root": "blake3:426e732d555fa291dbdf7a88f3c5d8ce9a9cbbb40f0b4963b49ecf9077356b72"
+      }
+    ],
+    "assessment_policy_root": "xla:blake3:938f9713c310d13d1144aca3f0234beba7ab8b30bf4ec24ca5476f163a54c348"
+  },
+  "funding": [
+    {
+      "settlement_receipt_id": "xlr:blake3:186aa7393341ec5540e3cd318a291e6de874d5b76df47a1cec4aacb8992e6e2f",
+      "donor_cluster": "xloperator:blake3:a612372446bfa37f86f8ac709a09f0400a13ab6fa9d9cad6cc2c3c42cbeaa31b",
+      "administrator_cluster": "xloperator:blake3:4194d1706ed1f408d5e02d672777019f4d5385c766a8c6ca8acba3167d36a7b9",
+      "category": "discovery",
+      "gross_units": 500000000,
+      "administrator_fee_units": 10000000,
+      "mandate_root": "xla:blake3:6c50b5519b39f8344b6df1c3d2d272e52b68f718e18346a6bb8e12e092dc9ff3"
+    },
+    {
+      "settlement_receipt_id": "xlr:blake3:1a7dcef2da1679149fe4d2eec0771b1e9697bb68f7e403b7d331e520c426f9e4",
+      "donor_cluster": "xloperator:blake3:6a8f6058339af309ef6893d89a133123255059c30d7b1fa9a67864e18a14403d",
+      "administrator_cluster": "xloperator:blake3:4194d1706ed1f408d5e02d672777019f4d5385c766a8c6ca8acba3167d36a7b9",
+      "category": "formalization",
+      "gross_units": 500000000,
+      "administrator_fee_units": 10000000,
+      "mandate_root": "xla:blake3:f29722dff409dcbd1a416543646400c2d5c233030f3c65fdd2aa1923e61ea4c6"
+    },
+    {
+      "settlement_receipt_id": "xlr:blake3:71ab19d61e7d8148049e7c163d6cc8bf9354c0906d83242a31760f4c745bbd0b",
+      "donor_cluster": "xloperator:blake3:01939bb7eca612fd1047e3959fee313f07795aa6c291f171f796123d6eb6e60c",
+      "administrator_cluster": "xloperator:blake3:4194d1706ed1f408d5e02d672777019f4d5385c766a8c6ca8acba3167d36a7b9",
+      "category": "proof_improvement",
+      "gross_units": 500000000,
+      "administrator_fee_units": 10000000,
+      "mandate_root": "xla:blake3:6740228137b2cd4244d2cc9353faeddf163f9c1011f6bdf62a88a9497b905a82"
+    },
+    {
+      "settlement_receipt_id": "xlr:blake3:ccfccf035865e4ba14c9f5ef43aa44acfaa0151f379367db8c650655c9a92e2d",
+      "donor_cluster": "xloperator:blake3:a612372446bfa37f86f8ac709a09f0400a13ab6fa9d9cad6cc2c3c42cbeaa31b",
+      "administrator_cluster": "xloperator:blake3:4194d1706ed1f408d5e02d672777019f4d5385c766a8c6ca8acba3167d36a7b9",
+      "category": "replication",
+      "gross_units": 500000000,
+      "administrator_fee_units": 10000000,
+      "mandate_root": "xla:blake3:1083cb94884180dc41a8e4f821f311e629004695735342fbca37740e7e8142a9"
+    },
+    {
+      "settlement_receipt_id": "xlr:blake3:bc4a500a3169607a22d9be378013ede40ac90f4be5f6bc5a72ff91d4fdc8d410",
+      "donor_cluster": "xloperator:blake3:6a8f6058339af309ef6893d89a133123255059c30d7b1fa9a67864e18a14403d",
+      "administrator_cluster": "xloperator:blake3:4194d1706ed1f408d5e02d672777019f4d5385c766a8c6ca8acba3167d36a7b9",
+      "category": "research_tools",
+      "gross_units": 500000000,
+      "administrator_fee_units": 10000000,
+      "mandate_root": "xla:blake3:4d683a047fdfb28ee45516b789d3e9fe2cca442d576d5ce7667f4df91cfd90bd"
+    },
+    {
+      "settlement_receipt_id": "xlr:blake3:f8244149bf90824c0a170da537124aed361e2980b70452e1d692e52f0baf4890",
+      "donor_cluster": "xloperator:blake3:01939bb7eca612fd1047e3959fee313f07795aa6c291f171f796123d6eb6e60c",
+      "administrator_cluster": "xloperator:blake3:4194d1706ed1f408d5e02d672777019f4d5385c766a8c6ca8acba3167d36a7b9",
+      "category": "negative_result",
+      "gross_units": 500000000,
+      "administrator_fee_units": 10000000,
+      "mandate_root": "xla:blake3:2305b9729ae0afafd51ee41264b7b107e41dcb788e98b205e3dd2221795a9bb3"
+    }
+  ],
+  "pledged_units": 1000000000,
+  "previously_rewarded_groups": [],
+  "previously_rewarded_claims": {},
+  "previously_consumed_settlements": [],
+  "events": [
+    {
+      "kind": "submit",
+      "at": 1,
+      "submission": {
+        "submission_id": "xlr:blake3:062c55ab3d112c77170ea00c8bcc11496027d75f367165dfb928cf3ed9bec793",
+        "group_id": "xlgroup:blake3:289f8b01adac7224101aeba7f153c572c3def3c9d6205ee795a689df07f5d419",
+        "category": "discovery",
+        "claims": [
+          "xlc:blake3:c461c624433276c4ec3053bd6599e2f21f74e27422b0542b2aae536137a04f0d"
+        ],
+        "contributors": [
+          {
+            "researcher_id": "xlresearcher:blake3:604c7a8af9cd126e29ba34aee3c2e9c043478c7575ba54fb1b490f8c823e594a",
+            "operator_cluster_id": "xloperator:blake3:752d056be67a18d60b70c88f77e551cb49afa3eda034a384c57dfb100e4e6bce",
+            "share_bps": 7000
+          },
+          {
+            "researcher_id": "xlresearcher:blake3:8174cf683db6754b07d23f443f1c954133d322e558307f4697a33b067c0a9798",
+            "operator_cluster_id": "xloperator:blake3:8174cf683db6754b07d23f443f1c954133d322e558307f4697a33b067c0a9798",
+            "share_bps": 3000
+          }
+        ],
+        "contribution_manifest_root": "xla:blake3:648dab06aeec85ed6152c20ec335a9d3034be5a18f56c34285d81abd7b72019b",
+        "profile_id": "xlpolicy:blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a",
+        "evidence_roots": {
+          "formal_statement": "xla:blake3:a0b4931dbb06f8fd71aac0aaef2e22e9e1d1a4fc93b68fc465c46286ed6cbea2",
+          "proof_object": "xla:blake3:bad244648de8738985fdf1aedfe0c5232903c18abe21dc5b17716afdfa41a9eb",
+          "pinned_toolchain": "xla:blake3:56f91cb6f7ffc97c7ce73cd3e9ea3a356fb18fb17025b85abac7cd08964ede0c",
+          "axiom_inventory": "xla:blake3:86707d2f7557a7b3aa3eeb216a83f12bfb917d9a1649fa1f99fc48951991cd6f"
+        },
+        "declared_evidence_status": "supported",
+        "reward_eligible": true,
+        "assessed_weight": 100,
+        "assessment_root": "xla:blake3:2ebff6565f6eea88af296072cd53b5ea04dbcfc12c6af05f3e3fc8420886fcab",
+        "assessors": [
+          "xloperator:blake3:b6203ec080398fad0b9cae2e466db925e14b49e22c1440ca676a47a92d0c0d3c",
+          "xloperator:blake3:3f77e3bf272dc0ed7b5f1d9f861a5cb349ca15dc28b16e724a4e401c40d2aff1"
+        ],
+        "reported_tokens": 10000,
+        "reported_compute_units": 1000000,
+        "registered_study": null
+      }
+    },
+    {
+      "kind": "submit",
+      "at": 2,
+      "submission": {
+        "submission_id": "xlr:blake3:ecf30b96c8147e8e97a080be8b01ee53e25be5b364c939e86e86856f99c4f514",
+        "group_id": "xlgroup:blake3:6fa2bfe628569ac121d54aa055e14e5dfddca30fc7815b1f0b225806c22db4bd",
+        "category": "formalization",
+        "claims": [
+          "xlc:blake3:3d864a7a9da230f43c460af8a8c13c9000b3ddddc919a1ff1adf940e0c18d8de"
+        ],
+        "contributors": [
+          {
+            "researcher_id": "xlresearcher:blake3:6ee8709aec0229f5785514bd50d4ea9f23b7f5ee2b49a319e907b20723fae93e",
+            "operator_cluster_id": "xloperator:blake3:97b13c9237c4639ed6223fe01167c5f27b8c6458c5beeafa68b0decf791a5cc8",
+            "share_bps": 7000
+          },
+          {
+            "researcher_id": "xlresearcher:blake3:36957af4acdae61c9310d97a4b2cad7b7ce65268b1ea546556c48159d9161a95",
+            "operator_cluster_id": "xloperator:blake3:36957af4acdae61c9310d97a4b2cad7b7ce65268b1ea546556c48159d9161a95",
+            "share_bps": 3000
+          }
+        ],
+        "contribution_manifest_root": "xla:blake3:31f6d9701a0b01bff723bf2ae1379a05569559aa8f62ba4f415f09db00b76c7a",
+        "profile_id": "xlpolicy:blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a",
+        "evidence_roots": {
+          "formal_statement": "xla:blake3:c998fb035d9bf729207ea0782ab0436eaa7d7e8be9a4c1ef7c5aedbc27c174bb",
+          "proof_object": "xla:blake3:cd7589ce4d1f054a9476769c255c94690d815326420116c961af8909688d7f77",
+          "pinned_toolchain": "xla:blake3:c005746bbf5f158786a2a5a788223181371cbb3423c61eb4a5c6283bd4f49757",
+          "axiom_inventory": "xla:blake3:f2e96d84c731d9bd1dabd345b0ae4e19723ff8c5fc7915d99187c2596c22794d"
+        },
+        "declared_evidence_status": "supported",
+        "reward_eligible": true,
+        "assessed_weight": 100,
+        "assessment_root": "xla:blake3:21b65b3d0a619ea045295b94a370c8c923b567536591336c673459818ecd7663",
+        "assessors": [
+          "xloperator:blake3:b6203ec080398fad0b9cae2e466db925e14b49e22c1440ca676a47a92d0c0d3c",
+          "xloperator:blake3:3f77e3bf272dc0ed7b5f1d9f861a5cb349ca15dc28b16e724a4e401c40d2aff1"
+        ],
+        "reported_tokens": 10000,
+        "reported_compute_units": 1000000,
+        "registered_study": null
+      }
+    },
+    {
+      "kind": "submit",
+      "at": 3,
+      "submission": {
+        "submission_id": "xlr:blake3:0fc4d78b69e83f46a7340479335b1211c5d72876efaee1f4ba43bcfec0b871d3",
+        "group_id": "xlgroup:blake3:e43955f7960a1f6dc493548e7c8d446be1ca7265e172fd9b08c89659cd626593",
+        "category": "proof_improvement",
+        "claims": [
+          "xlc:blake3:f828a6957ffce2de94b8867785b8f55170fe7020f7b3e2dd432196a75c62c7d5"
+        ],
+        "contributors": [
+          {
+            "researcher_id": "xlresearcher:blake3:67f9b96f3a246bce9b74df9e99840c60cbb6a960e79d7245716f817192ac96cc",
+            "operator_cluster_id": "xloperator:blake3:4ef00b0177f70667989c3e3e5fa241f7894d94fe80c97537fbe99d1b4f39b29c",
+            "share_bps": 7000
+          },
+          {
+            "researcher_id": "xlresearcher:blake3:48b4ac94e5679833d91412ac3128d6fb4e6c4f37d5519933924992bb34823cbc",
+            "operator_cluster_id": "xloperator:blake3:48b4ac94e5679833d91412ac3128d6fb4e6c4f37d5519933924992bb34823cbc",
+            "share_bps": 3000
+          }
+        ],
+        "contribution_manifest_root": "xla:blake3:46d7ce857b1c1b1c63366bc6f9ad5c19183436ea91818eab6f1728bf949960d3",
+        "profile_id": "xlpolicy:blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a",
+        "evidence_roots": {
+          "formal_statement": "xla:blake3:b103d4d4c3ba6d98fa6a4b0a7fc663d3fb098b1fbdee85c3df10f7c2dc952b7e",
+          "proof_object": "xla:blake3:6477cca78cafd11c14cfca16dacf68371f17912e3d051c1aaa90e5476a2c8a1c",
+          "pinned_toolchain": "xla:blake3:46fe02e4e40eb2f69eb0fd1fecf09d783e911da77986d400c4599e59a054e406",
+          "axiom_inventory": "xla:blake3:f8995c27a60f82fcbee4bf29795dc2672f29f52c21a47236baffc597d46b45a8"
+        },
+        "declared_evidence_status": "supported",
+        "reward_eligible": true,
+        "assessed_weight": 100,
+        "assessment_root": "xla:blake3:96412acf73af18637e0a3fd8f72ba34f3f60bc193b44434737340619a710ce30",
+        "assessors": [
+          "xloperator:blake3:b6203ec080398fad0b9cae2e466db925e14b49e22c1440ca676a47a92d0c0d3c",
+          "xloperator:blake3:3f77e3bf272dc0ed7b5f1d9f861a5cb349ca15dc28b16e724a4e401c40d2aff1"
+        ],
+        "reported_tokens": 10000,
+        "reported_compute_units": 1000000,
+        "registered_study": null
+      }
+    },
+    {
+      "kind": "submit",
+      "at": 4,
+      "submission": {
+        "submission_id": "xlr:blake3:b454739bc115c0d9401be67e46d974402a25a612114251b90a64d30308a6caee",
+        "group_id": "xlgroup:blake3:92f07b363b8cf29bb923fdf8dc5ef8868ca5d9bbeba4b0d7c768894386fe8345",
+        "category": "replication",
+        "claims": [
+          "xlc:blake3:3d80dbe7cf2c56a5df7e089aaf8c135e38da3247530b7694e5049c154529f895"
+        ],
+        "contributors": [
+          {
+            "researcher_id": "xlresearcher:blake3:e4db119e74ed0d2ba8b0be700c55fb31488b48bae3f07f2d5c7debd09cfa561d",
+            "operator_cluster_id": "xloperator:blake3:8a2f522278282788d269c3635277ac5fcc744f87be3fb2a2ae9b364b6b95ffd4",
+            "share_bps": 7000
+          },
+          {
+            "researcher_id": "xlresearcher:blake3:4b3e472bf94fb2e9f6be9f76ca96fe4c7b567f711f4308cbbd45b6a0937a19e3",
+            "operator_cluster_id": "xloperator:blake3:4b3e472bf94fb2e9f6be9f76ca96fe4c7b567f711f4308cbbd45b6a0937a19e3",
+            "share_bps": 3000
+          }
+        ],
+        "contribution_manifest_root": "xla:blake3:810bb6e7c3f74eee93570e80d3a39ccf9fa179246ff96b7c0bb17f36b490a98f",
+        "profile_id": "xlpolicy:blake3:426e732d555fa291dbdf7a88f3c5d8ce9a9cbbb40f0b4963b49ecf9077356b72",
+        "evidence_roots": {
+          "protocol_registration": "xla:blake3:e6a2a0644de9df341aaa8a817140516087e7d9349f37b7121116dc26cd5a4e7c",
+          "instrument_manifest": "xla:blake3:54fcaf36581ab19017bfefdcf1673b15eb57e6a710589e3a31e1ded348cafe68",
+          "data_lineage": "xla:blake3:04284c484536f7b26eaa8854ecbb9eacf9d9d3ff14d071aaeea5384bbfb51e39",
+          "independent_replication": "xla:blake3:a1ba1f484fde268e08bdcba23e90daed6c3acfd94d9d0523ae229223f9631ac0",
+          "dataset_provenance": "xla:blake3:c6fcd5396b41eb57d8c1c42452c515d2efd2e935d3d538f6194af773e82c4d78",
+          "analysis_plan": "xla:blake3:7eb8ec2d77c92ea2d3febe89fae9e108891fc16f50dc72b301f64fdc42d7a6fb",
+          "uncertainty_report": "xla:blake3:ec931204ab92191a9288b7bd6dbebc7fd5b19f9bf68909356718f83cbbb0b277",
+          "robustness_checks": "xla:blake3:1c68d0382a73ca6b9b74390b4756d67eb147665c26ea4b537a0bb4bfdccf4773"
+        },
+        "declared_evidence_status": "supported",
+        "reward_eligible": true,
+        "assessed_weight": 100,
+        "assessment_root": "xla:blake3:7c048ad1a88286a6bc206ccc3548f875e1aef10827f7c6a3bf79b00e77292fff",
+        "assessors": [
+          "xloperator:blake3:b6203ec080398fad0b9cae2e466db925e14b49e22c1440ca676a47a92d0c0d3c",
+          "xloperator:blake3:3f77e3bf272dc0ed7b5f1d9f861a5cb349ca15dc28b16e724a4e401c40d2aff1"
+        ],
+        "reported_tokens": 10000,
+        "reported_compute_units": 1000000,
+        "registered_study": {
+          "registration_root": "xla:blake3:e6a2a0644de9df341aaa8a817140516087e7d9349f37b7121116dc26cd5a4e7c",
+          "registered_at": 0,
+          "data_collection_started_at": 1,
+          "outcome": "positive"
+        }
+      }
+    },
+    {
+      "kind": "submit",
+      "at": 5,
+      "submission": {
+        "submission_id": "xlr:blake3:9bb537705e4a86e6a38e42e1f652de73f260b0c62c2921fa6ed25c113dd5f1b9",
+        "group_id": "xlgroup:blake3:7c6edefef64b540168dff4b34ec8fbec956288d5e9f79c918e9bdd5e5c9f1de2",
+        "category": "research_tools",
+        "claims": [
+          "xlc:blake3:83b28a96895c2a0effabe7286bba85525e1abdb1011434d2ad51bb4e4d9a5ced"
+        ],
+        "contributors": [
+          {
+            "researcher_id": "xlresearcher:blake3:139bffa2bd0298b015ac8e36ec942648c95bbcbe8522cc3d643ee5ded1fb732c",
+            "operator_cluster_id": "xloperator:blake3:131fc0436431531294fed46c5ccc33363ef6c7d8b78261e0d43e805b8776d4b8",
+            "share_bps": 7000
+          },
+          {
+            "researcher_id": "xlresearcher:blake3:3621cdcad7b4c32d3a75946e8601cbf3eb7b0f9cfef31007ebbe57f25b8807f7",
+            "operator_cluster_id": "xloperator:blake3:3621cdcad7b4c32d3a75946e8601cbf3eb7b0f9cfef31007ebbe57f25b8807f7",
+            "share_bps": 3000
+          }
+        ],
+        "contribution_manifest_root": "xla:blake3:a42d5ba86af5b9aa8a920bf06b5777ad2a26a25fe70584d66bbc228b4829ea4d",
+        "profile_id": "xlpolicy:blake3:d9d8e2c475ddb0b0e5ff632d77f25f680287994288b1ee1163d33c2545368b47",
+        "evidence_roots": {
+          "reproducible_source": "xla:blake3:d04e4cde30c384c3ef836df18d9f5ed491d3291a75bf00bd6d238e881c34f837",
+          "execution_environment": "xla:blake3:18eff50f5a4dacc39842991f5082105611ff34171171390c823a1f987d42008c",
+          "dependency_lock": "xla:blake3:6bdca9ab6098703ba62d8477e84ded242d4a08d689435f22a4760e4d94415d96",
+          "deterministic_rerun": "xla:blake3:59e5607636c9ff77238c64a39381b70c96597692b406e9163220549916ce0577"
+        },
+        "declared_evidence_status": "supported",
+        "reward_eligible": true,
+        "assessed_weight": 100,
+        "assessment_root": "xla:blake3:366a58ffffafe8ebed78f785330fb78984b03a8940e9eea86e6777aa4ffc4c08",
+        "assessors": [
+          "xloperator:blake3:b6203ec080398fad0b9cae2e466db925e14b49e22c1440ca676a47a92d0c0d3c",
+          "xloperator:blake3:3f77e3bf272dc0ed7b5f1d9f861a5cb349ca15dc28b16e724a4e401c40d2aff1"
+        ],
+        "reported_tokens": 10000,
+        "reported_compute_units": 1000000,
+        "registered_study": null
+      }
+    },
+    {
+      "kind": "submit",
+      "at": 6,
+      "submission": {
+        "submission_id": "xlr:blake3:a7a1e32e307d79fb54a1b43da50d0457d9efdc85eef3c67de65fdad9b5c76251",
+        "group_id": "xlgroup:blake3:35a84a5c7d0bb794698841f7375eb847521d88b496581bcbb5aeeb7930223525",
+        "category": "negative_result",
+        "claims": [
+          "xlc:blake3:9f132c27634970dbb3e68e35b519f2b19cc3b906014f04f80b6f4efd705cc10f"
+        ],
+        "contributors": [
+          {
+            "researcher_id": "xlresearcher:blake3:b7f78abb35c1d5502837bbcd80634170522cd95e3ff6be4ef252ff8e44d0d611",
+            "operator_cluster_id": "xloperator:blake3:b00ca39f5c89bc182cf20e43845b23f002392382657b7356a15b3cf9a4430aae",
+            "share_bps": 7000
+          },
+          {
+            "researcher_id": "xlresearcher:blake3:4cb427f62bbf358e01e9772e37b3660672fef6391bcf691ca9630448d318fa47",
+            "operator_cluster_id": "xloperator:blake3:4cb427f62bbf358e01e9772e37b3660672fef6391bcf691ca9630448d318fa47",
+            "share_bps": 3000
+          }
+        ],
+        "contribution_manifest_root": "xla:blake3:18c3f9d59d0220227e89ff52b867c8d63839cac4ba0413d9a63858632191a7ca",
+        "profile_id": "xlpolicy:blake3:426e732d555fa291dbdf7a88f3c5d8ce9a9cbbb40f0b4963b49ecf9077356b72",
+        "evidence_roots": {
+          "protocol_registration": "xla:blake3:081fe71026f55b9592dd6fd91c248af1958df7d0af7b48fdc9b63cf61812a444",
+          "instrument_manifest": "xla:blake3:c020b2a0129c26de16361cbc395c27641b10634e87ca904c9a113d9ee2f68553",
+          "data_lineage": "xla:blake3:bb1ed9535fd3b388552e8fcb2e0c6c96978aab7fb2158d2404eb6c91f4b99cbe",
+          "independent_replication": "xla:blake3:2512656ecf9bb4ce750549ce63a0afb7bb58752b54cf2606489dcbd9a2cdac4a",
+          "dataset_provenance": "xla:blake3:3ccedf4364dc280b5202908a226fe3a6d478df3abc1c576566a49fc247737e0a",
+          "analysis_plan": "xla:blake3:c19f56f76af325d4c2415e8b7092afd477039e84ec0c244ce651708a4e427d6b",
+          "uncertainty_report": "xla:blake3:57ebffdbead9dd9a33d870d830f230ac6d028b21fa150dea61a9a616548bfa6f",
+          "robustness_checks": "xla:blake3:ddd6636148bc32be901e60a6cc0d02006c7e4355ea763f62e70a2943e1da4b61"
+        },
+        "declared_evidence_status": "supported",
+        "reward_eligible": true,
+        "assessed_weight": 100,
+        "assessment_root": "xla:blake3:94f09d0dd62f2924bb870776b11623e3cbce1d7ff5e0efa21b425a12c7f4122f",
+        "assessors": [
+          "xloperator:blake3:b6203ec080398fad0b9cae2e466db925e14b49e22c1440ca676a47a92d0c0d3c",
+          "xloperator:blake3:3f77e3bf272dc0ed7b5f1d9f861a5cb349ca15dc28b16e724a4e401c40d2aff1"
+        ],
+        "reported_tokens": 10000,
+        "reported_compute_units": 1000000,
+        "registered_study": {
+          "registration_root": "xla:blake3:081fe71026f55b9592dd6fd91c248af1958df7d0af7b48fdc9b63cf61812a444",
+          "registered_at": 0,
+          "data_collection_started_at": 1,
+          "outcome": "null"
+        }
+      }
+    },
+    {
+      "kind": "submit",
+      "at": 7,
+      "submission": {
+        "submission_id": "xlr:blake3:95d2ccc2e9d5702da2398bac5d0b6b4943684a49febea8815658ca09d2641ad2",
+        "group_id": "xlgroup:blake3:289f8b01adac7224101aeba7f153c572c3def3c9d6205ee795a689df07f5d419",
+        "category": "discovery",
+        "claims": [
+          "xlc:blake3:754edc4a976cbd84fd61c90015211555e330a274102a0b6dde399647c2d906c7"
+        ],
+        "contributors": [
+          {
+            "researcher_id": "xlresearcher:blake3:604c7a8af9cd126e29ba34aee3c2e9c043478c7575ba54fb1b490f8c823e594a",
+            "operator_cluster_id": "xloperator:blake3:752d056be67a18d60b70c88f77e551cb49afa3eda034a384c57dfb100e4e6bce",
+            "share_bps": 7000
+          },
+          {
+            "researcher_id": "xlresearcher:blake3:8174cf683db6754b07d23f443f1c954133d322e558307f4697a33b067c0a9798",
+            "operator_cluster_id": "xloperator:blake3:8174cf683db6754b07d23f443f1c954133d322e558307f4697a33b067c0a9798",
+            "share_bps": 3000
+          }
+        ],
+        "contribution_manifest_root": "xla:blake3:5e4738ae63ba0a110aeda7d7fa9ba9b3773c22e43cded215e905b8a680d1e1d1",
+        "profile_id": "xlpolicy:blake3:b92231fc15698337333b5f92efba1256623a115a832bf4f7a265f3c17f8abc1a",
+        "evidence_roots": {
+          "formal_statement": "xla:blake3:a0b4931dbb06f8fd71aac0aaef2e22e9e1d1a4fc93b68fc465c46286ed6cbea2",
+          "proof_object": "xla:blake3:bad244648de8738985fdf1aedfe0c5232903c18abe21dc5b17716afdfa41a9eb",
+          "pinned_toolchain": "xla:blake3:56f91cb6f7ffc97c7ce73cd3e9ea3a356fb18fb17025b85abac7cd08964ede0c",
+          "axiom_inventory": "xla:blake3:86707d2f7557a7b3aa3eeb216a83f12bfb917d9a1649fa1f99fc48951991cd6f"
+        },
+        "declared_evidence_status": "supported",
+        "reward_eligible": true,
+        "assessed_weight": 100,
+        "assessment_root": "xla:blake3:1f6560c7b6b8cf34f0b943941f37c065d7810b5001b81683f6b8beea0fa7aeb3",
+        "assessors": [
+          "xloperator:blake3:b6203ec080398fad0b9cae2e466db925e14b49e22c1440ca676a47a92d0c0d3c",
+          "xloperator:blake3:3f77e3bf272dc0ed7b5f1d9f861a5cb349ca15dc28b16e724a4e401c40d2aff1"
+        ],
+        "reported_tokens": 10000,
+        "reported_compute_units": 1000000,
+        "registered_study": null
+      }
+    },
+    {
+      "kind": "appeal",
+      "at": 110,
+      "appeal_id": "xlr:blake3:d23f5c7ddf41573934007b07eea10e928b56dca11b600cab81d455fac0ec1298",
+      "submission_id": "xlr:blake3:95d2ccc2e9d5702da2398bac5d0b6b4943684a49febea8815658ca09d2641ad2",
+      "appellant": "xlresearcher:blake3:604c7a8af9cd126e29ba34aee3c2e9c043478c7575ba54fb1b490f8c823e594a",
+      "grounds": "grouping",
+      "evidence_root": "xla:blake3:1ec5503105e07fdda7c94b944f831841bd924e5620269edee12846dd7262cd50",
+      "appellant_cluster": "xloperator:blake3:752d056be67a18d60b70c88f77e551cb49afa3eda034a384c57dfb100e4e6bce"
+    },
+    {
+      "kind": "resolve",
+      "at": 120,
+      "appeal_id": "xlr:blake3:d23f5c7ddf41573934007b07eea10e928b56dca11b600cab81d455fac0ec1298",
+      "reviewers": [
+        "xloperator:blake3:26ad13ef3ab1b2a5684589878cb85b402dc124f1839dac43d8516ca03168b5b8",
+        "xloperator:blake3:c62cf65c55d5d6243083ca192e470e1b7fb3de9f8d24e4c188cd80d6de75d8b1"
+      ],
+      "reasons_root": "xla:blake3:3ad75d4f68c6271d15412f0f27eebb36550941fce1822d21a96e47c4703112ed",
+      "remedy": {
+        "kind": "correct_reward",
+        "group_id": "xlgroup:blake3:cc8da4117743483ba4be22d7c3a04da94273a035238b15916cd68ebdefbece82",
+        "eligible": true,
+        "weight": 100
+      }
+    },
+    {
+      "kind": "finalize",
+      "at": 210
+    }
+  ]
+}

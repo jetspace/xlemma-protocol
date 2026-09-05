@@ -21,8 +21,19 @@ This constitution defines powers that protocol governance may exercise and bound
 15. Compute markets price defined services, not universal scientific value; provider success claims do not control routing.
 16. Origin, attribution, historical evidence, deterministic validity, and portable exit are constitutional invariants outside chamber discretion.
 17. Material activation requires public simulation, approval by the Researcher, Operator, and Commons chambers, at least a seven-day timelock, and an available fork/exit plan.
+18. Verified knowledge and reward eligibility are separate decisions. Open research funding does not require a posted bounty, institutional affiliation, or immediate commercial demand under its published supported profiles.
+19. Renaming, duplicating, or artificially splitting the same contribution cannot increase its aggregate reward, including across identities or rounds. Genuine additional contributions require evidence under published rules.
+20. Discovery commitments conserve settled funding after costs and reserves; round policies are fixed before opening. Raw compute expenditure never establishes a reward entitlement.
+21. Evidence and reward decisions have independent, reasoned, append-only appeal paths with accessible review and published deadlines/remedies. Timely unresolved appeals hold affected allocations; review cannot override checker evidence.
+22. Institutions may finance and administer research under disclosed mandates, fees, restrictions, and conflicts. Funding conveys no authority to self-certify or rewrite attribution.
 
 These principles should be encoded as immutable contract constraints where practical and as social/governance constraints where not.
+
+Open research mining principles are activation requirements, not a claim of
+deployed enforcement. [XLIP-024](../spec/024-open-research-mining.md) defines the
+verification, allocation, and appeal requirements and remaining implementation
+gates. Adoption in this repository does not activate a funded network or bypass
+the constitutional policy process.
 
 ## 2. Governance domains
 

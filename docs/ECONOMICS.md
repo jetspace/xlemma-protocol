@@ -1,5 +1,38 @@
 # Research economics
 
+## Open discovery funding
+
+Researchers freely choose what to discover; pooled funding rewards verified
+contributions under transparent, budget-conserving rules. Institutions help
+finance that freedom, while independent verification determines what the
+evidence supports. Open discovery funds, restricted institutional pools, and
+specific bounties can coexist. Only settled external funding is spendable;
+intermediary mandates, restrictions, fees, and conflicts must be disclosed.
+
+Verified truth alone does not establish reward eligibility. New discovery,
+first formalization, material proof improvement, and independently useful
+replication require separate published criteria. Foundational work need not
+have a buyer. Renaming, duplicating, or artificially splitting the same
+contribution cannot increase its aggregate reward across identities or rounds.
+Independently assessed reference cost may inform difficulty; actual tokens,
+elapsed time, and submission count cannot manufacture an entitlement.
+
+Direct USDC discovery rewards come from budgets net of existing commitments,
+verification costs, and appeal reserves. Credits remain optional prepaid
+service balances; their backing cannot subsidize discovery payouts. Rules are
+fixed before each round opens. Assessments remain provisional until timely
+appeals close, including all allocations affected by a changed denominator.
+
+[XLIP-024](../spec/024-open-research-mining.md) specifies the proposed round
+allocator, evidence standards, independent appeals, and activation gates.
+Funding receipts and bounty escrow exist. A local round allocator and appeal
+state-machine simulation exercise category funding, collaboration, bounded
+review costs, and conservation; see [the pilot guide](DISCOVERY_PILOT.md).
+Authenticated settlement, calibration/grouping, and an operated appeal service
+remain activation work. Existing
+revenue and bounded impact-pool rules below remain distinct from discovery
+grants and do not impose commercial-use requirements on open research.
+
 ## Research-credit conservation
 
 For researcher `i`:

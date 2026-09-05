@@ -23,6 +23,15 @@ if any(argument != "--skip-simulation-report" for argument in sys.argv[1:]):
     raise SystemExit("usage: validate_repo.py [--skip-simulation-report]")
 
 REQUIRED_FILES = [
+    "docs/DISCOVERY_PILOT.md",
+    "spec/024-open-research-mining.md",
+    "schemas/discovery-simulation.schema.json",
+    "schemas/discovery-simulation-report.schema.json",
+    "examples/discovery/pilot.json",
+    "examples/discovery/expected-report.json",
+    "examples/discovery/physics-profile.json",
+    "reports/discovery-simulation.json",
+    "scripts/simulate_discovery.py",
     "README.md",
     "MANIFEST.sha256",
     ".editorconfig",
@@ -331,6 +340,23 @@ def validate_json_syntax_and_schemas() -> None:
         return jsonschema.Draft202012Validator(schema, resolver=resolver)
 
     # Relative refs such as common.schema.json are resolved against each schema's $id.
+    for path, schema_name in [
+        ("examples/discovery/pilot.json", "discovery-simulation.schema.json"),
+        ("examples/discovery/expected-report.json", "discovery-simulation-report.schema.json"),
+        ("examples/discovery/physics-profile.json", "verification-profile.schema.json"),
+    ]:
+        errors = list(schema_validator(schema_objects[schema_name]).iter_errors(load_json(ROOT / path)))
+        if errors:
+            fail(f"{path} failed {schema_name}: {errors[0].message}")
+
+    discovery = load_json(ROOT / "examples/discovery/pilot.json")
+    empirical_profiles = [p for p in discovery["policy"]["profiles"] if p["class"] == "empirical"]
+    if empirical_profiles != [load_json(ROOT / "examples/discovery/physics-profile.json")]:
+        fail("standalone physics profile differs from the executable pilot")
+    discovery_report = load_json(ROOT / "reports/discovery-simulation.json")
+    if not discovery_report.get("simulation_only") or len(discovery_report.get("scenarios", [])) != 17:
+        fail("discovery adversarial report must remain explicitly synthetic and cover 17 scenarios")
+
     for example_name, schema_name in EXAMPLE_SCHEMA_MAP.items():
         instance = load_json(EXAMPLE / example_name)
         validator = schema_validator(schema_objects[schema_name])

@@ -30,6 +30,8 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --locked --workspace --all-targets -- -D warnings
       - run: cargo test --locked --workspace
+      - name: Discovery economics adversarial conformance
+        run: python3 scripts/simulate_discovery.py --check
 
   rust-security-audit:
     runs-on: ubuntu-latest

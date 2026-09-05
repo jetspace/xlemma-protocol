@@ -1,0 +1,176 @@
+{
+  "simulation_only": true,
+  "schema_version": 1,
+  "scenario_count": 17,
+  "all_expected_behaviors_observed": true,
+  "limitations": [
+    "Synthetic adversarial cases are not real-world detection-rate estimates.",
+    "Undetected semantic duplication deliberately leaks 150 USDC in one case; independent grouping remains an activation gate.",
+    "One legitimate contribution is excluded by overbroad grouping and restored by the modeled independent appeal.",
+    "No cryptographic authentication, checker execution, laboratory validation, or USDC transfer occurs."
+  ],
+  "scenarios": [
+    {
+      "name": "all_categories",
+      "outcome": "modeled",
+      "state": "finalized",
+      "allocated_units": 1800000000,
+      "retained_units": 1134000000,
+      "reward_leakage_units": 0,
+      "legitimate_excluded_count": 0,
+      "unresolved_appeals": 0,
+      "verification_spent_units": 6000000,
+      "appeal_spent_units": 0
+    },
+    {
+      "name": "grouping_appeal_restores_legitimate_work",
+      "outcome": "modeled",
+      "state": "finalized",
+      "allocated_units": 1800000000,
+      "retained_units": 1131000000,
+      "reward_leakage_units": 0,
+      "legitimate_excluded_count": 0,
+      "unresolved_appeals": 0,
+      "verification_spent_units": 7000000,
+      "appeal_spent_units": 2000000
+    },
+    {
+      "name": "overbroad_grouping_without_appeal",
+      "outcome": "modeled",
+      "state": "finalized",
+      "allocated_units": 1800000000,
+      "retained_units": 1133000000,
+      "reward_leakage_units": 0,
+      "legitimate_excluded_count": 1,
+      "unresolved_appeals": 0,
+      "verification_spent_units": 7000000,
+      "appeal_spent_units": 0
+    },
+    {
+      "name": "recognized_partition_and_identity_flood",
+      "outcome": "modeled",
+      "state": "finalized",
+      "allocated_units": 1800000000,
+      "retained_units": 1114000000,
+      "reward_leakage_units": 0,
+      "legitimate_excluded_count": 0,
+      "unresolved_appeals": 0,
+      "verification_spent_units": 26000000,
+      "appeal_spent_units": 0
+    },
+    {
+      "name": "unrecognized_semantic_duplicate",
+      "outcome": "modeled",
+      "state": "finalized",
+      "allocated_units": 1800000000,
+      "retained_units": 1133000000,
+      "reward_leakage_units": 150000000,
+      "legitimate_excluded_count": 0,
+      "unresolved_appeals": 0,
+      "verification_spent_units": 7000000,
+      "appeal_spent_units": 0
+    },
+    {
+      "name": "inflated_compute_telemetry",
+      "outcome": "modeled",
+      "state": "finalized",
+      "allocated_units": 1800000000,
+      "retained_units": 1134000000,
+      "reward_leakage_units": 0,
+      "legitimate_excluded_count": 0,
+      "unresolved_appeals": 0,
+      "verification_spent_units": 6000000,
+      "appeal_spent_units": 0
+    },
+    {
+      "name": "cross_round_group_replay",
+      "outcome": "modeled",
+      "state": "finalized",
+      "allocated_units": 1500000000,
+      "retained_units": 1434000000,
+      "reward_leakage_units": 0,
+      "legitimate_excluded_count": 0,
+      "unresolved_appeals": 0,
+      "verification_spent_units": 6000000,
+      "appeal_spent_units": 0
+    },
+    {
+      "name": "pledges_cannot_cover_restricted_shortfall",
+      "outcome": "rejected_as_expected",
+      "reason": "category budget exceeds restricted funding"
+    },
+    {
+      "name": "settlement_replay",
+      "outcome": "rejected_as_expected",
+      "reason": "reused funding settlement"
+    },
+    {
+      "name": "original_panel_cannot_hear_appeal",
+      "outcome": "rejected_as_expected",
+      "reason": "unqualified or conflicted review panel"
+    },
+    {
+      "name": "submission_flood_hits_capacity",
+      "outcome": "rejected_as_expected",
+      "reason": "submission window or capacity exhausted"
+    },
+    {
+      "name": "pending_appeal_holds_batch",
+      "outcome": "modeled",
+      "state": "reviewing",
+      "allocated_units": 0,
+      "retained_units": 2933000000,
+      "reward_leakage_units": 0,
+      "legitimate_excluded_count": 0,
+      "unresolved_appeals": 1,
+      "verification_spent_units": 7000000,
+      "appeal_spent_units": 0
+    },
+    {
+      "name": "cannot_finalize_pending_appeal",
+      "outcome": "rejected_as_expected",
+      "reason": "unresolved appeal holds entire allocation batch"
+    },
+    {
+      "name": "timeout_preserves_unresolved_case",
+      "outcome": "modeled",
+      "state": "expired",
+      "allocated_units": 0,
+      "retained_units": 2933000000,
+      "reward_leakage_units": 0,
+      "legitimate_excluded_count": 0,
+      "unresolved_appeals": 1,
+      "verification_spent_units": 7000000,
+      "appeal_spent_units": 0
+    },
+    {
+      "name": "economic_appeal_cannot_override_divergence",
+      "outcome": "modeled",
+      "state": "finalized",
+      "allocated_units": 1800000000,
+      "retained_units": 1131000000,
+      "reward_leakage_units": 0,
+      "legitimate_excluded_count": 0,
+      "unresolved_appeals": 0,
+      "verification_spent_units": 7000000,
+      "appeal_spent_units": 2000000
+    },
+    {
+      "name": "replication_method_paid_for_null_outcome",
+      "outcome": "modeled",
+      "state": "finalized",
+      "allocated_units": 1800000000,
+      "retained_units": 1134000000,
+      "reward_leakage_units": 0,
+      "legitimate_excluded_count": 0,
+      "unresolved_appeals": 0,
+      "verification_spent_units": 6000000,
+      "appeal_spent_units": 0
+    },
+    {
+      "name": "retrospective_registration_rejected",
+      "outcome": "rejected_as_expected",
+      "reason": "registration must precede"
+    }
+  ]
+}

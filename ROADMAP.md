@@ -56,12 +56,32 @@ not close the production integrations and trust dependencies listed below.
 
 ## Phase 3 — research marketplace
 
-- Launch one sponsor-backed ASTRA/Lean formalization and certification vertical with identifiable external buyers before broadening domains.
+- Pilot independently verified formal research with settled funding; support unsolicited foundational work alongside sponsor-backed formalization without making a commercial buyer a condition of open-pool eligibility. Funded open discovery rounds require the activation gates below.
 - Deploy the implemented XLMP node advertisement, constrained discovery, service-order, immutable match, multidimensional-reputation, and bond records through multiple independent indexers.
 - Add public bounties, grants, certified proof services, encrypted delivery, and license manifests.
 - Qualify ASTRA and alternative implementations in the provider-neutral research-prover marketplace.
 - Add calibrated novelty-review committees and formal equivalence graphing.
 - Deploy user-owned compute cooperatives and independently measured eight-layer capture dashboards through multiple frontends.
+
+### Open research mining — activation gates
+
+The [XLIP-024](spec/024-open-research-mining.md) requirements have an executable
+[offline pilot](docs/DISCOVERY_PILOT.md). Live open mining and the operated
+decision-appeal service are not activated.
+
+- [x] Implement deterministic local round replay with separate category budgets, contributor splits, bounded review admission, declared institutional restrictions/concentration, appeal holds, corrections and expiry.
+- [x] Add simulation-only schemas, CLI vectors, an empirical physics profile, generated conservation/partition properties, and an adversarial runner measuring leakage and wrongful exclusion.
+
+- [ ] Implement versioned funded rounds, separate evidence/eligibility decisions, signed assessment and appeal records, schemas, lifecycle transitions, and APIs.
+- [ ] Implement domain-specific difficulty calibration, evidence-backed duplicate/partition grouping, cross-round reward history, contributor splits, and institutional fund restrictions.
+- [ ] Implement atomic, replay-safe USDC allocation with costs/reserves, integer rounding, and holds/recalculation for every allocation affected by a timely appeal.
+- [ ] Operate independent appeal panels with conflict exclusions, capped costs/funded access, review deadlines, escalation, expiry, and funded correction remedies.
+- [ ] Qualify physics verification profiles that distinguish model derivation, simulation reproduction, and empirical support with uncertainty and independent replication.
+- [ ] Pass XLIP-024 conservation properties and adversarial farming/appeal scenarios, including legitimate foundational contributions with no buyer.
+- [ ] Complete independent economic/security review, public simulation, and constitutional approval before activating funded discovery mining.
+- [ ] Protect foundational/domain budgets and operate fair commons-assisted queues with published verifier capacity and wait/cost forecasts.
+- [ ] Establish outcome-neutral registered-method contracts, qualified laboratories, and independent experimental replication partnerships.
+- [ ] Establish transparent multi-round institutional commitments and runway reporting, with fundraising separated from allocation and appeals.
 
 ## Phase 4 — compute economics
 
