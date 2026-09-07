@@ -12,9 +12,16 @@ ambition: advances may change what is possible in energy, materials, measurement
 computation and other fields in ways that cannot yet be predicted.
 
 The operational objective is to increase the rate at which reliable knowledge
-accumulates and enables further discovery. The working hypothesis is that making
-results easier to reproduce, challenge, connect and reuse will reduce the cost of
-subsequent research. The protocol must test that hypothesis with independent users.
+enables further discovery while widening access to the resulting capabilities.
+The working hypothesis is that making results easier to reproduce, challenge,
+connect and reuse will improve what subsequent researchers can accomplish with
+their resources. Test scientific gains and access separately with independent
+users; growth in one does not establish progress in the other.
+
+The Culture provides a literary reference for abundance, curiosity and freedom.
+Our chosen lesson is that powerful technology should support agency and shared
+capability. Fiction supplies an aspiration, not a demonstrated technological path
+or authority over participants' values. See [Banks's own account](https://redsails.org/a-few-notes-on-the-culture/).
 
 Landau's organizing perspective remains central: explicit assumptions, variational
 structure, symmetry, conservation, controlled limits and testable consequences.
@@ -33,6 +40,29 @@ reuse and delivered benefits are separate claims. This reporting discipline does
 not require each contribution to predict a social benefit or justify itself by
 commercial demand. The pilot below tests the means of acceleration; it does not
 set the ceiling of the mission.
+
+## What should compound
+
+Research should create durable capabilities: checked mathematical libraries,
+algorithms, numerical methods, measurement techniques and reusable evidence.
+Those assets should make further questions tractable, improve reliability, or
+reduce the resources needed for subsequent work. Preserve failed approaches and
+corrections so later researchers can understand and avoid the same mistakes.
+
+The intended loop is research, independent verification, usable shared artifacts,
+and further research that benefits from those artifacts. Count maintenance,
+revalidation and onboarding as part of keeping the loop working. A growing corpus,
+more model tokens or greater computing expenditure does not establish compounding.
+No constant or exponential rate of scientific return is assumed.
+
+Assess gains under declared quality and resource constraints. Record human time,
+compute, energy where measurable, and laboratory needs separately. More affordable
+capability is useful even when total demand rises; neither resource savings nor
+universal access can be inferred from a faster benchmark alone.
+
+Research capability compounding is distinct from the optional reinvestment of
+settled revenue in [the economics model](ECONOMICS.md#auto-compounding). Reuse does
+not create a payment debt, mint backing, or establish a claim on future discoveries.
 
 ## Why this is the next priority
 
@@ -80,7 +110,7 @@ vibration and control are hypotheses to investigate with practitioners.
 | Connection | A precisely scoped relation between the coupled system and a modal description, including conditions under which the transformation is valid. |
 | Reproduced computation | Pinned solver, inputs and tolerances; convergence and conservation/balance diagnostics assessed against declared criteria. Numerical agreement alone is not a proof. |
 | Adversarial case | A counterexample or deliberately invalid assumption that the review process correctly detects and preserves in history. |
-| Downstream extension | Another team uses an artifact in a different, declared task and records what it reused, what required repair, and the effort involved. |
+| Downstream extension | Independent teams tackle held-out tasks under a preregistered comparison, recording artifact reuse, failures, repair and full costs. |
 
 Finalize exact statements only after checking existing library coverage and
 reviewer availability. Do not require a generic formalization of all variational
@@ -92,6 +122,11 @@ method and an uncertainty budget. It requires independent experimental capabilit
 the core pilot can test formal and computational reuse before that branch opens.
 Field-theory research can proceed in parallel when its own dependencies and
 verification requirements are met.
+
+The [research compounding pilot](RESEARCH_COMPOUNDING_PILOT.md) specifies the two
+generations, baseline conditions, access checks and evidence required for a
+decision to expand. Its experimental protocol is planned work to implement and
+operate; it is separate from the existing synthetic economic simulator.
 
 ## Researcher workflow to build
 
@@ -126,14 +161,38 @@ report the sample size, variation and confounders.
 |---|---|
 | Is reproduction easier? | Elapsed time, human effort, compute cost and success rate for another team reproducing the same bounded task. |
 | Does work accumulate usefully? | Demonstrated reuse in a subsequent task with attributable artifacts and a clear additional result. Downloads and graph links are insufficient. |
+| Does accumulated work improve future capability? | Held-out task results under fixed resource limits or costs to reach a fixed quality target, including asset creation, maintenance and verification. |
 | Are failures caught? | Detection and correction of declared adversarial cases, later reversals and unresolved disputes. |
 | Can people participate fairly? | Queue delays, admission failures, assisted access, appeal outcomes and review of legitimate work excluded. |
+| Are the gains broadly accessible? | Usable artifact rights, fresh-environment reproduction, independent export/reuse, access costs and concentration of funding, compute and review control. |
 | Is the system economically viable? | Actual cost per completed workflow, funded verification capacity and exact spending conservation. |
 | Does research reach practice? | Documented use by an independent practitioner and the resulting measured benefit or failure, with uncertainty and limitations. |
 
 These are evaluation measures, not automatic payout formulas. Do not optimize
 for theorem count, token volume, treasury size, citation count or self-reported
 social impact. Reward rules remain prospective, budget-conserving and appealable.
+
+## Shared capability and accountable power
+
+Keep the existing commons, portable-exit and independent-appeal commitments central
+to implementation. For the pilot, contributors must explicitly agree to usable
+artifact rights before inclusion; historical rights are not rewritten. Test that
+another participant can retrieve, understand and reuse an artifact without the
+original producer's private service or a discretionary downstream permission.
+Any such dependency must be disclosed and limits the access claim.
+
+Measure who controls funding, compute, assessment and review using disclosed
+control relationships, with uncertainty visible. Protect assisted access and
+foundational exploration within published budgets. Preserve multiple research
+paths and provider choices rather than ranking all questions by one model's
+predicted social value. Treat model competence, participant consent and governance
+authority as distinct. AI proposals still require the applicable independent
+evidence; no provider gains authority by supplying more compute.
+
+Software alone cannot establish a benevolent society. Energy, manufacturing,
+institutions and accountable technology deployment remain additional work. xLemma
+should demonstrate its contribution through reliable research and accessible
+capabilities, without claiming to settle that wider social design.
 
 ## Funding and focus
 
@@ -159,13 +218,16 @@ financial feature before testing research usefulness.
 ## Next milestones and decision points
 
 - [ ] Inventory upstream coverage and select exact pilot statements, dependencies,
-  artifact licenses and accepted evidence profiles.
+  artifact licenses and accepted evidence profiles under the research compounding pilot.
+- [ ] Preregister held-out tasks, baseline conditions, resource/quality limits,
+  accounting and access criteria before generating the pilot's reusable assets.
 - [ ] Produce the connected artifacts and minimum researcher workflow; keep all
   scientific and empirical claims scoped to their actual evidence.
-- [ ] Obtain independent reproduction and a downstream reuse case, including one
-  correction or appeal exercise.
-- [ ] Publish baseline comparisons and complete costs; revise the workflow if
-  overhead dominates the observed benefit or independent teams cannot reuse it.
+- [ ] Obtain independent reproduction and downstream task comparisons, including
+  a correction/appeal exercise and fresh-environment export/reuse.
+- [ ] Publish scientific gains and access results separately with full costs and
+  control-concentration disclosures; revise if overhead or access barriers
+  undermine the claimed benefit. Report inconclusive or negative outcomes.
 - [ ] Open a bounded funded pilot only after the existing activation gates pass.
 - [ ] Expand when independent use identifies a concrete next bottleneck and the
   required reviewers or laboratories are available.

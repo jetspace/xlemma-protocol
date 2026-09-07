@@ -67,6 +67,12 @@ Cash_{i,j}=(1-\alpha_i)s_iN_j.
 
 Backing enters the Research Vault before or atomically with credit issuance.
 
+This is reinvestment of settled financial proceeds. The proposed
+[research compounding pilot](RESEARCH_COMPOUNDING_PILOT.md) separately tests whether
+reusable knowledge improves subsequent research. Measured capability gains or
+estimated compute savings do not mint backing, create revenue, or authorize
+payments by themselves.
+
 ## Evidence graph is not the economic graph
 
 `FORMALLY_DEPENDS_ON` records actual use in a final proof. It does not mean

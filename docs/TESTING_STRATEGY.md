@@ -1,6 +1,6 @@
 # Testing and verification strategy
 
-## Open discovery pilot
+## Offline discovery economics pilot
 
 `cargo test --locked -p xlemma-economics --test discovery` exercises the local
 economic state machine, including 256 generated cases for varied weights,
@@ -14,6 +14,19 @@ preserve the deliberately modeled leakage from unrecognized duplication and
 the wrongful-exclusion/appeal pair. These are not real-world detection rates.
 Structural validation checks the new schemas and profile fixture. The pilot
 adds no Solidity settlement or Lean checker execution path.
+
+The authenticated [discovery service](DISCOVERY_SERVICE.md) has separate service
+and local EVM integration tests. Neither those tests nor the synthetic economic
+simulation demonstrate scientific acceleration.
+
+## Research compounding evaluation — proposed
+
+The [research compounding pilot](RESEARCH_COMPOUNDING_PILOT.md) defines a planned
+two-generation evaluation comparing ordinary research, reuse through a repository,
+and xLemma's workflow. It requires preregistered held-out tasks, independent users,
+full costs, equivalent scientific assurance and separate access outcomes. Its
+records and collection tooling remain to be implemented; local fixtures cannot
+substitute for independent participation or demonstrate long-term compounding.
 
 The reference repository is not complete merely because it compiles. xLemma needs cross-layer tests that attack formal, economic, distributed-systems, privacy, and smart-contract assumptions.
 

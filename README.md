@@ -18,10 +18,15 @@ possibilities. It pursues that ambition by making reliable research easier to
 reproduce, challenge and build upon. Pooled USDC funding rewards meaningful
 contributions to that shared understanding.
 
-Our immediate priority is to demonstrate that a connected research workflow helps
-independent teams reach reliable results with less time and effort. The
-[project direction](docs/PROJECT_DIRECTION.md) defines a first physics pilot,
-evidence of progress, and the conditions for expanding it.
+**Turn computation into cumulative understanding, understanding into shared
+capability, and shared capability into greater freedom to live, discover, and create.**
+
+Our immediate priority is to test whether one generation of research makes the
+next more capable, with gains accessible to independent researchers. The
+[project direction](docs/PROJECT_DIRECTION.md) and proposed
+[research compounding pilot](docs/RESEARCH_COMPOUNDING_PILOT.md) define comparisons
+against ordinary research workflows, full resource costs, and access requirements.
+These are evaluation plans; sustained compounding has not been demonstrated.
 
 Researchers freely choose what to discover; pooled funding rewards verified
 contributions under transparent, budget-conserving rules. Institutions help

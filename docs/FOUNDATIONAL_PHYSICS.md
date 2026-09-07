@@ -17,6 +17,11 @@ reproduce and extend reliable work more efficiently. This tests one mechanism
 toward the broader ambition of expanding humanity's capacity for discovery;
 individual foundational contributions need no immediate application.
 
+The [research compounding pilot](RESEARCH_COMPOUNDING_PILOT.md) adds a second
+generation of unseen tasks, full resource accounting and independent access tests.
+The collection should leave later researchers with usable methods and knowledge;
+that benefit must be demonstrated separately from growth in artifact count.
+
 ## Starting references
 
 Landau and Lifshitz provide seed questions and organizing perspectives:
