@@ -890,3 +890,9 @@ gaps are explicitly tracked in XLIP-024 and the roadmap.
 ## Sources and design basis
 
 The dated source register is in `docs/SOURCES.md`; prior-art positioning is in `docs/PRIOR_ART_AND_DIFFERENTIATION.md`. Key foundations include official OpenAI Responses API documentation, official x402 V2 documentation, the Lean proof-validation guide, ERC-1155 and ERC-4626 specifications, RFC 8785, EIP-712, content-addressed storage literature, generalized Byzantine quorum research, and cryptographic sortition research.
+
+## License
+
+xLemma's original code and documentation are licensed under the [MIT License](LICENSE),
+unless a file explicitly states otherwise. Third-party dependencies and separately
+licensed research artifacts retain their own terms.
