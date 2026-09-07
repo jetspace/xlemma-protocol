@@ -12,8 +12,16 @@
 explicit, derive the consequences, and test them against nature.**
 
 xLemma is an evolving research commons for uncovering, verifying, and extending
-the structures connecting mathematics and physics. Pooled USDC funding rewards
-meaningful contributions to that shared understanding.
+the structures connecting mathematics and physics. Its long-term purpose is to
+expand humanity's capacity to understand nature and turn discovery into new
+possibilities. It pursues that ambition by making reliable research easier to
+reproduce, challenge and build upon. Pooled USDC funding rewards meaningful
+contributions to that shared understanding.
+
+Our immediate priority is to demonstrate that a connected research workflow helps
+independent teams reach reliable results with less time and effort. The
+[project direction](docs/PROJECT_DIRECTION.md) defines a first physics pilot,
+evidence of progress, and the conditions for expanding it.
 
 Researchers freely choose what to discover; pooled funding rewards verified
 contributions under transparent, budget-conserving rules. Institutions help

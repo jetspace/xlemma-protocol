@@ -11,6 +11,12 @@ work across mechanics, fields, mathematics and experiments simultaneously. Poole
 funding can reward making that web more reliable, explanatory and reusable before
 commercial applications are known.
 
+The [project direction](PROJECT_DIRECTION.md) makes the near-term objective
+concrete: test whether a small connected corpus helps independent researchers
+reproduce and extend reliable work more efficiently. This tests one mechanism
+toward the broader ambition of expanding humanity's capacity for discovery;
+individual foundational contributions need no immediate application.
+
 ## Starting references
 
 Landau and Lifshitz provide seed questions and organizing perspectives:

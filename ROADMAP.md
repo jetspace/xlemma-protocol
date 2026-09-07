@@ -8,19 +8,35 @@ The latest repository-wide audit and verified fixes are in
 [`docs/REPOSITORY_AUDIT.md`](docs/REPOSITORY_AUDIT.md). Passing local tests does
 not close the production integrations and trust dependencies listed below.
 
-## Current execution focus — funded discovery pilot readiness
+## Current execution focus — demonstrate reliable research acceleration
+
+The [project direction](docs/PROJECT_DIRECTION.md) prioritizes a small connected
+physics pilot and independent downstream reuse. The long-term aim is to expand
+humanity's capacity for discovery; the immediate test is whether xLemma reduces
+the time and effort needed to reach reliable results. Funding readiness remains
+a parallel requirement before real-USDC operation.
 
 Commit `96aa47e` adds the funded discovery reference service and local EVM
 integration. Reproducible checks and review limitations are recorded in the
 [service validation report](reports/discovery-service-validation.json) and
 [discovery security scan](reports/discovery-security-scan.json).
 
-The next milestone is a bounded, independently reviewed, actually funded pilot
-for unsolicited formal results, first formalizations and proof improvements.
-Before opening it, qualify independent checkers and operating teams, publish
-reviewed calibration and reward rules, fund the deployed escrow, and exercise
-appeals, quarantine and recovery. Qualify an empirical physics profile alongside
-this work; local test evidence does not establish experimental support.
+The next research milestone is a bounded collection around oscillation, energy
+balance and controlled approximations: explicit statements, reproduced artifacts,
+a checked connection and an independent downstream reuse case. Inventory upstream
+Mathlib/Physlib coverage first, then measure the workflow against published
+baselines, including failures and full costs. Exact scope depends on library
+support and qualified review capacity.
+
+Before opening a funded discovery pilot, qualify independent checkers and
+operating teams, publish reviewed calibration and reward rules, fund the deployed
+escrow, and exercise appeals, quarantine and recovery. Empirical claims require
+separately qualified methods, uncertainty and replication. Expand domain scope
+and marketplace features when independent research use identifies a need.
+
+- [ ] Publish exact pilot statements, upstream coverage and the minimum researcher workflow.
+- [ ] Obtain independent reproduction, an adversarial/correction case and demonstrated reuse in another task.
+- [ ] Report time, effort, cost, reproducibility and access against declared baselines; use the results to choose the next bottleneck to address.
 
 The open research mining activation gates below remain the launch checklist.
 Phase 0 encoding and independent-reproduction work remains open in parallel.
