@@ -893,6 +893,6 @@ The dated source register is in `docs/SOURCES.md`; prior-art positioning is in `
 
 ## License
 
-xLemma's original code and documentation are licensed under the [MIT License](LICENSE),
+xLemma's original code and documentation are licensed under [Apache-2.0](LICENSE),
 unless a file explicitly states otherwise. Third-party dependencies and separately
 licensed research artifacts retain their own terms.
