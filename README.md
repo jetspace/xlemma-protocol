@@ -8,8 +8,8 @@
   />
 </p>
 
-**Open research mining for mathematics and physics: freely explore, independently
-verify, and reward contributions to knowledge with pooled USDC funding.**
+**Build a shared, independently checked foundation for mathematics and physics—
+and reward the work that extends, tests, and improves it with pooled USDC funding.**
 
 Researchers freely choose what to discover; pooled funding rewards verified
 contributions under transparent, budget-conserving rules. Institutions help
@@ -20,6 +20,21 @@ xLemma aims to help researchers uncover new mathematics and new physics,
 including foundational work whose applications are not yet known. A posted
 bounty, institutional affiliation, or immediate commercial buyer is not a
 prerequisite for submitting a discovery to the open research pool.
+
+Our proposed starting physics program takes its scope from Landau and Lifshitz's
+*Mechanics* (Volume 1) and *The Classical Theory of Fields* (Volume 2): connect
+explicit assumptions to derivations, reproducible calculations, predictions,
+and independent measurements. Researchers can make established results reusable,
+expose limits in their assumptions, and explore extensions that experiments can
+distinguish. First formalizations earn consideration as formalization work;
+claims of new physics require evidence appropriate to what they assert.
+
+These volumes guide an initial research program, not eligibility for the whole
+network or authority over verification. See the
+[foundational physics program](docs/FOUNDATIONAL_PHYSICS.md) for sources,
+proposed milestones, and the boundary between checked mathematics and empirical
+support. The physics corpus described there is planned work, not implemented
+coverage of either textbook.
 
 > Status: architectural reference implementation and prototype. The Rust, Lean, Solidity, payment, and cryptographic components have not been independently audited. Do not deploy with real funds until the missing production work in `ROADMAP.md` is complete.
 

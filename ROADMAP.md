@@ -25,6 +25,18 @@ this work; local test evidence does not establish experimental support.
 The open research mining activation gates below remain the launch checklist.
 Phase 0 encoding and independent-reproduction work remains open in parallel.
 
+### Initial physics research program — proposed
+
+Use Landau and Lifshitz's *Mechanics* and *The Classical Theory of Fields* to
+scope a first foundational physics corpus, following the
+[research program](docs/FOUNDATIONAL_PHYSICS.md). This is a research track within
+the open network; it does not restrict all funding to these books.
+
+- [ ] Inventory a bounded mechanics corpus with explicit assumptions, source references, formal-library gaps and acceptance criteria.
+- [ ] Produce original formal artifacts and reproducible calculations; qualify independent checking and exercise appeals before a funded pilot.
+- [ ] Extend selected results into relativity and electromagnetism as dependencies and review capacity permit.
+- [ ] Qualify a feasible empirical profile with uncertainty, independent replication and outcome-neutral service terms before claiming experimental support.
+
 ### Phase 0 reference implementation progress
 
 - [x] Publish versioned, domain-separated ID derivation and RFC 8785 canonicalization code.
