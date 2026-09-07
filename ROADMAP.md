@@ -27,14 +27,16 @@ Phase 0 encoding and independent-reproduction work remains open in parallel.
 
 ### Initial physics research program — proposed
 
-Use Landau and Lifshitz's *Mechanics* and *The Classical Theory of Fields* to
-scope a first foundational physics corpus, following the
-[research program](docs/FOUNDATIONAL_PHYSICS.md). This is a research track within
-the open network; it does not restrict all funding to these books.
+Use Landau and Lifshitz's *Mechanics* and *The Classical Theory of Fields* as seed
+maps for an interconnected research program around variational structure,
+symmetries, conservation, equivalences and controlled limits. Follow the
+[research program](docs/FOUNDATIONAL_PHYSICS.md), with multiple entry points
+across mathematics, mechanics, fields and experiments.
 
-- [ ] Inventory a bounded mechanics corpus with explicit assumptions, source references, formal-library gaps and acceptance criteria.
+- [ ] Inventory a bounded, connected set of statements and proposed relationships with explicit assumptions, source references, formal-library gaps and acceptance criteria.
+- [ ] Specify evidence requirements and protocol mappings for derivations, symmetry/conservation claims, equivalences, limiting cases and empirical disagreements; publish reviewed reference vectors before implementing new relation profiles.
 - [ ] Produce original formal artifacts and reproducible calculations; qualify independent checking and exercise appeals before a funded pilot.
-- [ ] Extend selected results into relativity and electromagnetism as dependencies and review capacity permit.
+- [ ] Develop mechanics, relativity and electromagnetic research paths in parallel as dependencies and qualified review capacity permit.
 - [ ] Qualify a feasible empirical profile with uncertainty, independent replication and outcome-neutral service terms before claiming experimental support.
 
 ### Phase 0 reference implementation progress
