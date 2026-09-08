@@ -9,8 +9,9 @@ choose their questions; pooled USDC funding supports verified contributions unde
 transparent, budget-conserving rules.
 
 > **Status:** reference implementation and prototype. Local protocol, verification,
-> economic, and settlement tests are available. The physics research pilot and
-> independent research-compounding evaluation remain planned work. Components
+> economic, and settlement tests are available, alongside a small exact
+> [oscillator reproduction](docs/OSCILLATOR_REPRODUCTION.md). The independent
+> physics pilot and research-compounding evaluation remain planned work. Components
 > have not been independently audited; complete the [production gates](ROADMAP.md#production-blockers)
 > before deploying with real funds.
 
@@ -66,7 +67,7 @@ gains. See the [project direction](docs/PROJECT_DIRECTION.md),
 | Verification | PoIR logic, credential and trust-policy boundaries, Lean environment exporter, exact artifact bindings, and local tests. | Independent checker qualification, hardened execution, issuer integration, and operated verification teams. |
 | Discovery funding | Signed rounds, calibration, contributor consent, assessment, appeals, USDC escrow, publication bridge, and local EVM integration. | Independent review, actual funding, qualified operators, monitoring, and deployed settlement. |
 | Researcher economics | Fully backed credit/vault logic, bounded revenue routing, rights/portability records, and reference payment adapters. | External reconciliation, independently exercised exit, and deployment review. |
-| Research program | Landau-inspired seed questions and a defined evaluation plan. | Original physics artifacts, qualified empirical profiles, and independent evidence of research acceleration. |
+| Research program | Landau-inspired seed questions, exact discrete oscillator proofs and a defined evaluation plan. | Qualified submission packaging, empirical profiles, and independent evidence of research acceleration. |
 
 The [offline discovery simulator](docs/DISCOVERY_PILOT.md) uses synthetic inputs.
 The [funded discovery service](docs/DISCOVERY_SERVICE.md) has separate authenticated

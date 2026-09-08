@@ -12,6 +12,16 @@ fi
 
 lake build
 
+set +e
+physics_output="$(lake env lean -DwarningAsError=true tests/RejectFalsePhysics.lean 2>&1)"
+physics_status=$?
+set -e
+if [[ "$physics_status" -eq 0 || "$physics_output" != *'error: `grind` failed'* ]]; then
+  printf 'False oscillator conservation claim was accepted\n' >&2
+  exit 1
+fi
+lake env leanchecker --fresh XLemma.Physics.Reuse
+
 export_output="$(lake env lean -DwarningAsError=true XLemma/Example.lean 2>&1)"
 export_record="$(printf '%s\n' "$export_output" | python3 validate-export.py ../examples/lean-export/expected-add-zero.json)"
 if [[ "$export_output" != *"does not depend on any axioms"* ]]; then

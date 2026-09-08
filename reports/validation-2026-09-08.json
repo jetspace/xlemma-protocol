@@ -1,0 +1,133 @@
+{
+  "generated_at": "2026-09-08T19:29:23.515637+00:00",
+  "baseline_commit": "46a13f17383a34759ea50c165e40827ec337e140",
+  "author_operated": true,
+  "independent_security_audit": false,
+  "production_activated": false,
+  "checks": {
+    "rust": {
+      "passed": 224,
+      "failed": 0,
+      "ignored_evm_fixture_run_separately": 1,
+      "command": "make fmt lint rust-test"
+    },
+    "python": {
+      "passed": 10,
+      "command": "python3 -m unittest discover -s scripts -p 'test_*.py'"
+    },
+    "contracts": {
+      "passed": 53,
+      "format": "passed",
+      "command": "forge test --root <isolated-contract-copy>",
+      "dependencies": "existing cached pinned OpenZeppelin and forge-std; sources refreshed from workspace"
+    },
+    "adversarial_discovery": {
+      "passed": 17,
+      "command": "python3 scripts/simulate_discovery.py --check"
+    },
+    "local_evm": {
+      "status": "passed",
+      "command": "python3 scripts/test_discovery_evm.py --contracts <isolated-contract-copy> --cast <cast> --anvil <anvil>",
+      "asset": "mock six-decimal USDC",
+      "checker": "test double",
+      "independent_operators": false
+    },
+    "participant_journeys": {
+      "passed": 11,
+      "gates_passed": 20,
+      "command": "python3 scripts/simulate_use_cases.py --markdown <report.md> --json <report.json>",
+      "human_access_trial": false
+    },
+    "lean": {
+      "status": "passed via participant journey gate lean_pseudo_self_test",
+      "command": "make lean-test",
+      "physics_axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "fresh_bundled_checker_modules": [
+        "XLemma.Physics.Reuse",
+        "XLemma.Example"
+      ],
+      "independent_checker_qualification": false
+    },
+    "structure_and_economic_sanity": {
+      "status": "passed",
+      "command": "make validate simulate"
+    }
+  },
+  "security": {
+    "rustsec": {
+      "dependencies": 237,
+      "advisories": 1242,
+      "vulnerabilities": 0,
+      "command": "cargo audit --db <advisory-db> --deny warnings",
+      "database_commit": "bf25f6575a93a35f30796c65c0ed91bee7fa19fd"
+    },
+    "slither": {
+      "version": "0.11.6",
+      "analysis_succeeded": true,
+      "warnings": 43,
+      "groups": [
+        {
+          "detector": "calls-loop",
+          "severity": "Low",
+          "count": 17
+        },
+        {
+          "detector": "cyclomatic-complexity",
+          "severity": "Informational",
+          "count": 1
+        },
+        {
+          "detector": "missing-inheritance",
+          "severity": "Informational",
+          "count": 2
+        },
+        {
+          "detector": "reentrancy-balance",
+          "severity": "High",
+          "count": 3
+        },
+        {
+          "detector": "timestamp",
+          "severity": "Low",
+          "count": 20
+        }
+      ],
+      "triage_reference": "reports/discovery-security-scan.json",
+      "review": "The same detector/severity counts remain. Both RevenueRouter public routing entry points are nonReentrant and the vault callback regression passed. Loop availability, chain timestamps and interface maintainability remain documented limitations; no independent audit is claimed."
+    }
+  },
+  "limitations": [
+    "No independent researchers, checker operators or security auditor engaged yet.",
+    "Discrete rational identities and author-operated reuse do not establish empirical physics, novelty, reward eligibility or acceleration.",
+    "Physics artifacts still require qualified submission packaging and independent review.",
+    "Process-exit and closed-copy recovery do not establish power-loss durability or protection against rollback without an external checkpoint.",
+    "Remote CI nanoda and axiom-audit outcomes were not observed in this local run."
+  ],
+  "source_sha256": {
+    "Cargo.lock": "3896610e858b6879b0b817df4d2694bfa7a31d254002b75aee7c2325d22d10bc",
+    "contracts/src/BountyEscrow.sol": "5a41b89d3eba7a109ca9b1df5051d4002cf6ab7db98e92ab2023a95a4014dc7a",
+    "contracts/src/DiscoveryEvidenceRegistry.sol": "a3faf1903f63696990a93c2ca3af79eae12ea2a2051e8beab0f4e75852a9c899",
+    "contracts/src/DiscoveryRoundEscrow.sol": "a196432574554b472eb8e18c803becd7043288266ee3456ecb7702746bb184fd",
+    "contracts/src/LemmaCapsule1155.sol": "d9157ab43340dcd3fda9c2097ef4373e47a721204501d2e0cc46c13da8a9f185",
+    "contracts/src/NodeBondRegistry.sol": "2187531c3c40e9c465ecee2d7baf66ba22d6e7177ee9653854b3759a7da27005",
+    "contracts/src/PoIRCertificateRegistry.sol": "6661c6532cde545e6646a45c159c465e8cc12ee29d74516e9f8987f6b4953172",
+    "contracts/src/ProofRegistry.sol": "7d2baeea0ff221e422fcf55af82b4f03d5056bce28d7056c3a488680db13285d",
+    "contracts/src/ResearchCommitmentRegistry.sol": "1aff8aa19dab4c924297c79b44314267402498fca54b662e0249037c42ceccb0",
+    "contracts/src/ResearchVault.sol": "5a5f0ebeda85b23e48d01bedd2ccb98d50982d6ccdd4fdb477a7b0b5edd0b969",
+    "contracts/src/ResearchVaultFactory.sol": "50913277cbcc181b166644991f5004c0a6de9c175d8f7c1e0d62a2157ec6539b",
+    "contracts/src/ResearcherCredit.sol": "674a5b2cee9100bdada5ec61e67c1298dcd01db4fd473d5604479d644a8955d6",
+    "contracts/src/RevenueRouter.sol": "759ecab38b59303024bad0127cddbf2f53148fd837124629d66631ab06d9a8c7",
+    "crates/xlemma-api/src/event_store.rs": "433af87df9881053951863f589f445b32554a0c0e7783de66d1516033b35ecce",
+    "lean/XLemma/Physics/Oscillator.lean": "f021fcbd70250a56acfb861a15aa99b2ebef73f15132427f9498c37190fd2c2b",
+    "lean/XLemma/Physics/Reuse.lean": "b96175af53ce0e9bedd0bdf74df3a1e68778653531aab467d7cc6edbde969f20",
+    "lean/XLemma.lean": "366b567efbd420af118e008f897e71b981a5404ea5d231ce1cd3cbd52323949e",
+    "lean/self-test.sh": "356ce4ce6ef73c8e607b252ee41d4500d128e6f9a089c147cf6987b2ee7396c1",
+    "lean/tests/RejectFalsePhysics.lean": "2a440f18dfca84d5677cead75587739519676c6c3a9390a193cc3324219fcf45",
+    "scripts/test_discovery_chain.py": "67e1828c95302343d46bcc1b18b69b5613f753a5603c8c32766a3867a7f88232",
+    "scripts/test_physics.py": "c008e22ec8092eb82303bf393adf65a6f6370e8e4468f266513cc7f521df954a"
+  }
+}

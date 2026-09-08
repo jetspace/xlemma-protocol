@@ -37,6 +37,7 @@ escrow, and exercise appeals, quarantine and recovery. Empirical claims require
 separately qualified methods, uncertainty and replication. Expand domain scope
 and marketplace features when independent research use identifies a need.
 
+- [x] Add an author-operated [oscillator reproduction and review handoff](docs/OSCILLATOR_REPRODUCTION.md), with an exact balance, downstream conservation proof and rejected false claim.
 - [ ] Publish exact pilot statements, upstream coverage, usable artifact rights and available review capacity.
 - [ ] Preregister two-generation comparisons, held-out task selection, resource/quality limits, cost accounting, access thresholds and evaluation-record definitions.
 - [ ] Produce the connected artifacts and minimum researcher workflow, with independently usable retrieval/export and correction paths.

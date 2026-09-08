@@ -1,5 +1,18 @@
 # Threat model
 
+## Reproduction and recovery rehearsal — 2026-09-08
+
+The oscillator example proves conditional identities in an exact rational
+discrete model. It supplies no empirical certificate, novelty decision or reward
+entitlement. Downstream reuse by the producing team is not an independent trial.
+The [handoff](OSCILLATOR_REPRODUCTION.md) states the axiom inventory and open gates.
+
+The journal process-exit test exercises durable-write/lost-acknowledgement retry
+and restoring a closed copy. An internally consistent old journal can still pass
+local hash validation: production restore requires an external trusted checkpoint
+and settlement reconciliation. The test does not establish hardware power-loss
+durability. Malformed or timed-out RPC responses remain failures, not funding.
+
 ## Assets to protect
 
 - exact formal claim and proof identity;

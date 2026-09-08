@@ -1,5 +1,17 @@
 # Testing and verification strategy
 
+## Executable oscillator and recovery rehearsal
+
+The [reproduction handoff](OSCILLATOR_REPRODUCTION.md) connects exact rational
+Lean balance/conservation proofs, an explicitly rejected false physics claim,
+and numerical trajectory/reversibility checks. `make lean-test` runs the new
+proofs through the bundled fresh checker; Python discovery runs the model tests.
+The API journal suite now tests an actual process exit after durable append,
+recovery, duplicate retry rejection and a closed-copy restore. RPC regression
+tests cover malformed, mismatched, oversized, errored and timed-out responses.
+These remain author-operated checks. Outside operators, researcher experiments,
+access trials, production recovery and external security review remain required.
+
 ## Offline discovery economics pilot
 
 `cargo test --locked -p xlemma-economics --test discovery` exercises the local

@@ -2,6 +2,18 @@
 
 Date: 2026-09-04. Baseline commit: `0380149`.
 
+## Validation follow-up — 2026-09-08
+
+The [dated validation record](../reports/validation-2026-09-08.json) records
+224 Rust, 53 contract and 10 Python tests, 17 adversarial discovery scenarios,
+the local EVM settlement integration, and 11 scripted journeys across 20 gates.
+It includes a new process-exit recovery test and the
+[exact oscillator reproduction](OSCILLATOR_REPRODUCTION.md).
+The updated RustSec scan found no known vulnerabilities in 237 dependencies.
+Slither still reports 43 warnings, including three guarded router reentrancy
+findings; the existing triage and callback regression remain relevant.
+Independent security review and researcher/access trials remain open.
+
 ## Readiness decision
 
 The repository implements substantial deterministic protocol logic and working

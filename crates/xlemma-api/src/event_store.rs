@@ -482,6 +482,47 @@ mod tests {
     }
 
     #[test]
+    fn process_exit_after_durable_write_rejects_retry() {
+        const CHILD_PATH: &str = "XLEMMA_JOURNAL_EXIT_TEST_PATH";
+        if let Some(path) = std::env::var_os(CHILD_PATH) {
+            let (journal, _) = EventJournal::open(PathBuf::from(path).as_path()).unwrap();
+            journal
+                .append(ApiJournalEvent::VerificationJobCreated { job: job() })
+                .unwrap();
+            // Exit without Drop or an application acknowledgement after fsync.
+            std::process::exit(86);
+        }
+        let path = temp_path("process-exit");
+        let status = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "event_store::tests::process_exit_after_durable_write_rejects_retry",
+            ])
+            .env(CHILD_PATH, &path)
+            .status()
+            .unwrap();
+        assert_eq!(status.code(), Some(86));
+        let bytes = std::fs::read(&path).unwrap();
+        let (journal, recovered) = EventJournal::open(&path).unwrap();
+        assert_eq!(recovered.jobs.len(), 1);
+        assert_eq!(recovered.jobs[job().job_id.as_str()].state, job().state);
+        assert!(matches!(
+            journal.append(ApiJournalEvent::VerificationJobCreated { job: job() }),
+            Err(EventStoreError::DuplicateRecord(_))
+        ));
+        assert_eq!(std::fs::read(&path).unwrap(), bytes);
+        drop(journal);
+        let backup = temp_path("restored-backup");
+        std::fs::write(&backup, bytes).unwrap();
+        let (restored, state) = EventJournal::open(&backup).unwrap();
+        assert_eq!(state.jobs.len(), 1);
+        assert_eq!(state.jobs[job().job_id.as_str()].state, job().state);
+        drop(restored);
+        std::fs::remove_file(path).unwrap();
+        std::fs::remove_file(backup).unwrap();
+    }
+
+    #[test]
     fn restart_recovers_durable_job_history() {
         let path = temp_path("recovery");
         let (journal, recovered) = EventJournal::open(&path).unwrap();
