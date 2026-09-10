@@ -32,6 +32,15 @@ novelty or difficulty oracles. The existing adversarial report deliberately
 demonstrates leakage from an undetected semantic duplicate. Qualification,
 prior-art coverage and beneficial-control evidence must be independently reviewed.
 
+## Planned USDC wallet integration
+
+The [USDC infrastructure plan](USDC_RESEARCH_INFRASTRUCTURE.md) connects this
+reference lifecycle to a proposed Base Sepolia smart-account and Paymaster
+journey, with bounded sponsorship and later CCTP funding. These integrations
+remain planned; the local EVM test uses mock USDC and a checker test double.
+The plan preserves the service's independent verification, appeal and funding
+requirements.
+
 ## Configuration and identities
 
 Build the API and CLI with `cargo build --locked -p xlemma-api -p xlemma-cli`.

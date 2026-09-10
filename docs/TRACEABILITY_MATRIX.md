@@ -4,6 +4,7 @@ Every major concept requested or developed in the design is mapped to its primar
 
 | Concept | Specification / documentation | Reference implementation |
 |---|---|---|
+| Programmable USDC researcher journey | `docs/USDC_RESEARCH_INFRASTRUCTURE.md` | Escrow, evidence registry and signed discovery service are references; Base wallet, Paymaster, sponsorship and CCTP adapters remain planned |
 | Exact discrete physics and downstream reuse rehearsal | `docs/OSCILLATOR_REPRODUCTION.md` | `lean/XLemma/Physics`, `lean/tests/RejectFalsePhysics.lean`, `scripts/test_physics.py`; independent qualification remains open |
 | Durable-write termination and retry recovery | `docs/OSCILLATOR_REPRODUCTION.md` | `event_store::tests::process_exit_after_durable_write_rejects_retry`; external rollback checkpoints remain an operating requirement |
 | Unsolicited discovery without a buyer; protected foundational funding | `spec/024-open-research-mining.md`, `docs/DISCOVERY_SERVICE.md` | `DiscoveryLedger`, signed seven-category policies and independent calibration approvals |

@@ -62,6 +62,22 @@ across mathematics, mechanics, fields and experiments.
 - [ ] Develop mechanics, relativity and electromagnetic research paths in parallel as dependencies and qualified review capacity permit.
 - [ ] Qualify a feasible empirical profile with uncertainty, independent replication and outcome-neutral service terms before claiming experimental support.
 
+### Programmable USDC infrastructure — planned
+
+Implement the [USDC research infrastructure plan](docs/USDC_RESEARCH_INFRASTRUCTURE.md)
+alongside the scientific pilot. The first target is native USDC on Base, rehearsed
+on Base Sepolia. Existing escrow/service references provide a starting point;
+wallet, Paymaster, sponsorship and CCTP integrations are not yet implemented.
+Rewards remain limited to settled funding, with independent evidence checks,
+contribution assessment and funded appeals under prospective rules.
+
+- [ ] Specify pinned chain/token/EntryPoint/Paymaster configuration, researcher-controlled signing, bounded delegation, sponsorship and structured receipt mappings.
+- [ ] Integrate an ERC-4337 wallet and USDC gas payments, with a separate bounded sponsorship path for eligible researchers without an initial balance.
+- [ ] Run the full Base Sepolia wallet → funding → submission → verification → appeal → payout journey, disclosing checker doubles and operator independence.
+- [ ] Exercise payment authorization/replay, fee changes, depleted sponsorship, failed transfers, reorgs, late dissent, recovery and reconciliation before launch.
+- [ ] Complete independent verification, external security review, access/appeal trials and production gates before a bounded real-USDC pilot.
+- [ ] Add CCTP funding after the single-chain journey; reconcile transfers and admit spending capacity only from confirmed destination escrow deposits.
+
 ### Phase 0 reference implementation progress
 
 - [x] Publish versioned, domain-separated ID derivation and RFC 8785 canonicalization code.

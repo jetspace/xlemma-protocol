@@ -13,6 +13,17 @@ local hash validation: production restore requires an external trusted checkpoin
 and settlement reconciliation. The test does not establish hardware power-loss
 durability. Malformed or timed-out RPC responses remain failures, not funding.
 
+## Planned USDC wallet and cross-chain boundaries
+
+The [USDC infrastructure plan](USDC_RESEARCH_INFRASTRUCTURE.md) adds proposed
+smart-account, bundler/Paymaster, sponsorship and later CCTP boundaries.
+Implementations must pin the exact chain, token and account-abstraction contracts;
+bound delegated authority and sponsorship; and preserve consent, revocation,
+replay protection and auditable actual costs. USDC gas payment alone does not
+fund an empty researcher wallet. CCTP depends on Circle attestations; pending
+transfers cannot fund awards before destination escrow receipt confirmation.
+These adapters remain planned, and no new deployment trust is qualified here.
+
 ## Assets to protect
 
 - exact formal claim and proof identity;

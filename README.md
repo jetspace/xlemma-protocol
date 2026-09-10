@@ -8,6 +8,10 @@ connecting, and funding mathematical and physical knowledge. Researchers freely
 choose their questions; pooled USDC funding supports verified contributions under
 transparent, budget-conserving rules.
 
+**Mining the fabric of the universe:** explore freely, publish reproducible
+evidence, and earn USDC from transparently funded research pools. Every reward
+comes from settled funding under published rules.
+
 > **Status:** reference implementation and prototype. Local protocol, verification,
 > economic, and settlement tests are available, alongside a small exact
 > [oscillator reproduction](docs/OSCILLATOR_REPRODUCTION.md). The independent
@@ -106,7 +110,7 @@ reference-vector commands, API configuration, and local settlement testing.
 |---|---|
 | Research direction and scientific contributions | [Project direction](docs/PROJECT_DIRECTION.md) and [physics program](docs/FOUNDATIONAL_PHYSICS.md) |
 | Researchers and collectives | [Participant journeys](docs/RESEARCHER_USER_JOURNEYS.md) and [sovereignty specification](spec/022-researcher-sovereignty.md) |
-| Funders and discovery-round operators | [Discovery service](docs/DISCOVERY_SERVICE.md) and [economic model](docs/ECONOMICS.md) |
+| Funders and discovery-round operators | [Discovery service](docs/DISCOVERY_SERVICE.md), [USDC infrastructure plan](docs/USDC_RESEARCH_INFRASTRUCTURE.md) and [economic model](docs/ECONOMICS.md) |
 | Node operators and verifiers | [Operator runbook](docs/OPERATOR_RUNBOOK.md) and [trust-policy registry](spec/023-trust-policy-registry.md) |
 | Developers | [Local development](docs/LOCAL_DEVELOPMENT.md), [XLMP/1](spec/018-xlmp-wire-protocol.md), and [OpenAPI](openapi/openapi.yaml) |
 | Security and governance reviewers | [Threat model](docs/THREAT_MODEL.md), [constitution](docs/GOVERNANCE_CONSTITUTION.md), and [production checklist](docs/PRODUCTION_CHECKLIST.md) |
@@ -192,6 +196,22 @@ See [XLIP-024](spec/024-open-research-mining.md), the
 [discovery service](docs/DISCOVERY_SERVICE.md), and the
 [activation gates](ROADMAP.md#open-research-mining--activation-gates).
 
+### Programmable USDC infrastructure — planned
+
+The next payment milestone is one complete researcher journey:
+**wallet → pool funding → submission → verification → appeal → USDC payout**.
+The initial target is native USDC on Base, rehearsed on Base Sepolia, with an
+ERC-4337 smart account and Circle Paymaster for USDC-denominated gas payments.
+A separately budgeted sponsorship path should support researchers without an
+initial balance. The chain still uses its native gas asset beneath the wallet.
+
+The existing escrow and evidence registry provide reference payment conditions;
+wallet integration, sponsorship, public testnet operation and independent
+qualification remain work to complete. Cross-chain funding through CCTP follows
+the single-chain journey, with funds counted only after destination settlement.
+See the [USDC infrastructure plan](docs/USDC_RESEARCH_INFRASTRUCTURE.md) for
+allocation rules, trust boundaries, failure tests and delivery milestones.
+
 ### Research-credit economics
 
 Research credits are an optional, fully backed way to prepay services. A deposit
@@ -267,7 +287,7 @@ and [identity and credentials](spec/020-identity-credentials.md).
 | Direction and next work | [Roadmap](ROADMAP.md), [project direction](docs/PROJECT_DIRECTION.md), [research compounding pilot](docs/RESEARCH_COMPOUNDING_PILOT.md) |
 | Full architecture | [Design](docs/FULL_DESIGN.md), [diagrams](docs/ARCHITECTURE_DIAGRAMS.md), [traceability](docs/TRACEABILITY_MATRIX.md) |
 | Formalization and presentation | [Lean package](lean/README.md), [Lean/LaTeX guide](docs/LEAN_LATEX_GUIDE.md), [ASTRA prompts](docs/ASTRA_PROMPTS.md) |
-| Service and economic design | [Discovery service](docs/DISCOVERY_SERVICE.md), [economics](docs/ECONOMICS.md), [compute curve](spec/005-compute-curve.md), [x402](spec/008-x402-transport.md) |
+| Service and economic design | [Discovery service](docs/DISCOVERY_SERVICE.md), [USDC infrastructure plan](docs/USDC_RESEARCH_INFRASTRUCTURE.md), [economics](docs/ECONOMICS.md), [compute curve](spec/005-compute-curve.md), [x402](spec/008-x402-transport.md) |
 | Development and deployment | [Local development](docs/LOCAL_DEVELOPMENT.md), [contracts](contracts/README.md), [deployment architecture](docs/DEPLOYMENT_ARCHITECTURE.md), [operator runbook](docs/OPERATOR_RUNBOOK.md) |
 | Validation and review | [Testing strategy](docs/TESTING_STRATEGY.md), [repository audit](docs/REPOSITORY_AUDIT.md), [participant conformance](docs/USE_CASE_SIMULATION_REPORT.md), [production checklist](docs/PRODUCTION_CHECKLIST.md) |
 | Sources and scope | [Source register](docs/SOURCES.md), [prior art](docs/PRIOR_ART_AND_DIFFERENTIATION.md), [legal boundaries](docs/LEGAL_BOUNDARIES.md) |
