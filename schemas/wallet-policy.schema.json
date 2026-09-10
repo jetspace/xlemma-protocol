@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/wallet-policy.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "protocol_version": {
+      "const": "XLMP/1"
+    },
+    "profile": {
+      "const": "base-sepolia-circle-v07-reference"
+    },
+    "chain_id": {
+      "const": 84532
+    },
+    "usdc_address": {
+      "const": "0x036cbd53842c5426634e7929541ec2318f3dcf7e"
+    },
+    "entry_point_version": {
+      "const": "0.7"
+    },
+    "entry_point_address": {
+      "const": "0x0000000071727de22e5e9d8baf0edac6f37da032"
+    },
+    "paymaster_address": {
+      "const": "0x31be08d380a21fc740883c0bc434fcfc88740b58"
+    },
+    "signing_mode": {
+      "const": "owner_only"
+    },
+    "fee_mode": {
+      "const": "self_funded"
+    },
+    "maximum_funding_units": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "maximum_fee_units": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "maximum_intent_lifetime_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3600
+    }
+  },
+  "required": [
+    "protocol_version",
+    "profile",
+    "chain_id",
+    "usdc_address",
+    "entry_point_version",
+    "entry_point_address",
+    "paymaster_address",
+    "signing_mode",
+    "fee_mode",
+    "maximum_funding_units",
+    "maximum_fee_units",
+    "maximum_intent_lifetime_seconds"
+  ]
+}

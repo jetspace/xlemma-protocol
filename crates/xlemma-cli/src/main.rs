@@ -40,6 +40,17 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Derive wallet policy and discovery trust roots for unsigned intent preparation.
+    WalletContext { policy: PathBuf, trust: PathBuf },
+    /// Validate a testnet wallet intent; never signs, broadcasts or reserves funds.
+    WalletPreflight {
+        policy: PathBuf,
+        trust: PathBuf,
+        intent: PathBuf,
+        /// Explicit Unix time for reproducible offline preparation.
+        #[arg(long)]
+        at: u64,
+    },
     /// Prepare exact discovery evidence commitments from an XLMP certificate (not authentication).
     DiscoveryEvidenceInputs { envelope: PathBuf },
     /// Derive the public round, policy and trust roots; optionally prepare a submission commitment.
@@ -200,6 +211,28 @@ enum IdKind {
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
+        Command::WalletContext { policy, trust } => {
+            let policy: xlemma_economics::WalletPolicy = read_json(policy)?;
+            let trust: xlemma_economics::DiscoveryTrust = read_json(trust)?;
+            let (policy_id, trust_root) =
+                xlemma_economics::validate_wallet_context(&policy, &trust)?;
+            print_json(&serde_json::json!({
+                "policy_id": policy_id, "trust_root": trust_root,
+            }))?;
+        }
+        Command::WalletPreflight {
+            policy,
+            trust,
+            intent,
+            at,
+        } => {
+            print_json(&xlemma_economics::prepare_wallet_intent(
+                &read_json(policy)?,
+                &read_json(trust)?,
+                &read_json(intent)?,
+                at,
+            )?)?;
+        }
         Command::DiscoveryEvidenceInputs { envelope } => discovery::evidence_inputs(envelope)?,
         Command::DiscoveryPrepare {
             trust,

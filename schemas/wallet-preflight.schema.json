@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/wallet-preflight.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "protocol_version": {
+      "const": "XLMP/1"
+    },
+    "status": {
+      "const": "prepared_unsigned"
+    },
+    "preflight_id": {
+      "type": "string",
+      "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+    },
+    "policy_id": {
+      "type": "string",
+      "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+    },
+    "trust_root": {
+      "type": "string",
+      "pattern": "^xlpolicy:blake3:[0-9a-f]{64}$"
+    },
+    "intent_id": {
+      "type": "string",
+      "pattern": "^xlr:blake3:[0-9a-f]{64}$"
+    },
+    "researcher_id": {
+      "type": "string",
+      "pattern": "^xlresearcher:blake3:[0-9a-f]{64}$"
+    },
+    "chain_id": {
+      "const": 84532
+    },
+    "wallet_address": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{40}$"
+    },
+    "escrow_address": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{40}$"
+    },
+    "usdc_asset": {
+      "const": "eip155:84532/erc20:0x036cbd53842c5426634e7929541ec2318f3dcf7e"
+    },
+    "entry_point_address": {
+      "const": "0x0000000071727de22e5e9d8baf0edac6f37da032"
+    },
+    "paymaster_address": {
+      "const": "0x31be08d380a21fc740883c0bc434fcfc88740b58"
+    },
+    "method": {
+      "enum": [
+        "fund(bytes32,uint8,uint256,bytes32)",
+        "refund(bytes32,uint8)"
+      ]
+    },
+    "arguments": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 4,
+      "items": {
+        "type": "string"
+      }
+    },
+    "maximum_escrow_allowance_units": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "maximum_paymaster_allowance_units": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "required_wallet_balance_units": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "checked_at": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "expires_at": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "owner_signature_required": {
+      "const": true
+    },
+    "funds_reserved": {
+      "const": false
+    }
+  },
+  "required": [
+    "protocol_version",
+    "status",
+    "preflight_id",
+    "policy_id",
+    "trust_root",
+    "intent_id",
+    "researcher_id",
+    "chain_id",
+    "wallet_address",
+    "escrow_address",
+    "usdc_asset",
+    "entry_point_address",
+    "paymaster_address",
+    "method",
+    "arguments",
+    "maximum_escrow_allowance_units",
+    "maximum_paymaster_allowance_units",
+    "required_wallet_balance_units",
+    "checked_at",
+    "expires_at",
+    "owner_signature_required",
+    "funds_reserved"
+  ]
+}

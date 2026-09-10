@@ -205,8 +205,10 @@ ERC-4337 smart account and Circle Paymaster for USDC-denominated gas payments.
 A separately budgeted sponsorship path should support researchers without an
 initial balance. The chain still uses its native gas asset beneath the wallet.
 
-The existing escrow and evidence registry provide reference payment conditions;
-wallet integration, sponsorship, public testnet operation and independent
+The existing escrow and evidence registry provide reference payment conditions.
+An [offline wallet preflight](docs/WALLET_BOUNDARY.md) now validates pinned Base
+Sepolia configuration and unsigned funding/refund intents with separate fee caps.
+Wallet execution, sponsorship, public testnet operation and independent
 qualification remain work to complete. Cross-chain funding through CCTP follows
 the single-chain journey, with funds counted only after destination settlement.
 See the [USDC infrastructure plan](docs/USDC_RESEARCH_INFRASTRUCTURE.md) for

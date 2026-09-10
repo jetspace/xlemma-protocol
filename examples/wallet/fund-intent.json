@@ -1,0 +1,18 @@
+{
+  "protocol_version": "XLMP/1",
+  "policy_id": "xlpolicy:blake3:14fa69b11fd01faed695aee2724a6e0e4f34edc7eb702decb37387d892bd5aab",
+  "trust_root": "xlpolicy:blake3:2ea9cb29893b3725d0a4a116a43d5f3a868374ee70bad3416616bd9915d475a9",
+  "principal": "ed25519:7UkoxijRwsbq6QM4kFmVYSlZJzpcY_k2NsFGFKyHN9E",
+  "wallet_address": "0x0000000000000000000000000000000000000003",
+  "nonce": 1,
+  "valid_after": 1788998400,
+  "valid_until": 1788998700,
+  "maximum_fee_units": 250000,
+  "action": {
+    "kind": "fund_round",
+    "round_id": "xlround:blake3:1111111111111111111111111111111111111111111111111111111111111111",
+    "category": "foundational_research",
+    "amount_units": 10000000,
+    "mandate_root": "xla:blake3:2222222222222222222222222222222222222222222222222222222222222222"
+  }
+}

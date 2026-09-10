@@ -1,5 +1,15 @@
 # Testing and verification strategy
 
+## Wallet boundary
+
+`cargo test --locked -p xlemma-economics --test wallet -p xlemma-cli --test wallet`
+exercises the [offline wallet boundary](WALLET_BOUNDARY.md), including canonical
+fund/refund vectors, 90 amount-boundary combinations, wrong contracts and identity
+bindings, altered policies, excessive fees, expiry and unsupported actions.
+`make validate` checks the new schemas and all wallet fixtures. Account execution,
+durable nonce/reservation handling, Paymaster and public testnet settlement remain
+separate integration work; passing preflight tests does not establish those paths.
+
 ## Executable oscillator and recovery rehearsal
 
 The [reproduction handoff](OSCILLATOR_REPRODUCTION.md) connects exact rational

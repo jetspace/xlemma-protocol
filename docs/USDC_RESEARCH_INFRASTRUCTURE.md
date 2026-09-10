@@ -3,6 +3,8 @@
 Status: accepted implementation direction, 2026-09-09. The repository has a
 funded discovery reference service and local EVM tests. The wallet, Paymaster,
 public testnet journey and cross-chain funding integrations below are planned.
+An [offline wallet boundary](WALLET_BOUNDARY.md) now supplies pinned configuration,
+fund/refund intent preflight, schemas and reference vectors; it does not sign or pay.
 This plan does not activate a live mining network or change published round rules.
 
 > Explore freely. Publish reproducible evidence. Earn USDC from transparently

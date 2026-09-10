@@ -341,6 +341,12 @@ def validate_json_syntax_and_schemas() -> None:
 
     # Relative refs such as common.schema.json are resolved against each schema's $id.
     for path, schema_name in [
+        ("config/wallet-base-sepolia.json", "wallet-policy.schema.json"),
+        ("examples/wallet/trust.json", "discovery-trust.schema.json"),
+        ("examples/wallet/fund-intent.json", "wallet-intent.schema.json"),
+        ("examples/wallet/refund-intent.json", "wallet-intent.schema.json"),
+        ("examples/wallet/fund-expected.json", "wallet-preflight.schema.json"),
+        ("examples/wallet/refund-expected.json", "wallet-preflight.schema.json"),
         ("examples/discovery/pilot.json", "discovery-simulation.schema.json"),
         ("examples/discovery/expected-report.json", "discovery-simulation-report.schema.json"),
         ("examples/discovery/physics-profile.json", "verification-profile.schema.json"),

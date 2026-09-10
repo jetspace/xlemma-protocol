@@ -1,0 +1,27 @@
+{
+  "protocol_version": "XLMP/1",
+  "status": "prepared_unsigned",
+  "preflight_id": "xlr:blake3:de25621c2790f734f3858b02c235fad9131258b108c58f676f356b816bea8eb2",
+  "policy_id": "xlpolicy:blake3:14fa69b11fd01faed695aee2724a6e0e4f34edc7eb702decb37387d892bd5aab",
+  "trust_root": "xlpolicy:blake3:2ea9cb29893b3725d0a4a116a43d5f3a868374ee70bad3416616bd9915d475a9",
+  "intent_id": "xlr:blake3:bfacb2784ca5261bb357c87f8f39a46ae85fffdda7b2f907d999389de77e9d97",
+  "researcher_id": "xlresearcher:blake3:8e613ce9fb5b32c58ff2b3622aba3485181db21b0a1f4fed89ffc368e68f525b",
+  "chain_id": 84532,
+  "wallet_address": "0x0000000000000000000000000000000000000003",
+  "escrow_address": "0x0000000000000000000000000000000000000064",
+  "usdc_asset": "eip155:84532/erc20:0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+  "entry_point_address": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+  "paymaster_address": "0x31be08d380a21fc740883c0bc434fcfc88740b58",
+  "method": "refund(bytes32,uint8)",
+  "arguments": [
+    "0x1111111111111111111111111111111111111111111111111111111111111111",
+    "0"
+  ],
+  "maximum_escrow_allowance_units": 0,
+  "maximum_paymaster_allowance_units": 250000,
+  "required_wallet_balance_units": 250000,
+  "checked_at": 1788998460,
+  "expires_at": 1788998700,
+  "owner_signature_required": true,
+  "funds_reserved": false
+}

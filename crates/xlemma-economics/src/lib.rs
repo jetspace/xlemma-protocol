@@ -7,6 +7,7 @@ pub mod dividend;
 pub mod funding;
 pub mod revenue;
 pub mod upstream;
+pub mod wallet;
 
 pub use credit::*;
 pub use discovery::*;
@@ -15,3 +16,4 @@ pub use dividend::*;
 pub use funding::*;
 pub use revenue::*;
 pub use upstream::*;
+pub use wallet::*;

@@ -24,6 +24,14 @@ fund an empty researcher wallet. CCTP depends on Circle attestations; pending
 transfers cannot fund awards before destination escrow receipt confirmation.
 These adapters remain planned, and no new deployment trust is qualified here.
 
+The [offline wallet preflight](WALLET_BOUNDARY.md) pins the testnet contract set,
+checks discovery trust and payout bindings, and bounds unsigned funding/refund
+intents. It proves neither ownership nor onchain executability. Its caller-supplied
+time, nonce and fee ceiling are draft inputs; it consumes no authorization and
+reserves no balance. Execution must independently authenticate consent, enforce
+permissions and durable budgets, simulate calls, and reconcile actual receipts.
+Delegated and sponsored modes are rejected by the initial profile.
+
 ## Assets to protect
 
 - exact formal claim and proof identity;

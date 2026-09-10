@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-09-10T22:34:54.149758+00:00",
+  "baseline_commit": "4c3598ad9c56fbd76cfb6007be18aed54e6ac0c7",
+  "author_operated": true,
+  "scope": "Offline wallet intent preflight; no signing, reservation, broadcasting or settlement",
+  "checks": {
+    "rust_workspace": {
+      "passed": 233,
+      "failed": 0,
+      "ignored": 1,
+      "command": "make fmt lint rust-test"
+    },
+    "wallet": {
+      "focused_tests": 8,
+      "cli_integration_tests": 1,
+      "amount_boundary_combinations": 90,
+      "command": "cargo test --locked -p xlemma-economics --test wallet -p xlemma-cli --test wallet"
+    },
+    "discovery_regression": {
+      "matched_scenarios": 17,
+      "command": "python3 scripts/simulate_discovery.py --check"
+    },
+    "schema_and_python": {
+      "status": "passed",
+      "python_tests": 10,
+      "command": "make validate"
+    }
+  },
+  "not_exercised": [
+    "Live smart account or bundler",
+    "Paymaster execution and actual fee receipts",
+    "Durable authorization, replay consumption and sponsorship reservations",
+    "Public testnet or real-USDC settlement",
+    "Independent security review or checker qualification"
+  ],
+  "source_sha256": {
+    "config/wallet-base-sepolia.json": "5c8a47ea35b8ae4905bc7ba71c602525cb8db7843cd9b4e5ab0071a6a5f36264",
+    "crates/xlemma-cli/src/main.rs": "d76ae5e41a4bd14688068cf826488cc439cd83ed16ef19b32ee397b083acc6b3",
+    "crates/xlemma-cli/tests/wallet.rs": "f3c61607b83b2b5e0509bf29fe1fbdfe78e8e30737857d04075ce339a68af62c",
+    "crates/xlemma-economics/src/wallet.rs": "810bf5af5eb5e6e717c96d79349288669635a0ea96e9e60f925da5459d2deb25",
+    "crates/xlemma-economics/tests/wallet.rs": "78c65cc1fc93d82f4bc4fef56ada230f2e02e31b76e130542ac648bf694fdf98",
+    "examples/wallet/fund-expected.json": "db7c1104ef43fac12f2e5984618fec1d59157c3bf48734c7a859eca51f6a6750",
+    "examples/wallet/fund-intent.json": "202db6ea0f0349e187378424414ce89521f636bfdb0b26a336380b545a456f95",
+    "examples/wallet/refund-expected.json": "ef8b260d323920c90c86dd9426df3ec485514cc071e8094970696f9401737d54",
+    "examples/wallet/refund-intent.json": "146b33c49c55c7a873b8be20c5ce6987c771cacf990f2e4a7e580f14c2cdfe75",
+    "examples/wallet/trust.json": "9c8db972ffa459927c5e04ce9783dcd1ef675d2f07f41c339cec03b95d5be2d2",
+    "schemas/wallet-intent.schema.json": "e85b0e4a9b991e05e20d229cc5466a31686a5367813e86708f83e6d5444effef",
+    "schemas/wallet-policy.schema.json": "7f3fa2336bae3aa0c921ced8330ed9f150f76e9e8eef454e1282888785115f27",
+    "schemas/wallet-preflight.schema.json": "e91fb164f16451e597a6bfb7b27f6e7da9b8a76c52f9f719b5e10db88a715d43",
+    "scripts/validate_repo.py": "794aa07121b0fe7f59f648426decdb117757e3005b55d7323a97d1b52128f035"
+  }
+}

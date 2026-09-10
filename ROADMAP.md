@@ -71,7 +71,7 @@ wallet, Paymaster, sponsorship and CCTP integrations are not yet implemented.
 Rewards remain limited to settled funding, with independent evidence checks,
 contribution assessment and funded appeals under prospective rules.
 
-- [ ] Specify pinned chain/token/EntryPoint/Paymaster configuration, researcher-controlled signing, bounded delegation, sponsorship and structured receipt mappings.
+- [x] Specify the [wallet boundary](docs/WALLET_BOUNDARY.md): pinned Base Sepolia/EntryPoint v0.7/Paymaster configuration, owner-only preflight, future delegation/sponsorship constraints and receipt mappings, with schemas and executable vectors.
 - [ ] Integrate an ERC-4337 wallet and USDC gas payments, with a separate bounded sponsorship path for eligible researchers without an initial balance.
 - [ ] Run the full Base Sepolia wallet → funding → submission → verification → appeal → payout journey, disclosing checker doubles and operator independence.
 - [ ] Exercise payment authorization/replay, fee changes, depleted sponsorship, failed transfers, reorgs, late dissent, recovery and reconciliation before launch.

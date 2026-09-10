@@ -1,0 +1,14 @@
+{
+  "protocol_version": "XLMP/1",
+  "profile": "base-sepolia-circle-v07-reference",
+  "chain_id": 84532,
+  "usdc_address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+  "entry_point_version": "0.7",
+  "entry_point_address": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+  "paymaster_address": "0x31be08d380a21fc740883c0bc434fcfc88740b58",
+  "signing_mode": "owner_only",
+  "fee_mode": "self_funded",
+  "maximum_funding_units": 100000000,
+  "maximum_fee_units": 1000000,
+  "maximum_intent_lifetime_seconds": 300
+}

@@ -82,6 +82,14 @@ allocation, certificate publication, settlement and refunds. It does not launch
 a funded network or establish scientific validity. The signed service workflow,
 observer requirements and deployment gates are in [DISCOVERY_SERVICE.md](DISCOVERY_SERVICE.md).
 
+## Offline wallet preparation
+
+The [wallet boundary](WALLET_BOUNDARY.md) documents `wallet-context` and
+`wallet-preflight`, the pinned Base Sepolia profile, fund/refund vectors and
+validation commands. Both commands are read-only; they require no wallet secret,
+RPC access or balance and do not reserve funds or broadcast a UserOperation.
+The full smart-wallet and public testnet integration remain planned.
+
 ## Run the API
 
 The API reads its **process environment**. Copying `.env.example` alone does not
