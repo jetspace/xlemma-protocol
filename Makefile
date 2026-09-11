@@ -1,4 +1,4 @@
-.PHONY: check test lint fmt validate simulate rust-test lean-test contracts-test test-all run-api manifest archive
+.PHONY: check test lint fmt validate simulate rust-test lean-test contracts-test test-all run-api manifest archive research-search-check
 
 check:
 	cargo check --locked --workspace --all-targets
@@ -28,6 +28,9 @@ validate:
 
 simulate:
 	python3 scripts/simulate_economics.py
+
+research-search-check:
+	python3 scripts/research_search.py evaluate examples/research-search/catalog.json examples/research-search/evaluation.json --check reports/research-search-evaluation.json
 
 run-api:
 	cargo run -p xlemma-api

@@ -1,5 +1,22 @@
 # Threat model
 
+## Candidate retrieval boundary — 2026-09-11
+
+The [research-search prototype](RESEARCH_RETRIEVAL.md) reads an explicit public
+source catalog and checks hashes, source ranges, paths and index reconstruction.
+It does not authenticate scientific metadata or establish an edge's validity.
+Malicious descriptions, incomplete coverage, semantic duplication, incorrect
+assumptions and word-form similarities can mislead retrieval. The development
+evaluation retains a known zero-damping/positive-damping confusion.
+
+Search emits candidates with evidence labels, assumptions and source bindings.
+Rejected proofs require explicit opt-in; graph expansion uses declared one-hop
+links only. No search score enters verification, novelty assessment, reward
+allocation or settlement. No external model is called. Curators remain responsible
+for public-data selection; any future hosted or learned index needs explicit
+private-data controls and independent evaluation. Index hashes never replace
+canonical formal ClaimIDs.
+
 ## Reproduction and recovery rehearsal — 2026-09-08
 
 The oscillator example proves conditional identities in an exact rational

@@ -1,5 +1,14 @@
 # Testing and verification strategy
 
+## Research retrieval
+
+`make research-search-check` reproduces the recorded keyword/vector/graph/hybrid
+development comparison, including its known misleading suggestion. Python
+discovery also runs source/index tampering, path isolation, deterministic ordering,
+bounded graph expansion, evidence filtering, rejected-proof visibility and CLI
+snapshot tests. The [retrieval guide](RESEARCH_RETRIEVAL.md) separates exposed
+development cases and local lookup timings from independent research evaluation.
+
 ## Wallet boundary
 
 `cargo test --locked -p xlemma-economics --test wallet -p xlemma-cli --test wallet`

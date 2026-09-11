@@ -1,0 +1,65 @@
+{
+  "generated_at": "2026-09-11T22:06:13.884271+00:00",
+  "baseline_commit": "367ad5e976a95f27b6a16aee1c8ea7f64cfd1661",
+  "author_operated": true,
+  "independent_holdout": false,
+  "scope": "Opt-in public artifact retrieval; no certification or reward authority",
+  "python_version": "3.10.7",
+  "checks": {
+    "python_unittest": {
+      "passed": 21,
+      "failed": 0,
+      "command": "python3 -m unittest discover -s scripts -p 'test_*.py'"
+    },
+    "retrieval_development_evaluation": {
+      "documents": 9,
+      "queries": 14,
+      "ranking_modes": 4,
+      "command": "make research-search-check",
+      "known_assumption_confusion_retained": true
+    }
+  },
+  "index_sha256": "c4e4f5f4e1c32fbae7ef7bd6f5d48884c5acbf3cbf51714987be7e4638584354",
+  "local_measurement": {
+    "scope": "Warm in-memory ranking; excludes source/index replay, process startup, proof checking and researcher work",
+    "index_build_ms": 19.04,
+    "lookups_per_mode": 70,
+    "external_model_calls": 0,
+    "compute_cost_usdc": null,
+    "energy_measurement": null,
+    "modes": {
+      "keyword": {
+        "median_ms": 0.046,
+        "p95_ms": 0.205
+      },
+      "vector": {
+        "median_ms": 1.238,
+        "p95_ms": 2.699
+      },
+      "graph": {
+        "median_ms": 0.043,
+        "p95_ms": 0.272
+      },
+      "hybrid": {
+        "median_ms": 1.624,
+        "p95_ms": 3.297
+      }
+    }
+  },
+  "limitations": [
+    "Author-authored exposed relevance labels; no independent participants.",
+    "Sparse lexical vectors do not understand physical assumptions or semantic equivalence.",
+    "No new Lean or Solidity execution; their sources and behavior are unchanged.",
+    "Lookup timings exclude integrity replay, process startup, proof checking and researcher work.",
+    "No research acceleration, novelty detection or production deployment is established."
+  ],
+  "source_sha256": {
+    "scripts/research_search.py": "6a4849d98ad3c7991c56d77218066a6bb1b09a315fe044f57e593cf48db39b63",
+    "scripts/test_research_search.py": "6b29932aedb7849de1488f1b65444d40a1341faad357348ac874d51b908edc43",
+    "examples/research-search/catalog.json": "dae7b733890d02ab5fb58d5a5ac5ef09d64e4962958c38d628577fe5bde2e68f",
+    "examples/research-search/evaluation.json": "0fbd4eb5c32f72217e69c96a23ffd813075248c5895e7f4f816954f19f47ba93",
+    "schemas/research-search-catalog.schema.json": "11a31bde63419f6deffcc3b0e3581913f52d056340c0043971d9da1049586394",
+    "schemas/research-search-evaluation.schema.json": "7b9131c933d5c3d75271472fa17150eaefe5ba85ec36feff5c65e4354ce3168c",
+    "reports/research-search-evaluation.json": "5419ed7a1d4c74927dc4d78a392ae9333609f8a171b706aa68b377214b4509f1"
+  }
+}

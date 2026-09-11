@@ -82,6 +82,15 @@ allocation, certificate publication, settlement and refunds. It does not launch
 a funded network or establish scientific validity. The signed service workflow,
 observer requirements and deployment gates are in [DISCOVERY_SERVICE.md](DISCOVERY_SERVICE.md).
 
+## Local research search
+
+The [retrieval guide](RESEARCH_RETRIEVAL.md) shows how to build a source-pinned
+index and query exact terms, sparse vectors and declared dependencies. Run
+`make research-search-check` to reproduce the development comparison, or add
+`--measure` to the evaluation command for local lookup timings. These commands
+use only public cataloged files and make no model or chain calls. Search results
+are candidates; independent proof and economic decisions remain separate.
+
 ## Offline wallet preparation
 
 The [wallet boundary](WALLET_BOUNDARY.md) documents `wallet-context` and

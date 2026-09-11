@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/research-search-evaluation.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "xlemma-retrieval-evaluation-v1"
+    },
+    "independent_holdout": {
+      "const": false
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "relevant": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{0,63}$"
+            },
+            "minItems": 0,
+            "maxItems": 64
+          },
+          "forbidden": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{0,63}$"
+            },
+            "minItems": 0,
+            "maxItems": 64
+          },
+          "seeds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{0,63}$"
+            },
+            "minItems": 0,
+            "maxItems": 8
+          },
+          "evidence_kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "formal_example",
+                  "computational_example",
+                  "design_note",
+                  "rejected_proof",
+                  "empirical_evidence"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "include_rejected": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "case_id",
+          "query",
+          "relevant",
+          "forbidden",
+          "seeds",
+          "evidence_kind",
+          "include_rejected"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 128
+    }
+  },
+  "required": [
+    "version",
+    "independent_holdout",
+    "cases"
+  ]
+}

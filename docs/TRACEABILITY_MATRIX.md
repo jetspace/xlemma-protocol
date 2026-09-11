@@ -4,6 +4,7 @@ Every major concept requested or developed in the design is mapped to its primar
 
 | Concept | Specification / documentation | Reference implementation |
 |---|---|---|
+| Candidate retrieval with vectors and declared dependencies | `docs/RESEARCH_RETRIEVAL.md` | `scripts/research_search.py`, public source catalog, schemas and development evaluation; no verification or payment authority |
 | Programmable USDC researcher journey | `docs/USDC_RESEARCH_INFRASTRUCTURE.md`, `docs/WALLET_BOUNDARY.md` | Escrow/service references plus `xlemma-economics::wallet` and CLI preflight with pinned configuration, schemas and fund/refund vectors; account execution, Paymaster, sponsorship and CCTP adapters remain planned |
 | Exact discrete physics and downstream reuse rehearsal | `docs/OSCILLATOR_REPRODUCTION.md` | `lean/XLemma/Physics`, `lean/tests/RejectFalsePhysics.lean`, `scripts/test_physics.py`; independent qualification remains open |
 | Durable-write termination and retry recovery | `docs/OSCILLATOR_REPRODUCTION.md` | `event_store::tests::process_exit_after_durable_write_rejects_retry`; external rollback checkpoints remain an operating requirement |

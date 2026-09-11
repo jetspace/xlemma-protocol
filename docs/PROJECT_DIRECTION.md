@@ -41,6 +41,16 @@ not require each contribution to predict a social benefit or justify itself by
 commercial demand. The pilot below tests the means of acceleration; it does not
 set the ceiling of the mission.
 
+## Research navigation decision — 2026-09-11
+
+Develop an opt-in [local retrieval layer](RESEARCH_RETRIEVAL.md) that helps
+researchers find useful existing artifacts and declared dependencies. The first
+prototype compares exact tokens, sparse lexical vectors, explicit graph navigation
+and their combination. Its development cases show both useful matches and
+assumption-confusion failures. It introduces no scientific or payment authority.
+Independent evaluations of verified reuse, cost and access remain necessary
+before adopting it as a default workflow or claiming research acceleration.
+
 ## What should compound
 
 Research should create durable capabilities: checked mathematical libraries,

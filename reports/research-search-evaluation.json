@@ -1,0 +1,699 @@
+{
+  "version": "xlemma-retrieval-report-v1",
+  "index_sha256": "c4e4f5f4e1c32fbae7ef7bd6f5d48884c5acbf3cbf51714987be7e4638584354",
+  "evaluation_sha256": "2a6018b8bdf750b331fa3f8de04ae54d19783bffdf3727f534dd2bfa4b03a389",
+  "author_operated": true,
+  "independent_holdout": false,
+  "default_workflow_enabled": false,
+  "research_acceleration_established": false,
+  "summary": {
+    "keyword": {
+      "cases_with_relevant_result_at_3": 10,
+      "positive_cases": 13,
+      "recall_at_3_ppm": 730769,
+      "mrr_at_3_ppm": 717948,
+      "forbidden_suggestions": 1
+    },
+    "vector": {
+      "cases_with_relevant_result_at_3": 11,
+      "positive_cases": 13,
+      "recall_at_3_ppm": 846153,
+      "mrr_at_3_ppm": 641025,
+      "forbidden_suggestions": 1
+    },
+    "graph": {
+      "cases_with_relevant_result_at_3": 1,
+      "positive_cases": 13,
+      "recall_at_3_ppm": 76923,
+      "mrr_at_3_ppm": 76923,
+      "forbidden_suggestions": 0
+    },
+    "hybrid": {
+      "cases_with_relevant_result_at_3": 11,
+      "positive_cases": 13,
+      "recall_at_3_ppm": 807692,
+      "mrr_at_3_ppm": 769230,
+      "forbidden_suggestions": 1
+    }
+  },
+  "cases": [
+    {
+      "case_id": "exact-symbol",
+      "mode": "keyword",
+      "returned": [
+        "midpoint-balance",
+        "midpoint-conservation",
+        "discovery-economics"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "exact-symbol",
+      "mode": "vector",
+      "returned": [
+        "midpoint-conservation",
+        "midpoint-balance",
+        "oscillator-computation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 2,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "exact-symbol",
+      "mode": "graph",
+      "returned": [],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "exact-symbol",
+      "mode": "hybrid",
+      "returned": [
+        "midpoint-balance",
+        "midpoint-conservation",
+        "discovery-economics"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "damping-word-form",
+      "mode": "keyword",
+      "returned": [
+        "midpoint-balance",
+        "euler-growth",
+        "midpoint-conservation"
+      ],
+      "relevant_count": 2,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "damping-word-form",
+      "mode": "vector",
+      "returned": [
+        "midpoint-conservation",
+        "midpoint-balance",
+        "oscillator-computation"
+      ],
+      "relevant_count": 2,
+      "relevant_retrieved": 2,
+      "first_relevant_rank": 2,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "damping-word-form",
+      "mode": "graph",
+      "returned": [],
+      "relevant_count": 2,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "damping-word-form",
+      "mode": "hybrid",
+      "returned": [
+        "midpoint-balance",
+        "midpoint-conservation",
+        "euler-growth"
+      ],
+      "relevant_count": 2,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "undamped-energy",
+      "mode": "keyword",
+      "returned": [
+        "midpoint-conservation",
+        "discovery-economics",
+        "euler-growth"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "undamped-energy",
+      "mode": "vector",
+      "returned": [
+        "midpoint-conservation",
+        "midpoint-balance",
+        "oscillator-computation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "undamped-energy",
+      "mode": "graph",
+      "returned": [],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "undamped-energy",
+      "mode": "hybrid",
+      "returned": [
+        "midpoint-conservation",
+        "midpoint-balance",
+        "discovery-economics"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "euler-question",
+      "mode": "keyword",
+      "returned": [
+        "euler-growth",
+        "midpoint-conservation",
+        "oscillator-computation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "euler-question",
+      "mode": "vector",
+      "returned": [
+        "euler-growth",
+        "midpoint-conservation",
+        "oscillator-computation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "euler-question",
+      "mode": "graph",
+      "returned": [],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "euler-question",
+      "mode": "hybrid",
+      "returned": [
+        "euler-growth",
+        "midpoint-conservation",
+        "oscillator-computation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "dependency-navigation",
+      "mode": "keyword",
+      "returned": [
+        "discovery-economics",
+        "euler-growth",
+        "physics-evidence"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "dependency-navigation",
+      "mode": "vector",
+      "returned": [
+        "discovery-economics",
+        "physics-evidence",
+        "euler-growth"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "dependency-navigation",
+      "mode": "graph",
+      "returned": [
+        "midpoint-balance"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "dependency-navigation",
+      "mode": "hybrid",
+      "returned": [
+        "discovery-economics",
+        "euler-growth",
+        "physics-evidence"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "arithmetic",
+      "mode": "keyword",
+      "returned": [
+        "add-zero",
+        "midpoint-conservation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "arithmetic",
+      "mode": "vector",
+      "returned": [
+        "add-zero",
+        "midpoint-conservation",
+        "oscillator-computation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "arithmetic",
+      "mode": "graph",
+      "returned": [],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "arithmetic",
+      "mode": "hybrid",
+      "returned": [
+        "add-zero",
+        "midpoint-conservation",
+        "oscillator-computation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "numerical-reversal",
+      "mode": "keyword",
+      "returned": [
+        "oscillator-computation",
+        "euler-growth"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "numerical-reversal",
+      "mode": "vector",
+      "returned": [
+        "oscillator-computation",
+        "euler-growth",
+        "discovery-economics"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "numerical-reversal",
+      "mode": "graph",
+      "returned": [],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "numerical-reversal",
+      "mode": "hybrid",
+      "returned": [
+        "oscillator-computation",
+        "euler-growth",
+        "discovery-economics"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "spelling-variation",
+      "mode": "keyword",
+      "returned": [],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "spelling-variation",
+      "mode": "vector",
+      "returned": [
+        "midpoint-conservation",
+        "midpoint-balance",
+        "oscillator-computation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 2,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "spelling-variation",
+      "mode": "graph",
+      "returned": [],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "spelling-variation",
+      "mode": "hybrid",
+      "returned": [
+        "midpoint-conservation",
+        "midpoint-balance",
+        "oscillator-computation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 2,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "connections",
+      "mode": "keyword",
+      "returned": [
+        "physics-evidence",
+        "reuse-evaluation",
+        "discovery-economics"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "connections",
+      "mode": "vector",
+      "returned": [
+        "physics-evidence",
+        "reuse-evaluation",
+        "discovery-economics"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "connections",
+      "mode": "graph",
+      "returned": [],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "connections",
+      "mode": "hybrid",
+      "returned": [
+        "physics-evidence",
+        "reuse-evaluation",
+        "discovery-economics"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "financial-conservation",
+      "mode": "keyword",
+      "returned": [
+        "discovery-economics",
+        "reuse-evaluation",
+        "midpoint-conservation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "financial-conservation",
+      "mode": "vector",
+      "returned": [
+        "midpoint-conservation",
+        "reuse-evaluation",
+        "discovery-economics"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 3,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "financial-conservation",
+      "mode": "graph",
+      "returned": [],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "financial-conservation",
+      "mode": "hybrid",
+      "returned": [
+        "discovery-economics",
+        "midpoint-conservation",
+        "reuse-evaluation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "lexical-gap",
+      "mode": "keyword",
+      "returned": [],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "lexical-gap",
+      "mode": "vector",
+      "returned": [
+        "physics-evidence",
+        "oscillator-computation",
+        "reuse-evaluation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "lexical-gap",
+      "mode": "graph",
+      "returned": [],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "lexical-gap",
+      "mode": "hybrid",
+      "returned": [
+        "physics-evidence",
+        "oscillator-computation",
+        "reuse-evaluation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "damping-assumption-trap",
+      "mode": "keyword",
+      "returned": [
+        "midpoint-conservation",
+        "discovery-economics",
+        "midpoint-balance"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 3,
+      "forbidden_retrieved": [
+        "midpoint-conservation"
+      ]
+    },
+    {
+      "case_id": "damping-assumption-trap",
+      "mode": "vector",
+      "returned": [
+        "midpoint-conservation",
+        "midpoint-balance",
+        "oscillator-computation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 2,
+      "forbidden_retrieved": [
+        "midpoint-conservation"
+      ]
+    },
+    {
+      "case_id": "damping-assumption-trap",
+      "mode": "graph",
+      "returned": [],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "damping-assumption-trap",
+      "mode": "hybrid",
+      "returned": [
+        "midpoint-conservation",
+        "midpoint-balance",
+        "oscillator-computation"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 2,
+      "forbidden_retrieved": [
+        "midpoint-conservation"
+      ]
+    },
+    {
+      "case_id": "experimental-filter",
+      "mode": "keyword",
+      "returned": [],
+      "relevant_count": 0,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "experimental-filter",
+      "mode": "vector",
+      "returned": [],
+      "relevant_count": 0,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "experimental-filter",
+      "mode": "graph",
+      "returned": [],
+      "relevant_count": 0,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "experimental-filter",
+      "mode": "hybrid",
+      "returned": [],
+      "relevant_count": 0,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "rejected-opt-in",
+      "mode": "keyword",
+      "returned": [
+        "rejected-euler",
+        "discovery-economics",
+        "euler-growth"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "rejected-opt-in",
+      "mode": "vector",
+      "returned": [
+        "rejected-euler",
+        "euler-growth",
+        "discovery-economics"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "rejected-opt-in",
+      "mode": "graph",
+      "returned": [],
+      "relevant_count": 1,
+      "relevant_retrieved": 0,
+      "first_relevant_rank": null,
+      "forbidden_retrieved": []
+    },
+    {
+      "case_id": "rejected-opt-in",
+      "mode": "hybrid",
+      "returned": [
+        "rejected-euler",
+        "discovery-economics",
+        "euler-growth"
+      ],
+      "relevant_count": 1,
+      "relevant_retrieved": 1,
+      "first_relevant_rank": 1,
+      "forbidden_retrieved": []
+    }
+  ]
+}

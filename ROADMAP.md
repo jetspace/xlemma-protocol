@@ -38,6 +38,8 @@ separately qualified methods, uncertainty and replication. Expand domain scope
 and marketplace features when independent research use identifies a need.
 
 - [x] Add an author-operated [oscillator reproduction and review handoff](docs/OSCILLATOR_REPRODUCTION.md), with an exact balance, downstream conservation proof and rejected false claim.
+- [x] Add opt-in [local research retrieval](docs/RESEARCH_RETRIEVAL.md) with source-pinned sparse vectors, keyword/declared-dependency baselines, reproducible development cases and retained assumption-confusion failures.
+- [ ] Expand the retrieval corpus and independently compare unseen tasks, verified reuse, full costs and misleading suggestions before enabling search in the default research workflow.
 - [ ] Publish exact pilot statements, upstream coverage, usable artifact rights and available review capacity.
 - [ ] Preregister two-generation comparisons, held-out task selection, resource/quality limits, cost accounting, access thresholds and evaluation-record definitions.
 - [ ] Produce the connected artifacts and minimum researcher workflow, with independently usable retrieval/export and correction paths.

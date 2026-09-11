@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlemma.example/schemas/research-search-catalog.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "xlemma-research-catalog-v1"
+    },
+    "visibility": {
+      "const": "public"
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,63}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "start_line": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "end_line": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "evidence_kind": {
+            "enum": [
+              "formal_example",
+              "computational_example",
+              "design_note",
+              "rejected_proof",
+              "empirical_evidence"
+            ]
+          },
+          "assumptions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "minItems": 1,
+            "maxItems": 16
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "minItems": 1,
+            "maxItems": 16
+          }
+        },
+        "required": [
+          "document_id",
+          "title",
+          "summary",
+          "source",
+          "source_sha256",
+          "start_line",
+          "end_line",
+          "evidence_kind",
+          "assumptions",
+          "limitations"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 64
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,63}$"
+          },
+          "target": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,63}$"
+          },
+          "kind": {
+            "const": "declared_dependency"
+          }
+        },
+        "required": [
+          "source",
+          "target",
+          "kind"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 256
+    }
+  },
+  "required": [
+    "version",
+    "visibility",
+    "documents",
+    "dependencies"
+  ]
+}

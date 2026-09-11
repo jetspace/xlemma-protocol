@@ -1,0 +1,169 @@
+{
+  "version": "xlemma-retrieval-evaluation-v1",
+  "independent_holdout": false,
+  "cases": [
+    {
+      "case_id": "exact-symbol",
+      "query": "midpoint_work_energy",
+      "relevant": [
+        "midpoint-balance"
+      ],
+      "forbidden": [],
+      "seeds": [],
+      "evidence_kind": null,
+      "include_rejected": false
+    },
+    {
+      "case_id": "damping-word-form",
+      "query": "damped oscillator",
+      "relevant": [
+        "midpoint-balance",
+        "oscillator-computation"
+      ],
+      "forbidden": [],
+      "seeds": [],
+      "evidence_kind": null,
+      "include_rejected": false
+    },
+    {
+      "case_id": "undamped-energy",
+      "query": "undamped midpoint energy conservation",
+      "relevant": [
+        "midpoint-conservation"
+      ],
+      "forbidden": [],
+      "seeds": [],
+      "evidence_kind": null,
+      "include_rejected": false
+    },
+    {
+      "case_id": "euler-question",
+      "query": "forward Euler conserves energy",
+      "relevant": [
+        "euler-growth"
+      ],
+      "forbidden": [
+        "rejected-euler"
+      ],
+      "seeds": [],
+      "evidence_kind": null,
+      "include_rejected": false
+    },
+    {
+      "case_id": "dependency-navigation",
+      "query": "supporting result",
+      "relevant": [
+        "midpoint-balance"
+      ],
+      "forbidden": [],
+      "seeds": [
+        "midpoint-conservation"
+      ],
+      "evidence_kind": null,
+      "include_rejected": false
+    },
+    {
+      "case_id": "arithmetic",
+      "query": "natural number add zero",
+      "relevant": [
+        "add-zero"
+      ],
+      "forbidden": [],
+      "seeds": [],
+      "evidence_kind": null,
+      "include_rejected": false
+    },
+    {
+      "case_id": "numerical-reversal",
+      "query": "time reversal fractional trajectories",
+      "relevant": [
+        "oscillator-computation"
+      ],
+      "forbidden": [],
+      "seeds": [],
+      "evidence_kind": null,
+      "include_rejected": false
+    },
+    {
+      "case_id": "spelling-variation",
+      "query": "midpont dampng",
+      "relevant": [
+        "midpoint-balance"
+      ],
+      "forbidden": [],
+      "seeds": [],
+      "evidence_kind": null,
+      "include_rejected": false
+    },
+    {
+      "case_id": "connections",
+      "query": "equivalence controlled limits assumptions",
+      "relevant": [
+        "physics-evidence"
+      ],
+      "forbidden": [],
+      "seeds": [],
+      "evidence_kind": null,
+      "include_rejected": false
+    },
+    {
+      "case_id": "financial-conservation",
+      "query": "research allocation budget conservation",
+      "relevant": [
+        "discovery-economics"
+      ],
+      "forbidden": [],
+      "seeds": [],
+      "evidence_kind": null,
+      "include_rejected": false
+    },
+    {
+      "case_id": "lexical-gap",
+      "query": "friction drains motion",
+      "relevant": [
+        "midpoint-balance"
+      ],
+      "forbidden": [],
+      "seeds": [],
+      "evidence_kind": null,
+      "include_rejected": false
+    },
+    {
+      "case_id": "damping-assumption-trap",
+      "query": "midpoint energy conserved with positive damping",
+      "relevant": [
+        "midpoint-balance"
+      ],
+      "forbidden": [
+        "midpoint-conservation"
+      ],
+      "seeds": [],
+      "evidence_kind": null,
+      "include_rejected": false
+    },
+    {
+      "case_id": "experimental-filter",
+      "query": "experimental measurements of oscillator damping",
+      "relevant": [],
+      "forbidden": [
+        "midpoint-balance",
+        "midpoint-conservation",
+        "oscillator-computation"
+      ],
+      "seeds": [],
+      "evidence_kind": "empirical_evidence",
+      "include_rejected": false
+    },
+    {
+      "case_id": "rejected-opt-in",
+      "query": "rejected false Euler conservation fixture",
+      "relevant": [
+        "rejected-euler"
+      ],
+      "forbidden": [],
+      "seeds": [],
+      "evidence_kind": null,
+      "include_rejected": true
+    }
+  ]
+}

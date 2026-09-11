@@ -72,6 +72,7 @@ gains. See the [project direction](docs/PROJECT_DIRECTION.md),
 | Discovery funding | Signed rounds, calibration, contributor consent, assessment, appeals, USDC escrow, publication bridge, and local EVM integration. | Independent review, actual funding, qualified operators, monitoring, and deployed settlement. |
 | Researcher economics | Fully backed credit/vault logic, bounded revenue routing, rights/portability records, and reference payment adapters. | External reconciliation, independently exercised exit, and deployment review. |
 | Research program | Landau-inspired seed questions, exact discrete oscillator proofs and a defined evaluation plan. | Qualified submission packaging, empirical profiles, and independent evidence of research acceleration. |
+| Research navigation | Opt-in local search using sparse vectors, exact terms and declared dependency links, with source-bound results and a development evaluation. | Broader coverage, independent retrieval/reuse evaluation and qualified scientific metadata. |
 
 The [offline discovery simulator](docs/DISCOVERY_PILOT.md) uses synthetic inputs.
 The [funded discovery service](docs/DISCOVERY_SERVICE.md) has separate authenticated
@@ -162,6 +163,18 @@ See [PoIR](spec/003-poir-consensus.md), [trust policies](spec/023-trust-policy-r
 [verification and appeals](spec/024-open-research-mining.md#verification-and-appeals),
 and the [service runbook](docs/DISCOVERY_SERVICE.md) for exact rules and remaining
 operational requirements.
+
+### Find material to build on
+
+The [research-search prototype](docs/RESEARCH_RETRIEVAL.md) combines local sparse
+text vectors, exact terms and declared dependencies to suggest relevant artifacts.
+Results retain their source, assumptions and evidence labels. Search similarity
+does not establish truth, novelty, unification or reward eligibility.
+
+The current comparison shows some retrieval gains and a known failure involving
+damping assumptions. Search remains opt-in while independent researchers evaluate
+whether it improves verified reuse and total research cost. The existing proof
+graph and USDC settlement rules keep their separate roles.
 
 ## Open research mining
 
@@ -288,6 +301,7 @@ and [identity and credentials](spec/020-identity-credentials.md).
 |---|---|
 | Direction and next work | [Roadmap](ROADMAP.md), [project direction](docs/PROJECT_DIRECTION.md), [research compounding pilot](docs/RESEARCH_COMPOUNDING_PILOT.md) |
 | Full architecture | [Design](docs/FULL_DESIGN.md), [diagrams](docs/ARCHITECTURE_DIAGRAMS.md), [traceability](docs/TRACEABILITY_MATRIX.md) |
+| Research navigation | [Local retrieval prototype](docs/RESEARCH_RETRIEVAL.md), [development evaluation](reports/research-search-evaluation.json) |
 | Formalization and presentation | [Lean package](lean/README.md), [Lean/LaTeX guide](docs/LEAN_LATEX_GUIDE.md), [ASTRA prompts](docs/ASTRA_PROMPTS.md) |
 | Service and economic design | [Discovery service](docs/DISCOVERY_SERVICE.md), [USDC infrastructure plan](docs/USDC_RESEARCH_INFRASTRUCTURE.md), [economics](docs/ECONOMICS.md), [compute curve](spec/005-compute-curve.md), [x402](spec/008-x402-transport.md) |
 | Development and deployment | [Local development](docs/LOCAL_DEVELOPMENT.md), [contracts](contracts/README.md), [deployment architecture](docs/DEPLOYMENT_ARCHITECTURE.md), [operator runbook](docs/OPERATOR_RUNBOOK.md) |

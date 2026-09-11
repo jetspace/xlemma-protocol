@@ -1,0 +1,157 @@
+{
+  "version": "xlemma-research-catalog-v1",
+  "visibility": "public",
+  "documents": [
+    {
+      "document_id": "midpoint-balance",
+      "title": "Implicit midpoint oscillator work and energy balance",
+      "summary": "Exact rational work-energy identity for a damped oscillator step.",
+      "source": "lean/XLemma/Physics/Oscillator.lean",
+      "source_sha256": "f021fcbd70250a56acfb861a15aa99b2ebef73f15132427f9498c37190fd2c2b",
+      "start_line": 7,
+      "end_line": 12,
+      "evidence_kind": "formal_example",
+      "assumptions": [
+        "Rational variables; nondimensional unit mass; both midpoint step equations hold."
+      ],
+      "limitations": [
+        "Author-operated formal example; no measurements, convergence guarantee or independent certificate."
+      ]
+    },
+    {
+      "document_id": "euler-growth",
+      "title": "Forward Euler oscillator energy growth",
+      "summary": "The explicit forward Euler update multiplies twice the oscillator energy by one plus the squared time step.",
+      "source": "lean/XLemma/Physics/Oscillator.lean",
+      "source_sha256": "f021fcbd70250a56acfb861a15aa99b2ebef73f15132427f9498c37190fd2c2b",
+      "start_line": 14,
+      "end_line": 17,
+      "evidence_kind": "formal_example",
+      "assumptions": [
+        "Rational position, velocity and time step; unit stiffness."
+      ],
+      "limitations": [
+        "Energy growth identity, not a conservation theorem or experimental result."
+      ]
+    },
+    {
+      "document_id": "midpoint-conservation",
+      "title": "Zero damping midpoint energy conservation",
+      "summary": "Reuse of the general midpoint balance to prove conservation of oscillator energy in an undamped step.",
+      "source": "lean/XLemma/Physics/Reuse.lean",
+      "source_sha256": "b96175af53ce0e9bedd0bdf74df3a1e68778653531aab467d7cc6edbde969f20",
+      "start_line": 5,
+      "end_line": 11,
+      "evidence_kind": "formal_example",
+      "assumptions": [
+        "Zero damping; rational parameters; both undamped midpoint equations hold."
+      ],
+      "limitations": [
+        "Does not assert energy conservation with positive damping; author-operated reuse, not independent research."
+      ]
+    },
+    {
+      "document_id": "add-zero",
+      "title": "Natural number addition by zero",
+      "summary": "A minimal exact Lean theorem about adding zero to a natural number.",
+      "source": "lean/XLemma/Example.lean",
+      "source_sha256": "211e9258ba147e9db8ef451b76cca7a70fd03b09bbcc66d21c1d132682050667",
+      "start_line": 6,
+      "end_line": 8,
+      "evidence_kind": "formal_example",
+      "assumptions": [
+        "n is a natural number."
+      ],
+      "limitations": [
+        "Arithmetic exporter example; no physical model or discovery claim."
+      ]
+    },
+    {
+      "document_id": "rejected-euler",
+      "title": "Rejected false Euler conservation fixture",
+      "summary": "A deliberately false concrete Euler energy equality; the Lean self-test expects proof failure.",
+      "source": "lean/tests/RejectFalsePhysics.lean",
+      "source_sha256": "2a440f18dfca84d5677cead75587739519676c6c3a9390a193cc3324219fcf45",
+      "start_line": 1,
+      "end_line": 5,
+      "evidence_kind": "rejected_proof",
+      "assumptions": [
+        "Unit position and step; initially zero velocity."
+      ],
+      "limitations": [
+        "This attempted proof is rejected. It is never a verified conservation claim."
+      ]
+    },
+    {
+      "document_id": "oscillator-computation",
+      "title": "Exact fractional oscillator trajectory checks",
+      "summary": "Numerical model tests for dissipation, reversibility and forward Euler counterexamples using exact fractions.",
+      "source": "scripts/test_physics.py",
+      "source_sha256": "c008e22ec8092eb82303bf393adf65a6f6370e8e4468f266513cc7f521df954a",
+      "start_line": 7,
+      "end_line": 43,
+      "evidence_kind": "computational_example",
+      "assumptions": [
+        "Nonnegative step, stiffness and damping in the dissipation grid."
+      ],
+      "limitations": [
+        "Finite trajectories and test cases do not prove a universal theorem or establish experimental validity."
+      ]
+    },
+    {
+      "document_id": "physics-evidence",
+      "title": "Evidence requirements for connections between physical models",
+      "summary": "Derivations, symmetry, equivalences, controlled limits and empirical disagreements need explicitly scoped evidence.",
+      "source": "docs/FOUNDATIONAL_PHYSICS.md",
+      "source_sha256": "e017678b8a08e109f75399ff1bc6503888aef60b464fdb826b6d4e5246d34bb1",
+      "start_line": 45,
+      "end_line": 80,
+      "evidence_kind": "design_note",
+      "assumptions": [
+        "Proposed research acceptance profiles and documented physical assumptions."
+      ],
+      "limitations": [
+        "Design guidance; it supplies no proof of a particular equivalence or empirical confirmation."
+      ]
+    },
+    {
+      "document_id": "reuse-evaluation",
+      "title": "Independent research reuse evaluation",
+      "summary": "A proposed comparison of ordinary research, repository reuse and xLemma using held-out tasks and full cost accounting.",
+      "source": "docs/RESEARCH_COMPOUNDING_PILOT.md",
+      "source_sha256": "7778a14dfdf9082d2d1267610b73c9516eff7e8fcda49a68278293e3b9932236",
+      "start_line": 1,
+      "end_line": 72,
+      "evidence_kind": "design_note",
+      "assumptions": [
+        "Preregistered tasks and independent downstream researchers are required."
+      ],
+      "limitations": [
+        "A proposed evaluation; no measured scientific acceleration or independent participant result."
+      ]
+    },
+    {
+      "document_id": "discovery-economics",
+      "title": "Funded research allocation and budget conservation",
+      "summary": "An offline economic pilot with protected funding categories and adversarial duplicate and appeal scenarios.",
+      "source": "docs/DISCOVERY_PILOT.md",
+      "source_sha256": "8e49046a73ea7d8dd1651a84ec5c34cef253c4a3eb307ae7d6f69a8728d7717b",
+      "start_line": 1,
+      "end_line": 65,
+      "evidence_kind": "design_note",
+      "assumptions": [
+        "Settled funding and published eligibility rules; synthetic pilot inputs."
+      ],
+      "limitations": [
+        "Conservation of money is not conservation of physical energy or proof of scientific novelty."
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "source": "midpoint-conservation",
+      "target": "midpoint-balance",
+      "kind": "declared_dependency"
+    }
+  ]
+}
